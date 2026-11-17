@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "orefishfarm:fish_food"
+    },
+    {
+      "item": "orefishfarm:fish_food"
+    },
+    {
+      "item": "minecraft:magma_cream"
+    }
+  ],
+  "result": {
+    "item": "orefishfarm:ember_pellets",
+    "count": 2
+  }
+}

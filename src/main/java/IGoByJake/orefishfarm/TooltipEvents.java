@@ -23,6 +23,24 @@ public final class TooltipEvents {
             event.getToolTip().add(Component.literal("⚡ ").withStyle(ChatFormatting.YELLOW)
                     .append(Component.translatable("tooltip.orefishfarm.power_fish").withStyle(ChatFormatting.GOLD)));
         }
+        if (fish != null) {
+            net.minecraft.resources.ResourceLocation hab = fish.habitat();
+            event.getToolTip().add(Component.translatable("tooltip.orefishfarm.habitat", FishData.habitatName(hab)).withStyle(ChatFormatting.AQUA));
+        }
+        net.minecraft.resources.ResourceLocation foodHab = FishData.loaded() ? FishData.foodHabitat(event.getItemStack()) : null;
+        if (foodHab != null) {
+            event.getToolTip().add(Component.translatable("tooltip.orefishfarm.habitat_food", FishData.habitatName(foodHab)).withStyle(ChatFormatting.AQUA));
+        }
+        FishData.Habitat kit = FishData.loaded() ? FishData.habitatForKit(event.getItemStack()) : null;
+        if (kit != null) {
+            event.getToolTip().add(Component.translatable("tooltip.orefishfarm.habitat_kit", FishData.habitatName(kit.id())).withStyle(ChatFormatting.DARK_AQUA));
+        }
+        if (event.getItemStack().is(Registry.DYNAMO_COIL.get())) {
+            event.getToolTip().add(Component.translatable("tooltip.orefishfarm.dynamo_coil").withStyle(ChatFormatting.GOLD));
+        }
+        if (event.getItemStack().is(Registry.LOVE_LATTICE.get())) {
+            event.getToolTip().add(Component.translatable("tooltip.orefishfarm.love_lattice").withStyle(ChatFormatting.LIGHT_PURPLE));
+        }
         if (event.getItemStack().is(FishItem.HYBRID_FISH)) {
             event.getToolTip().add(Component.literal("❤ ").withStyle(ChatFormatting.LIGHT_PURPLE)
                     .append(Component.translatable("tooltip.orefishfarm.hybrid_fish").withStyle(ChatFormatting.DARK_PURPLE)));

@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CCC",
+    "CMC",
+    "CLC"
+  ],
+  "key": {
+    "C": {
+      "item": "minecraft:copper_ingot"
+    },
+    "M": {
+      "item": "minecraft:magma_block"
+    },
+    "L": {
+      "item": "minecraft:lava_bucket"
+    }
+  },
+  "result": {
+    "item": "orefishfarm:heating_coil",
+    "count": 1
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " G ",
+    "GEG",
+    " G "
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "E": {
+      "item": "minecraft:ender_eye"
+    }
+  },
+  "result": {
+    "item": "orefishfarm:void_lens",
+    "count": 1
+  }
+}

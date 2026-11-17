@@ -36,14 +36,21 @@ import java.util.Map;
  *     "product": { "item": "orefishfarm:iron_scale", "count": 1 },   (optional: a fish can make nothing)
  *     "product_chance": 0.25,   chance per food eaten in a Fish Tank
  *     "breed_chance": 0.08,     chance per food eaten in a Breeding Tank with two of this fish
- *     "power": 30 }             FE/tick while eating in power mode (optional; 0 = not a power fish)
+ *     "power": 30,              FE/tick while eating in a power tank (optional; 0 = not a power fish)
+ *     "habitat": "orefishfarm:water" }  which tank it lives in (optional; water by default)
  *
  * data/&lt;ns&gt;/orefishfarm_breeding/&lt;name&gt;.json
  *   { "parents": ["orefishfarm:cuprum_eel", "orefishfarm:zincray"],
  *     "result": { "item": "orefishfarm:brass_bream", "count": 1 }, "chance": 0.04 }
  *
  * data/&lt;ns&gt;/orefishfarm_food/&lt;name&gt;.json
- *   { "item": "orefishfarm:fish_food", "ticks": 400 }
+ *   { "item": "orefishfarm:fish_food", "ticks": 400,
+ *     "habitat": "orefishfarm:void" }   optional: while it is being eaten, any fish survives in a tank of this habitat
+ *
+ * data/&lt;ns&gt;/orefishfarm_habitat/&lt;name&gt;.json   (the file name is the habitat id)
+ *   { "look": "water" | "lava" | "void",   how the tank is drawn
+ *     "color": "#3F9FE4",                  tint of the fill (water look only)
+ *     "kit": "orefishfarm:heating_coil" }  item that turns a Fish Tank into this habitat
  * </pre>
  *
  * Any item can be made a fish this way. Items in {@code #orefishfarm:tank_fish} without a file are fish that
@@ -57,7 +64,16 @@ public final class FishData {
     public static final TagKey<Item> TANK_FISH = ItemTags.create(new ResourceLocation(OreFishFarm.MODID, "tank_fish"));
     public static final TagKey<Item> FISH_FOOD = ItemTags.create(new ResourceLocation(OreFishFarm.MODID, "fish_food"));
 
-    public record Fish(Item item, ItemStack product, float productChance, float breedChance, int power) {
+    /** Every fish lives here unless its file says otherwise. */
+    public static final ResourceLocation WATER = new ResourceLocation(OreFishFarm.MODID, "water");
+
+    public record Habitat(ResourceLocation id, String look, int color, @Nullable Item kit) {}
+
+    public record Food(int ticks, @Nullable ResourceLocation habitat) {}
+
+    private static final Habitat DEFAULT_WATER = new Habitat(WATER, "water", 0x3F9FE4, null);
+
+    public record Fish(Item item, ItemStack product, float productChance, float breedChance, int power, ResourceLocation habitat) {
         public boolean makesPower() { return this.power > 0; }
         public boolean makesProduct() { return !this.product.isEmpty() && this.productChance > 0; }
     }
@@ -68,7 +84,8 @@ public final class FishData {
 
     private static Map<Item, Fish> fish = Map.of();
     private static List<Cross> crosses = List.of();
-    private static Map<Item, Integer> foods = Map.of();
+    private static Map<Item, Food> foods = Map.of();
+    private static Map<ResourceLocation, Habitat> habitats = Map.of();
     /** False on a client connected to a remote server, where the files aren't known: slots then accept anything and the server decides. */
     private static boolean loaded;
     /** True where the files were read from disk (a server, or singleplayer); clients elsewhere get them over the network. */
@@ -122,6 +139,7 @@ public final class FishData {
             buf.writeFloat(productChance(f));
             buf.writeFloat(breedChance(f));
             buf.writeVarInt(powerPerTick(f));
+            buf.writeResourceLocation(f.habitat());
         }
         buf.writeVarInt(crosses.size());
         for (Cross c : crosses) {
@@ -131,13 +149,23 @@ public final class FishData {
             buf.writeFloat(crossChance(c));
         }
         buf.writeVarInt(foods.size());
-        foods.forEach((item, ticks) -> {
+        foods.forEach((item, food) -> {
             buf.writeResourceLocation(ForgeRegistries.ITEMS.getKey(item));
-            buf.writeVarInt(ticks);
+            buf.writeVarInt(food.ticks());
+            buf.writeBoolean(food.habitat() != null);
+            if (food.habitat() != null) buf.writeResourceLocation(food.habitat());
         });
+        buf.writeVarInt(habitats.size());
+        for (Habitat h : habitats.values()) {
+            buf.writeResourceLocation(h.id());
+            buf.writeUtf(h.look());
+            buf.writeInt(h.color());
+            buf.writeBoolean(h.kit() != null);
+            if (h.kit() != null) buf.writeResourceLocation(ForgeRegistries.ITEMS.getKey(h.kit()));
+        }
     }
 
-    public record Synced(Map<Item, Fish> fish, List<Cross> crosses, Map<Item, Integer> foods) {}
+    public record Synced(Map<Item, Fish> fish, List<Cross> crosses, Map<Item, Food> foods, Map<ResourceLocation, Habitat> habitats) {}
 
     public static Synced read(net.minecraft.network.FriendlyByteBuf buf) {
         Map<Item, Fish> f = new HashMap<>();
@@ -145,7 +173,7 @@ public final class FishData {
         for (int i = 0; i < n; i++) {
             Item item = ForgeRegistries.ITEMS.getValue(buf.readResourceLocation());
             ItemStack product = buf.readItem();
-            Fish fish = new Fish(item, product, buf.readFloat(), buf.readFloat(), buf.readVarInt());
+            Fish fish = new Fish(item, product, buf.readFloat(), buf.readFloat(), buf.readVarInt(), buf.readResourceLocation());
             if (item != null) f.put(item, fish);
         }
         List<Cross> x = new ArrayList<>();
@@ -157,14 +185,24 @@ public final class FishData {
             float c = buf.readFloat();
             if (a != null && b != null) x.add(new Cross(a, b, r, c));
         }
-        Map<Item, Integer> food = new HashMap<>();
+        Map<Item, Food> food = new HashMap<>();
         n = buf.readVarInt();
         for (int i = 0; i < n; i++) {
             Item item = ForgeRegistries.ITEMS.getValue(buf.readResourceLocation());
             int t = buf.readVarInt();
-            if (item != null) food.put(item, t);
+            ResourceLocation h = buf.readBoolean() ? buf.readResourceLocation() : null;
+            if (item != null) food.put(item, new Food(t, h));
         }
-        return new Synced(f, x, food);
+        Map<ResourceLocation, Habitat> hab = new HashMap<>();
+        n = buf.readVarInt();
+        for (int i = 0; i < n; i++) {
+            ResourceLocation id = buf.readResourceLocation();
+            String look = buf.readUtf();
+            int color = buf.readInt();
+            Item kit = buf.readBoolean() ? ForgeRegistries.ITEMS.getValue(buf.readResourceLocation()) : null;
+            hab.put(id, new Habitat(id, look, color, kit));
+        }
+        return new Synced(f, x, food, hab);
     }
 
     /** Client side: use the server's lists unless this game already read them from disk (singleplayer). */
@@ -173,6 +211,7 @@ public final class FishData {
         fish = s.fish();
         crosses = s.crosses();
         foods = s.foods();
+        habitats = s.habitats();
         loaded = true;
         // JEI may already have built its lists before this arrived (on a server): give it the tank pages now.
         if (net.minecraftforge.fml.ModList.get().isLoaded("jei")) IGoByJake.orefishfarm.compat.jei.OreFishJei.lateRecipes();
@@ -183,7 +222,7 @@ public final class FishData {
         if (stack.isEmpty()) return null;
         Fish f = fish.get(stack.getItem());
         if (f != null) return f;
-        if (stack.is(TANK_FISH)) return new Fish(stack.getItem(), ItemStack.EMPTY, 0, Config.DEFAULT_BREED_CHANCE.get().floatValue(), 0);
+        if (stack.is(TANK_FISH)) return new Fish(stack.getItem(), ItemStack.EMPTY, 0, Config.DEFAULT_BREED_CHANCE.get().floatValue(), 0, WATER);
         return null;
     }
 
@@ -193,9 +232,51 @@ public final class FishData {
 
     public static int foodTicks(ItemStack stack) {
         if (stack.isEmpty()) return 0;
-        Integer t = foods.get(stack.getItem());
-        if (t != null) return t;
+        Food f = foods.get(stack.getItem());
+        if (f != null) return f.ticks();
         return stack.is(FISH_FOOD) ? Config.DEFAULT_FOOD_TICKS.get() : 0;
+    }
+
+    /** The habitat this food makes livable while it is eaten, or null for an ordinary food. */
+    @Nullable
+    public static ResourceLocation foodHabitat(ItemStack stack) {
+        if (stack.isEmpty()) return null;
+        Food f = foods.get(stack.getItem());
+        return f == null ? null : f.habitat();
+    }
+
+    /** Where a fish lives (water if it isn't a known fish). */
+    public static ResourceLocation habitatOf(ItemStack fish) {
+        Fish f = fish(fish);
+        return f == null ? WATER : f.habitat();
+    }
+
+    public static Habitat habitat(@Nullable ResourceLocation id) {
+        if (id == null) return habitats.getOrDefault(WATER, DEFAULT_WATER);
+        Habitat h = habitats.get(id);
+        if (h != null) return h;
+        return id.equals(WATER) ? DEFAULT_WATER : habitats.getOrDefault(WATER, DEFAULT_WATER);
+    }
+
+    public static boolean isHabitat(ResourceLocation id) {
+        return id.equals(WATER) || habitats.containsKey(id);
+    }
+
+    /** The habitat an item converts a tank into, if it is a habitat kit. */
+    @Nullable
+    public static Habitat habitatForKit(ItemStack stack) {
+        if (stack.isEmpty()) return null;
+        for (Habitat h : habitats.values()) if (h.kit() != null && stack.is(h.kit())) return h;
+        return null;
+    }
+
+    public static java.util.Collection<Habitat> allHabitats() {
+        return habitats.values();
+    }
+
+    /** Display name of a habitat: lang key habitat.<ns>.<path>. */
+    public static net.minecraft.network.chat.Component habitatName(ResourceLocation id) {
+        return net.minecraft.network.chat.Component.translatable("habitat." + id.getNamespace() + "." + id.getPath());
     }
 
     public static boolean isFood(ItemStack stack) {
@@ -212,6 +293,7 @@ public final class FishData {
         event.addListener(new Listener("orefishfarm_fish", FishData::loadFish));
         event.addListener(new Listener("orefishfarm_breeding", FishData::loadCrosses));
         event.addListener(new Listener("orefishfarm_food", FishData::loadFoods));
+        event.addListener(new Listener("orefishfarm_habitat", FishData::loadHabitats));
     }
 
     private interface Loader { void load(Map<ResourceLocation, JsonElement> files); }
@@ -259,8 +341,9 @@ public final class FishData {
                     if (p == null) return; // product from a mod that isn't installed: skip the whole fish
                     product = p;
                 }
+                ResourceLocation hab = o.has("habitat") ? new ResourceLocation(GsonHelper.getAsString(o, "habitat")) : WATER;
                 out.put(f, new Fish(f, product, GsonHelper.getAsFloat(o, "product_chance", 0.25F),
-                        GsonHelper.getAsFloat(o, "breed_chance", 0.1F), GsonHelper.getAsInt(o, "power", 0)));
+                        GsonHelper.getAsFloat(o, "breed_chance", 0.1F), GsonHelper.getAsInt(o, "power", 0), hab));
             } catch (Exception ex) {
                 LOG.error("Bad fish file {}: {}", id, ex.getMessage());
             }
@@ -288,16 +371,35 @@ public final class FishData {
     }
 
     private static void loadFoods(Map<ResourceLocation, JsonElement> files) {
-        Map<Item, Integer> out = new HashMap<>();
+        Map<Item, Food> out = new HashMap<>();
         files.forEach((id, json) -> {
             try {
                 JsonObject o = json.getAsJsonObject();
                 Item i = item(GsonHelper.getAsString(o, "item"));
-                if (i != null) out.put(i, Math.max(1, GsonHelper.getAsInt(o, "ticks", 400)));
+                ResourceLocation hab = o.has("habitat") ? new ResourceLocation(GsonHelper.getAsString(o, "habitat")) : null;
+                if (i != null) out.put(i, new Food(Math.max(1, GsonHelper.getAsInt(o, "ticks", 400)), hab));
             } catch (Exception ex) {
                 LOG.error("Bad fish food file {}: {}", id, ex.getMessage());
             }
         });
         foods = out;
+    }
+
+    private static void loadHabitats(Map<ResourceLocation, JsonElement> files) {
+        Map<ResourceLocation, Habitat> out = new HashMap<>();
+        files.forEach((id, json) -> {
+            try {
+                JsonObject o = json.getAsJsonObject();
+                String look = GsonHelper.getAsString(o, "look", "water");
+                if (!look.equals("water") && !look.equals("lava") && !look.equals("void")) look = "water";
+                String c = GsonHelper.getAsString(o, "color", "#3F9FE4").replace("#", "");
+                Item kit = o.has("kit") ? item(GsonHelper.getAsString(o, "kit")) : null;
+                out.put(id, new Habitat(id, look, Integer.parseInt(c, 16) & 0xFFFFFF, kit));
+            } catch (Exception ex) {
+                LOG.error("Bad habitat file {}: {}", id, ex.getMessage());
+            }
+        });
+        if (!out.containsKey(WATER)) out.put(WATER, DEFAULT_WATER);
+        habitats = out;
     }
 }

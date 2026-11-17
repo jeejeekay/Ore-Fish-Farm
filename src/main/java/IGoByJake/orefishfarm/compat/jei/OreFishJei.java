@@ -43,6 +43,15 @@ public class OreFishJei implements IModPlugin {
 
     @Override
     public void registerRecipes(IRecipeRegistration reg) {
+        info(reg, Registry.FISH_TANK.get(), "fish_tank");
+        info(reg, Registry.HEATING_COIL.get(), "heating_coil");
+        info(reg, Registry.VOID_LENS.get(), "void_lens");
+        info(reg, Registry.DYNAMO_COIL.get(), "dynamo_coil");
+        info(reg, Registry.LOVE_LATTICE.get(), "love_lattice");
+        info(reg, Registry.BRINE_FLAKES.get(), "habitat_food");
+        info(reg, Registry.EMBER_PELLETS.get(), "habitat_food");
+        info(reg, Registry.VOID_FLAKES.get(), "habitat_food");
+        info(reg, Registry.FISH_BONE.get(), "fish_bone");
         added = FishData.loaded();
         if (!added) return;
         reg.addRecipes(PRODUCT, TankRecipes.products());
@@ -50,11 +59,18 @@ public class OreFishJei implements IModPlugin {
         reg.addRecipes(POWER, TankRecipes.power());
     }
 
+    private static void info(IRecipeRegistration reg, net.minecraft.world.level.ItemLike item, String key) {
+        reg.addIngredientInfo(new ItemStack(item), mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
+                net.minecraft.network.chat.Component.translatable("jei.orefishfarm.info." + key));
+    }
+
     @Override
     public void registerRecipeCatalysts(IRecipeCatalystRegistration reg) {
         reg.addRecipeCatalyst(new ItemStack(Registry.FISH_TANK.get()), PRODUCT);
-        reg.addRecipeCatalyst(new ItemStack(Registry.BREEDING_TANK.get()), BREEDING);
-        reg.addRecipeCatalyst(new ItemStack(Registry.POWER_TANK.get()), POWER);
+        reg.addRecipeCatalyst(new ItemStack(Registry.LOVE_LATTICE.get()), BREEDING);
+        reg.addRecipeCatalyst(new ItemStack(Registry.FISH_TANK.get()), BREEDING);
+        reg.addRecipeCatalyst(new ItemStack(Registry.DYNAMO_COIL.get()), POWER);
+        reg.addRecipeCatalyst(new ItemStack(Registry.FISH_TANK.get()), POWER);
     }
 
     @Override

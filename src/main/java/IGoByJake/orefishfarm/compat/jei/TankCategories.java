@@ -90,7 +90,7 @@ public final class TankCategories {
 
     // ---- Breeding Tank: fish + fish (+ food) -> baby or hybrid, X% per food
     static class BreedingCategory extends Base<TankRecipes.Breeding> {
-        BreedingCategory(IGuiHelper gui) { super(gui, Registry.BREEDING_TANK.get()); }
+        BreedingCategory(IGuiHelper gui) { super(gui, Registry.LOVE_LATTICE.get()); }
 
         @Override public RecipeType<TankRecipes.Breeding> getRecipeType() { return OreFishJei.BREEDING; }
 
@@ -113,7 +113,7 @@ public final class TankCategories {
 
     // ---- Power Tank: power fish (+ food) -> FE/t
     static class PowerCategory extends Base<TankRecipes.Power> {
-        PowerCategory(IGuiHelper gui) { super(gui, Registry.POWER_TANK.get()); }
+        PowerCategory(IGuiHelper gui) { super(gui, Registry.DYNAMO_COIL.get()); }
 
         @Override public RecipeType<TankRecipes.Power> getRecipeType() { return OreFishJei.POWER; }
 

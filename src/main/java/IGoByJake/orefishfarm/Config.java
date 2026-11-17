@@ -14,6 +14,10 @@ public final class Config {
     public static final ForgeConfigSpec.IntValue DEFAULT_FOOD_TICKS;
     public static final ForgeConfigSpec.IntValue ENERGY_CAPACITY;
     public static final ForgeConfigSpec.IntValue ENERGY_OUTPUT;
+    public static final ForgeConfigSpec.IntValue MAX_AQUARIUM_SIZE;
+    public static final ForgeConfigSpec.IntValue HABITAT_GRACE;
+    public static final ForgeConfigSpec.IntValue HABITAT_HURT;
+    public static final ForgeConfigSpec.DoubleValue LATTICE_BONUS;
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
@@ -28,8 +32,14 @@ public final class Config {
         DEFAULT_FOOD_TICKS = b.comment("Ticks one item lasts for foods in the #orefishfarm:fish_food tag that have no food file.").defineInRange("defaultFoodTicks", 400, 1, 72000);
         b.pop().push("power");
         POWER = b.comment("Multiplier on the FE/tick power fish make.").defineInRange("powerMultiplier", 1.0, 0.0, 100.0);
-        ENERGY_CAPACITY = b.comment("FE a fish tank can hold.").defineInRange("energyCapacity", 20000, 100, Integer.MAX_VALUE);
+        ENERGY_CAPACITY = b.comment("FE each block of a power tank can hold (an aquarium holds this times its blocks).").defineInRange("energyCapacity", 20000, 100, Integer.MAX_VALUE);
         ENERGY_OUTPUT = b.comment("Most FE per tick a tank pushes into neighbouring blocks.").defineInRange("energyOutput", 1000, 1, Integer.MAX_VALUE);
+        b.pop().push("aquarium");
+        MAX_AQUARIUM_SIZE = b.comment("Largest aquarium joined tanks can form, in blocks along each axis.").defineInRange("maxAquariumSize", 8, 1, 16);
+        LATTICE_BONUS = b.comment("Extra breeding chance for each Love Lattice after the first (0.25 = +25% each).").defineInRange("latticeBonus", 0.25, 0.0, 10.0);
+        b.pop().push("habitat");
+        HABITAT_GRACE = b.comment("Ticks a fish in the wrong habitat waits for its habitat food before it starts getting hurt.").defineInRange("graceTicks", 200, 0, 72000);
+        HABITAT_HURT = b.comment("Ticks a fish is hurt (with a hurt sound each second) before it dies. Pull it out in time to save it.").defineInRange("hurtTicks", 60, 1, 72000);
         b.pop();
         SPEC = b.build();
     }

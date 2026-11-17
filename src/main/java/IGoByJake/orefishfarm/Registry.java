@@ -1,14 +1,12 @@
 package IGoByJake.orefishfarm;
 
-import IGoByJake.orefishfarm.block.BreedingTankBlockEntity;
-import IGoByJake.orefishfarm.block.FishTankBlockEntity;
-import IGoByJake.orefishfarm.block.PowerTankBlockEntity;
+import IGoByJake.orefishfarm.block.LegacyTankBlock;
+import IGoByJake.orefishfarm.block.LegacyTankBlockEntity;
 import IGoByJake.orefishfarm.block.TankBlock;
+import IGoByJake.orefishfarm.block.TankBlockEntity;
 import IGoByJake.orefishfarm.entity.OreFish;
 import IGoByJake.orefishfarm.loot.AddFishModifier;
-import IGoByJake.orefishfarm.menu.BreedingTankMenu;
-import IGoByJake.orefishfarm.menu.FishTankMenu;
-import IGoByJake.orefishfarm.menu.PowerTankMenu;
+import IGoByJake.orefishfarm.menu.AquariumMenu;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -92,6 +90,16 @@ public final class Registry {
     public static final RegistryObject<Item> COPPER_TOOTH = item("copper_tooth");
     public static final RegistryObject<Item> BRASS_SCALE = item("brass_scale");
     public static final RegistryObject<Item> FISH_FOOD = item("fish_food");
+    public static final RegistryObject<Item> BRINE_FLAKES = item("brine_flakes");
+    public static final RegistryObject<Item> EMBER_PELLETS = item("ember_pellets");
+    public static final RegistryObject<Item> VOID_FLAKES = item("void_flakes");
+    public static final RegistryObject<Item> FISH_BONE = item("fish_bone");
+
+    // Kits and upgrades for the Fish Tank
+    public static final RegistryObject<Item> HEATING_COIL = item("heating_coil");
+    public static final RegistryObject<Item> VOID_LENS = item("void_lens");
+    public static final RegistryObject<Item> DYNAMO_COIL = item("dynamo_coil");
+    public static final RegistryObject<Item> LOVE_LATTICE = item("love_lattice");
 
     // Spawn eggs (fish colours: body, accent)
     private static void egg(String name, java.util.function.Supplier<? extends EntityType<? extends net.minecraft.world.entity.Mob>> type, int bg, int fg) {
@@ -114,34 +122,29 @@ public final class Registry {
     }
 
     public static final RegistryObject<Block> FISH_TANK = BLOCKS.register("fish_tank",
-            () -> new TankBlock(tankProps(), Registry.FISH_TANK_BE, FishTankBlockEntity::new));
-    public static final RegistryObject<Block> BREEDING_TANK = BLOCKS.register("breeding_tank",
-            () -> new TankBlock(tankProps(), Registry.BREEDING_TANK_BE, BreedingTankBlockEntity::new));
-    public static final RegistryObject<Block> POWER_TANK = BLOCKS.register("power_tank",
-            () -> new TankBlock(tankProps(), Registry.POWER_TANK_BE, PowerTankBlockEntity::new));
+            () -> new TankBlock(tankProps().lightLevel(s -> s.getValue(TankBlock.LOOK).light)));
+    /** 1.x blocks: each turns into a Fish Tank the first time it ticks. Their items still place (and convert). */
+    public static final RegistryObject<Block> BREEDING_TANK = BLOCKS.register("breeding_tank", () -> new LegacyTankBlock(tankProps(), true));
+    public static final RegistryObject<Block> POWER_TANK = BLOCKS.register("power_tank", () -> new LegacyTankBlock(tankProps(), false));
 
     static {
-        for (RegistryObject<Block> b : List.of(POWER_TANK, BREEDING_TANK, FISH_TANK)) {
-            TAB_ORDER.add(0, ITEMS.register(b.getId().getPath(), () -> new BlockItem(b.get(), new Item.Properties())));
-        }
+        TAB_ORDER.add(0, ITEMS.register("fish_tank", () -> new BlockItem(FISH_TANK.get(), new Item.Properties())));
+        ITEMS.register("breeding_tank", () -> new BlockItem(BREEDING_TANK.get(), new Item.Properties()));
+        ITEMS.register("power_tank", () -> new BlockItem(POWER_TANK.get(), new Item.Properties()));
     }
 
     @SuppressWarnings("ConstantConditions")
-    public static final RegistryObject<BlockEntityType<FishTankBlockEntity>> FISH_TANK_BE = BLOCK_ENTITIES.register("fish_tank",
-            () -> BlockEntityType.Builder.of(FishTankBlockEntity::new, FISH_TANK.get()).build(null));
+    public static final RegistryObject<BlockEntityType<TankBlockEntity>> FISH_TANK_BE = BLOCK_ENTITIES.register("fish_tank",
+            () -> BlockEntityType.Builder.of(TankBlockEntity::new, FISH_TANK.get()).build(null));
     @SuppressWarnings("ConstantConditions")
-    public static final RegistryObject<BlockEntityType<BreedingTankBlockEntity>> BREEDING_TANK_BE = BLOCK_ENTITIES.register("breeding_tank",
-            () -> BlockEntityType.Builder.of(BreedingTankBlockEntity::new, BREEDING_TANK.get()).build(null));
+    public static final RegistryObject<BlockEntityType<LegacyTankBlockEntity>> LEGACY_BREEDING_BE = BLOCK_ENTITIES.register("breeding_tank",
+            () -> BlockEntityType.Builder.of((p, st) -> new LegacyTankBlockEntity(Registry.LEGACY_BREEDING_BE.get(), p, st), BREEDING_TANK.get()).build(null));
     @SuppressWarnings("ConstantConditions")
-    public static final RegistryObject<BlockEntityType<PowerTankBlockEntity>> POWER_TANK_BE = BLOCK_ENTITIES.register("power_tank",
-            () -> BlockEntityType.Builder.of(PowerTankBlockEntity::new, POWER_TANK.get()).build(null));
+    public static final RegistryObject<BlockEntityType<LegacyTankBlockEntity>> LEGACY_POWER_BE = BLOCK_ENTITIES.register("power_tank",
+            () -> BlockEntityType.Builder.of((p, st) -> new LegacyTankBlockEntity(Registry.LEGACY_POWER_BE.get(), p, st), POWER_TANK.get()).build(null));
 
-    public static final RegistryObject<MenuType<FishTankMenu>> FISH_TANK_MENU = MENUS.register("fish_tank",
-            () -> IForgeMenuType.create(FishTankMenu::fromNetwork));
-    public static final RegistryObject<MenuType<BreedingTankMenu>> BREEDING_TANK_MENU = MENUS.register("breeding_tank",
-            () -> IForgeMenuType.create(BreedingTankMenu::fromNetwork));
-    public static final RegistryObject<MenuType<PowerTankMenu>> POWER_TANK_MENU = MENUS.register("power_tank",
-            () -> IForgeMenuType.create(PowerTankMenu::fromNetwork));
+    public static final RegistryObject<MenuType<AquariumMenu>> AQUARIUM_MENU = MENUS.register("fish_tank",
+            () -> IForgeMenuType.create(AquariumMenu::fromNetwork));
 
     public static final RegistryObject<Codec<AddFishModifier>> ADD_FISH = LOOT_MODIFIERS.register("add_fish", AddFishModifier.CODEC);
 
