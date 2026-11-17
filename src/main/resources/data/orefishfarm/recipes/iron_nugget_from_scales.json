@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "orefishfarm:iron_scale"
+    },
+    {
+      "item": "orefishfarm:iron_scale"
+    },
+    {
+      "item": "orefishfarm:iron_scale"
+    },
+    {
+      "item": "orefishfarm:iron_scale"
+    }
+  ],
+  "result": {
+    "item": "minecraft:iron_nugget",
+    "count": 1
+  }
+}

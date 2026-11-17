@@ -1,0 +1,9 @@
+{
+  "fish": "orefishfarm:gilded_carp",
+  "product": {
+    "item": "orefishfarm:gold_scale",
+    "count": 1
+  },
+  "product_chance": 0.2,
+  "breed_chance": 0.07
+}

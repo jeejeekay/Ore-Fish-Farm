@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "orefishfarm:block/fish_tank"
+    },
+    "facing=east": {
+      "model": "orefishfarm:block/fish_tank",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "orefishfarm:block/fish_tank",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "orefishfarm:block/fish_tank",
+      "y": 270
+    }
+  }
+}

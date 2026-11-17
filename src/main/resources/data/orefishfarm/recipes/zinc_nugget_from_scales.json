@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "orefishfarm:zinc_scale"
+    },
+    {
+      "item": "orefishfarm:zinc_scale"
+    },
+    {
+      "item": "orefishfarm:zinc_scale"
+    },
+    {
+      "item": "orefishfarm:zinc_scale"
+    }
+  ],
+  "result": {
+    "item": "create:zinc_nugget",
+    "count": 1
+  },
+  "conditions": [
+    {
+      "type": "forge:mod_loaded",
+      "modid": "create"
+    }
+  ]
+}

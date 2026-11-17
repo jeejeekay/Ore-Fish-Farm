@@ -1,0 +1,31 @@
+{
+  "type": "orefishfarm:add_fish",
+  "conditions": [
+    {
+      "condition": "forge:loot_table_id",
+      "loot_table_id": "minecraft:gameplay/fishing"
+    }
+  ],
+  "fish": [
+    {
+      "item": "orefishfarm:obsidian_fish",
+      "chance": 0.04
+    },
+    {
+      "item": "orefishfarm:ferrofin",
+      "chance": 0.01
+    },
+    {
+      "item": "orefishfarm:gilded_carp",
+      "chance": 0.008
+    },
+    {
+      "item": "orefishfarm:zincray",
+      "chance": 0.01
+    },
+    {
+      "item": "orefishfarm:cuprum_eel",
+      "chance": 0.008
+    }
+  ]
+}

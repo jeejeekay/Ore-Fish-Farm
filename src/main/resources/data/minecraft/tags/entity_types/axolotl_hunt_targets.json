@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "orefishfarm:obsidian_fish",
+    "orefishfarm:ferrofin",
+    "orefishfarm:gilded_carp",
+    "orefishfarm:zincray",
+    "orefishfarm:cuprum_eel",
+    "orefishfarm:brass_bream"
+  ]
+}

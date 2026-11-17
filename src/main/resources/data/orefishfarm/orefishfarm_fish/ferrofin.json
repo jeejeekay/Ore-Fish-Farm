@@ -1,0 +1,9 @@
+{
+  "fish": "orefishfarm:ferrofin",
+  "product": {
+    "item": "orefishfarm:iron_scale",
+    "count": 1
+  },
+  "product_chance": 0.25,
+  "breed_chance": 0.08
+}

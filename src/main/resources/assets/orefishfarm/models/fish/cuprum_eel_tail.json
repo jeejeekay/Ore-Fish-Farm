@@ -1,0 +1,44 @@
+{
+ "texture_size": [
+  32,
+  32
+ ],
+ "textures": {
+  "t": "orefishfarm:entity/fish/cuprum_eel",
+  "particle": "orefishfarm:entity/fish/cuprum_eel"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    6,
+    8
+   ],
+   "to": [
+    1,
+    10,
+    8
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      13.0,
+      2.5,
+      13.5,
+      4.5
+     ],
+     "texture": "#t"
+    },
+    "south": {
+     "uv": [
+      13.5,
+      2.5,
+      14.0,
+      4.5
+     ],
+     "texture": "#t"
+    }
+   }
+  }
+ ]
+}

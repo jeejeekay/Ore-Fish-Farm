@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "orefishfarm:obsidian_scale",
+    "orefishfarm:iron_scale",
+    "orefishfarm:gold_scale",
+    "orefishfarm:zinc_scale",
+    "orefishfarm:brass_scale",
+    "orefishfarm:copper_tooth"
+  ]
+}

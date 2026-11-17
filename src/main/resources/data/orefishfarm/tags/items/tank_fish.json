@@ -1,0 +1,19 @@
+{
+  "replace": false,
+  "values": [
+    "orefishfarm:obsidian_fish",
+    "orefishfarm:ferrofin",
+    "orefishfarm:gilded_carp",
+    "orefishfarm:zincray",
+    "orefishfarm:cuprum_eel",
+    "orefishfarm:brass_bream",
+    "minecraft:cod",
+    "minecraft:salmon",
+    "minecraft:tropical_fish",
+    "minecraft:pufferfish",
+    {
+      "id": "#forge:raw_fishes",
+      "required": false
+    }
+  ]
+}

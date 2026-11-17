@@ -1,0 +1,44 @@
+{
+ "texture_size": [
+  32,
+  32
+ ],
+ "textures": {
+  "t": "orefishfarm:entity/fish/gilded_carp",
+  "particle": "orefishfarm:entity/fish/gilded_carp"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    4,
+    8
+   ],
+   "to": [
+    4,
+    12,
+    8
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      6.0,
+      3.0,
+      8.0,
+      7.0
+     ],
+     "texture": "#t"
+    },
+    "south": {
+     "uv": [
+      8.0,
+      3.0,
+      10.0,
+      7.0
+     ],
+     "texture": "#t"
+    }
+   }
+  }
+ ]
+}

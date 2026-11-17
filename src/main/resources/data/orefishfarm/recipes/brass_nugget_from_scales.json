@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "orefishfarm:brass_scale"
+    },
+    {
+      "item": "orefishfarm:brass_scale"
+    },
+    {
+      "item": "orefishfarm:brass_scale"
+    },
+    {
+      "item": "orefishfarm:brass_scale"
+    }
+  ],
+  "result": {
+    "item": "create:brass_nugget",
+    "count": 1
+  },
+  "conditions": [
+    {
+      "type": "forge:mod_loaded",
+      "modid": "create"
+    }
+  ]
+}

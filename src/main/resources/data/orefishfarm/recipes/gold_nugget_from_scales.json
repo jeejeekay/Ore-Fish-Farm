@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "orefishfarm:gold_scale"
+    },
+    {
+      "item": "orefishfarm:gold_scale"
+    },
+    {
+      "item": "orefishfarm:gold_scale"
+    },
+    {
+      "item": "orefishfarm:gold_scale"
+    }
+  ],
+  "result": {
+    "item": "minecraft:gold_nugget",
+    "count": 1
+  }
+}
