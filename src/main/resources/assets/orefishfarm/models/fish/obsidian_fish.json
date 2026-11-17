@@ -5,8 +5,8 @@
   32
  ],
  "textures": {
-  "t": "orefishfarm:entity/fish/obsidian_fish",
-  "particle": "orefishfarm:entity/fish/obsidian_fish"
+  "t": "orefishfarm:item/fish/obsidian_fish",
+  "particle": "orefishfarm:item/fish/obsidian_fish"
  },
  "elements": [
   {

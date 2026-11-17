@@ -14,13 +14,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Draws the fish inside a tank, side-on to the tank's front (see FishRender for model lookup).
- * One fish swims slowly from side to side and turns round at the ends; in a Breeding Tank the two fish face
- * each other and drift together. Only drawn within 48 blocks.
+ * Draws the fish inside a tank, side-on to the tank's front (see FishRender for model lookup). Each fish swims
+ * in place: a slow bob, a gentle sway and a slight roll. In a Breeding Tank the two face each other.
+ * Only drawn within 48 blocks.
  */
 public class TankRenderer implements BlockEntityRenderer<BaseTankBlockEntity> {
-    private static final float LONE_SCALE = 0.5F;
-    private static final float PAIR_SCALE = 0.36F;
+    private static final float LONE_SCALE = 0.62F;
+    private static final float PAIR_SCALE = 0.45F;
 
     public TankRenderer(BlockEntityRendererProvider.Context ctx) {}
 
@@ -29,32 +29,28 @@ public class TankRenderer implements BlockEntityRenderer<BaseTankBlockEntity> {
         if (be.getLevel() == null) return;
         Direction facing = be.getBlockState().hasProperty(TankBlock.FACING) ? be.getBlockState().getValue(TankBlock.FACING) : Direction.SOUTH;
         int fishCount = be.items().getSlots() - 2;
-        float t = (be.getLevel().getGameTime() + partial) / 20F + (be.getBlockPos().asLong() & 255) / 7F;
+        float time = (be.getLevel().getGameTime() + partial) / 20F;
+        float phase0 = (be.getBlockPos().asLong() & 255) / 40F;
         int lit = LevelRenderer.getLightColor(be.getLevel(), be.getBlockPos().above());
-
-        pose.pushPose();
-        pose.translate(0.5, 0.53, 0.5);
-        pose.mulPose(Axis.YP.rotationDegrees(-facing.toYRot()));
-        if (fishCount == 1) {
-            drawFish(be.fish(0), pose, buffers, lit, FishRender.swimOffset(t, 0.25F) * 0.17F, Mth.sin(t * 0.8F) * 0.012F,
-                    FishRender.swimYaw(t, 0.25F), LONE_SCALE, FishRender.tailWag(t, 0));
-        } else {
-            float drift = Mth.sin(t * 0.22F) * 0.06F;
-            float gap = 0.19F + Mth.sin(t * 0.5F) * 0.015F;
-            drawFish(be.fish(0), pose, buffers, lit, drift - gap, Mth.sin(t * 0.8F) * 0.012F, 0, PAIR_SCALE, FishRender.tailWag(t, 0));
-            drawFish(be.fish(1), pose, buffers, lit, drift + gap, Mth.sin(t * 0.8F + 1.3F) * 0.012F, 180, PAIR_SCALE, FishRender.tailWag(t, 1.7F));
+        for (int i = 0; i < fishCount; i++) {
+            ItemStack fish = be.fish(i);
+            if (fish.isEmpty()) continue;
+            float phase = phase0 + i * 1.7F;
+            pose.pushPose();
+            pose.translate(0.5, 0.52, 0.5);
+            pose.mulPose(Axis.YP.rotationDegrees(-facing.toYRot()));
+            if (fishCount == 2) {
+                pose.translate(i == 0 ? -0.2 : 0.2, 0, 0);
+                if (i == 1) pose.mulPose(Axis.YP.rotationDegrees(180));
+            }
+            pose.translate(0, Mth.sin(time * 2.0F + phase) * 0.03F, 0);
+            pose.mulPose(Axis.YP.rotationDegrees(Mth.sin(time * 2.7F + phase) * 10F));
+            pose.mulPose(Axis.ZP.rotationDegrees(Mth.sin(time * 1.3F + phase) * 3F));
+            float s = fishCount == 2 ? PAIR_SCALE : LONE_SCALE;
+            pose.scale(s, s, s);
+            FishRender.render(fish, pose, buffers, lit, FishRender.tailWag(time, phase));
+            pose.popPose();
         }
-        pose.popPose();
-    }
-
-    private static void drawFish(ItemStack fish, PoseStack pose, MultiBufferSource buffers, int light, float x, float y, float yaw, float scale, float tail) {
-        if (fish.isEmpty()) return;
-        pose.pushPose();
-        pose.translate(x, y, 0);
-        pose.mulPose(Axis.YP.rotationDegrees(yaw));
-        pose.scale(scale, scale, scale);
-        FishRender.render(fish, pose, buffers, light, tail);
-        pose.popPose();
     }
 
     @Override

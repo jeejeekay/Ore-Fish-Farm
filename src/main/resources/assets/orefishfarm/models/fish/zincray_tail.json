@@ -4,8 +4,8 @@
   32
  ],
  "textures": {
-  "t": "orefishfarm:entity/fish/zincray",
-  "particle": "orefishfarm:entity/fish/zincray"
+  "t": "orefishfarm:item/fish/zincray",
+  "particle": "orefishfarm:item/fish/zincray"
  },
  "elements": [
   {

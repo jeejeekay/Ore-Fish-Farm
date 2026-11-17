@@ -4,8 +4,8 @@
   32
  ],
  "textures": {
-  "t": "orefishfarm:entity/fish/gilded_carp",
-  "particle": "orefishfarm:entity/fish/gilded_carp"
+  "t": "orefishfarm:item/fish/gilded_carp",
+  "particle": "orefishfarm:item/fish/gilded_carp"
  },
  "elements": [
   {

@@ -4,8 +4,8 @@
   32
  ],
  "textures": {
-  "t": "orefishfarm:entity/fish/cuprum_eel",
-  "particle": "orefishfarm:entity/fish/cuprum_eel"
+  "t": "orefishfarm:item/fish/cuprum_eel",
+  "particle": "orefishfarm:item/fish/cuprum_eel"
  },
  "elements": [
   {

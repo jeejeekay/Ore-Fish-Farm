@@ -4,8 +4,8 @@
   32
  ],
  "textures": {
-  "t": "orefishfarm:entity/fish/brass_bream",
-  "particle": "orefishfarm:entity/fish/brass_bream"
+  "t": "orefishfarm:item/fish/brass_bream",
+  "particle": "orefishfarm:item/fish/brass_bream"
  },
  "elements": [
   {

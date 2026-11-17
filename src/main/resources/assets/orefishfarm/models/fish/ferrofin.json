@@ -5,8 +5,8 @@
   32
  ],
  "textures": {
-  "t": "orefishfarm:entity/fish/ferrofin",
-  "particle": "orefishfarm:entity/fish/ferrofin"
+  "t": "orefishfarm:item/fish/ferrofin",
+  "particle": "orefishfarm:item/fish/ferrofin"
  },
  "elements": [
   {
