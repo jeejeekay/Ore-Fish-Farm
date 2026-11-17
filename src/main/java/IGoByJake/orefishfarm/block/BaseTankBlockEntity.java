@@ -77,6 +77,25 @@ public abstract class BaseTankBlockEntity extends BlockEntity implements MenuPro
 
     public ItemStack fish(int i) { return this.items.getStackInSlot(i); }
 
+    /** Whether a right-click with this item would put it in the tank. */
+    public boolean tryInsertFishCheck(ItemStack held) {
+        if (held.isEmpty() || !acceptsFish(held)) return false;
+        for (int i = 0; i < this.fishSlots; i++) if (this.items.getStackInSlot(i).isEmpty()) return true;
+        return false;
+    }
+
+    /** Right-click with a fish: drops one into the first empty fish slot. Returns false if it doesn't fit. */
+    public boolean tryInsertFish(ItemStack held) {
+        if (held.isEmpty() || !acceptsFish(held)) return false;
+        for (int i = 0; i < this.fishSlots; i++) {
+            if (this.items.getStackInSlot(i).isEmpty()) {
+                this.items.setStackInSlot(i, held.copyWithCount(1));
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** Whether the tank has something to do right now (decides if food burns). */
     protected abstract boolean canWork();
 

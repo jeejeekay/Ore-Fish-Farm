@@ -5,7 +5,10 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -80,8 +83,18 @@ public class TankBlock extends BaseEntityBlock {
 
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if (!level.isClientSide && level.getBlockEntity(pos) instanceof BaseTankBlockEntity be && player instanceof ServerPlayer sp) {
-            NetworkHooks.openScreen(sp, be, pos);
+        if (level.getBlockEntity(pos) instanceof BaseTankBlockEntity be) {
+            // Holding a fish and there's room: slip it straight into the tank.
+            ItemStack held = player.getItemInHand(hand);
+            if (!player.isShiftKeyDown() && !held.isEmpty() && be.tryInsertFishCheck(held)) {
+                if (!level.isClientSide) {
+                    be.tryInsertFish(held);
+                    if (!player.getAbilities().instabuild) held.shrink(1);
+                    level.playSound(null, pos, SoundEvents.BUCKET_EMPTY_FISH, SoundSource.BLOCKS, 1.0F, 1.0F);
+                }
+                return InteractionResult.sidedSuccess(level.isClientSide);
+            }
+            if (!level.isClientSide && player instanceof ServerPlayer sp) NetworkHooks.openScreen(sp, be, pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
