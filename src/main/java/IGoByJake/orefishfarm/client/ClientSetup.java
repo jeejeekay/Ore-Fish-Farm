@@ -33,12 +33,6 @@ public final class ClientSetup {
         event.registerBlockEntityRenderer(Registry.BREEDING_TANK_BE.get(), TankRenderer::new);
         event.registerBlockEntityRenderer(Registry.POWER_TANK_BE.get(), TankRenderer::new);
         for (var fish : Registry.FISH_MOBS) event.registerEntityRenderer(fish.get(), OreFishRenderer::new);
-        event.registerEntityRenderer(Registry.SEAGULL.get(), SeagullRenderer::new);
-    }
-
-    @SubscribeEvent
-    public static void onLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
-        event.registerLayerDefinition(SeagullModel.LAYER, SeagullModel::createLayer);
     }
 
     @SubscribeEvent

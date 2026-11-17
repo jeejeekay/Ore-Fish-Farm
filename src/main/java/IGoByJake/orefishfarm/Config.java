@@ -14,10 +14,6 @@ public final class Config {
     public static final ForgeConfigSpec.IntValue DEFAULT_FOOD_TICKS;
     public static final ForgeConfigSpec.IntValue ENERGY_CAPACITY;
     public static final ForgeConfigSpec.IntValue ENERGY_OUTPUT;
-    public static final ForgeConfigSpec.BooleanValue SEAGULLS;
-    public static final ForgeConfigSpec.ConfigValue<java.util.List<? extends String>> SEAGULL_DIMENSIONS;
-    public static final ForgeConfigSpec.IntValue FIRST_GIFT_SECONDS;
-    public static final ForgeConfigSpec.DoubleValue SECOND_SEAGULL_CHANCE;
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
@@ -34,13 +30,6 @@ public final class Config {
         POWER = b.comment("Multiplier on the FE/tick power fish make.").defineInRange("powerMultiplier", 1.0, 0.0, 100.0);
         ENERGY_CAPACITY = b.comment("FE a fish tank can hold.").defineInRange("energyCapacity", 20000, 100, Integer.MAX_VALUE);
         ENERGY_OUTPUT = b.comment("Most FE per tick a tank pushes into neighbouring blocks.").defineInRange("energyOutput", 1000, 1, Integer.MAX_VALUE);
-        b.pop().push("seagulls");
-        SEAGULLS = b.comment("A seagull keeps each player company (and brings the odd gift).").define("enabled", true);
-        SEAGULL_DIMENSIONS = b.comment("Dimensions seagulls appear in.").defineListAllowEmpty("dimensions",
-                java.util.List.of("minecraft:overworld"), o -> o instanceof String);
-        FIRST_GIFT_SECONDS = b.comment("A player's first gift (loot table orefishfarm:gameplay/seagull/first_gift) arrives within about this many seconds of play.")
-                .defineInRange("firstGiftWithinSeconds", 300, 180, 36000);
-        SECOND_SEAGULL_CHANCE = b.comment("Chance each minute that a second seagull joins.").defineInRange("secondSeagullChance", 0.03, 0.0, 1.0);
         b.pop();
         SPEC = b.build();
     }

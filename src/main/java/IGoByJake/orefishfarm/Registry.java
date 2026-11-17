@@ -5,7 +5,6 @@ import IGoByJake.orefishfarm.block.FishTankBlockEntity;
 import IGoByJake.orefishfarm.block.PowerTankBlockEntity;
 import IGoByJake.orefishfarm.block.TankBlock;
 import IGoByJake.orefishfarm.entity.OreFish;
-import IGoByJake.orefishfarm.entity.Seagull;
 import IGoByJake.orefishfarm.loot.AddFishModifier;
 import IGoByJake.orefishfarm.menu.BreedingTankMenu;
 import IGoByJake.orefishfarm.menu.FishTankMenu;
@@ -85,9 +84,6 @@ public final class Registry {
     public static final List<RegistryObject<EntityType<OreFish>>> FISH_MOBS =
             List.of(OBSIDIAN_FISH_MOB, FERROFIN_MOB, GILDED_CARP_MOB, ZINCRAY_MOB, CUPRUM_EEL_MOB, BRASS_BREAM_MOB);
 
-    public static final RegistryObject<EntityType<Seagull>> SEAGULL = ENTITIES.register("seagull",
-            () -> EntityType.Builder.<Seagull>of(Seagull::new, MobCategory.AMBIENT).sized(0.6F, 0.6F).clientTrackingRange(10).build("seagull"));
-
     // What they make
     public static final RegistryObject<Item> OBSIDIAN_SCALE = item("obsidian_scale");
     public static final RegistryObject<Item> IRON_SCALE = item("iron_scale");
@@ -109,7 +105,6 @@ public final class Registry {
         egg("zincray", ZINCRAY_MOB, 0x9AA9B5, 0xEEF5FA);
         egg("cuprum_eel", CUPRUM_EEL_MOB, 0xD4683F, 0x4FB59A);
         egg("brass_bream", BRASS_BREAM_MOB, 0xD9A944, 0x8A6A1F);
-        egg("seagull", SEAGULL, 0xF4F6F8, 0xA9B1BA);
     }
 
     // Tanks
