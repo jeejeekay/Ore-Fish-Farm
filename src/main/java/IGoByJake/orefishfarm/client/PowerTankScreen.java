@@ -35,13 +35,21 @@ public class PowerTankScreen extends TankScreen<PowerTankMenu> {
 
     @Override
     protected void drawExtraBg(GuiGraphics g, int l, int t, float time) {
-        // Bolt lamp where the output slot would be: lit while generating, flickering a little.
+        // Bolt lamp where the output slot would be: steadily lit while generating.
         boolean on = this.menu.get(4) == 1;
-        g.blit(TEX, l + 152, t + 35, on && (time * 8) % 1 > 0.15F ? 190 : 176, 46, 14, 14);
-        // Energy bar.
+        g.blit(TEX, l + 152, t + 35, on ? 190 : 176, 46, 14, 14);
+        // Energy bar; while generating, a soft highlight slides along the filled part.
         g.blit(TEX, l + EX, t + EY, 0, 166, EW, EH);
         int w = Math.round(this.menu.get(2) / 1000F * EW);
-        if (w > 0) g.blit(TEX, l + EX, t + EY, 0, 172, w, EH);
+        if (w > 0) {
+            g.blit(TEX, l + EX, t + EY, 0, 172, w, EH);
+            if (on && w > 8) {
+                int band = 8;
+                int x = (int) ((time * 40) % (w + band)) - band;
+                int x0 = Math.max(1, x), x1 = Math.min(w - 1, x + band);
+                if (x1 > x0) g.fill(l + EX + x0, t + EY + 1, l + EX + x1, t + EY + EH - 1, 0x55FFFFFF);
+            }
+        }
     }
 
     @Override
