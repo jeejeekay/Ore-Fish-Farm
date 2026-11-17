@@ -83,15 +83,52 @@ public final class FishData {
         return fromDisk ? (int) Math.round(f.power() * Config.POWER.get()) : f.power();
     }
 
+    /** Chances after the config multipliers (synced copies already have them applied). */
+    public static float productChance(Fish f) {
+        return fromDisk ? (float) Math.min(1, f.productChance() * Config.PRODUCT_CHANCE.get()) : f.productChance();
+    }
+
+    public static float breedChance(Fish f) {
+        return fromDisk ? (float) Math.min(1, f.breedChance() * Config.BREED_CHANCE.get()) : f.breedChance();
+    }
+
+    public static float crossChance(Cross c) {
+        return fromDisk ? (float) Math.min(1, c.chance() * Config.CROSSBREED_CHANCE.get()) : c.chance();
+    }
+
+    public static java.util.Collection<Fish> allFish() {
+        return fish.values();
+    }
+
+    public static List<Cross> allCrosses() {
+        return crosses;
+    }
+
+    /** Every item that works as fish food (files plus the tag). */
+    public static List<ItemStack> allFoods() {
+        java.util.LinkedHashSet<Item> out = new java.util.LinkedHashSet<>(foods.keySet());
+        ForgeRegistries.ITEMS.tags().getTag(FISH_FOOD).forEach(out::add);
+        List<ItemStack> list = new ArrayList<>();
+        out.forEach(i -> list.add(new ItemStack(i)));
+        return list;
+    }
+
     /** Sent to each player on join and /reload (see Network): fish (power already multiplied) and foods. */
     public static void write(net.minecraft.network.FriendlyByteBuf buf) {
         buf.writeVarInt(fish.size());
         for (Fish f : fish.values()) {
             buf.writeResourceLocation(ForgeRegistries.ITEMS.getKey(f.item()));
             buf.writeItem(f.product());
-            buf.writeFloat(f.productChance());
-            buf.writeFloat(f.breedChance());
+            buf.writeFloat(productChance(f));
+            buf.writeFloat(breedChance(f));
             buf.writeVarInt(powerPerTick(f));
+        }
+        buf.writeVarInt(crosses.size());
+        for (Cross c : crosses) {
+            buf.writeResourceLocation(ForgeRegistries.ITEMS.getKey(c.a()));
+            buf.writeResourceLocation(ForgeRegistries.ITEMS.getKey(c.b()));
+            buf.writeItem(c.result());
+            buf.writeFloat(crossChance(c));
         }
         buf.writeVarInt(foods.size());
         foods.forEach((item, ticks) -> {
@@ -100,7 +137,7 @@ public final class FishData {
         });
     }
 
-    public record Synced(Map<Item, Fish> fish, Map<Item, Integer> foods) {}
+    public record Synced(Map<Item, Fish> fish, List<Cross> crosses, Map<Item, Integer> foods) {}
 
     public static Synced read(net.minecraft.network.FriendlyByteBuf buf) {
         Map<Item, Fish> f = new HashMap<>();
@@ -111,6 +148,15 @@ public final class FishData {
             Fish fish = new Fish(item, product, buf.readFloat(), buf.readFloat(), buf.readVarInt());
             if (item != null) f.put(item, fish);
         }
+        List<Cross> x = new ArrayList<>();
+        n = buf.readVarInt();
+        for (int i = 0; i < n; i++) {
+            Item a = ForgeRegistries.ITEMS.getValue(buf.readResourceLocation());
+            Item b = ForgeRegistries.ITEMS.getValue(buf.readResourceLocation());
+            ItemStack r = buf.readItem();
+            float c = buf.readFloat();
+            if (a != null && b != null) x.add(new Cross(a, b, r, c));
+        }
         Map<Item, Integer> food = new HashMap<>();
         n = buf.readVarInt();
         for (int i = 0; i < n; i++) {
@@ -118,15 +164,18 @@ public final class FishData {
             int t = buf.readVarInt();
             if (item != null) food.put(item, t);
         }
-        return new Synced(f, food);
+        return new Synced(f, x, food);
     }
 
     /** Client side: use the server's lists unless this game already read them from disk (singleplayer). */
     public static void applySynced(Synced s) {
         if (fromDisk) return;
         fish = s.fish();
+        crosses = s.crosses();
         foods = s.foods();
         loaded = true;
+        // JEI may already have built its lists before this arrived (on a server): give it the tank pages now.
+        if (net.minecraftforge.fml.ModList.get().isLoaded("jei")) IGoByJake.orefishfarm.compat.jei.OreFishJei.lateRecipes();
     }
 
     @Nullable

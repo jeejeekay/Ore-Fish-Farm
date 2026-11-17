@@ -26,7 +26,7 @@ public final class Network {
     }
 
     public static void onDatapackSync(OnDatapackSyncEvent event) {
-        FishData.Synced msg = new FishData.Synced(java.util.Map.of(), java.util.Map.of()); // contents are written from FishData directly
+        FishData.Synced msg = new FishData.Synced(java.util.Map.of(), java.util.List.of(), java.util.Map.of()); // contents are written from FishData directly
         ServerPlayer player = event.getPlayer();
         if (player != null) CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), msg);
         else CHANNEL.send(PacketDistributor.ALL.noArg(), msg);

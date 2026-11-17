@@ -52,5 +52,12 @@
   "item.orefishfarm.brass_bream_spawn_egg": "Brass Bream Spawn Egg",
   "entity.orefishfarm.seagull": "Seagull",
   "item.orefishfarm.seagull_spawn_egg": "Seagull Spawn Egg",
-  "tooltip.orefishfarm.power_fish_amount": "Power fish: %s FE/t in a Power Tank"
+  "tooltip.orefishfarm.power_fish_amount": "Power fish: %s FE/t in a Power Tank",
+  "jei.orefishfarm.fish_tank": "Fish Tank",
+  "jei.orefishfarm.breeding_tank": "Breeding Tank",
+  "jei.orefishfarm.power_tank": "Power Tank",
+  "jei.orefishfarm.per_food": "%s%% per food",
+  "jei.orefishfarm.baby": "%s%% baby per food",
+  "jei.orefishfarm.hybrid": "%s%% hybrid per food",
+  "jei.orefishfarm.while_eating": "every tick it's eating"
 }
