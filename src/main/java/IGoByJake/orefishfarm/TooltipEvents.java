@@ -1,5 +1,6 @@
 package IGoByJake.orefishfarm;
 
+import IGoByJake.orefishfarm.data.FishData;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
@@ -14,7 +15,11 @@ public final class TooltipEvents {
 
     @SubscribeEvent
     public static void onTooltip(ItemTooltipEvent event) {
-        if (event.getItemStack().is(FishItem.POWER_FISH)) {
+        FishData.Fish fish = FishData.loaded() ? FishData.fish(event.getItemStack()) : null;
+        if (fish != null && fish.makesPower()) {
+            event.getToolTip().add(Component.literal("⚡ ").withStyle(ChatFormatting.YELLOW)
+                    .append(Component.translatable("tooltip.orefishfarm.power_fish_amount", FishData.powerPerTick(fish)).withStyle(ChatFormatting.GOLD)));
+        } else if (event.getItemStack().is(FishItem.POWER_FISH)) {
             event.getToolTip().add(Component.literal("⚡ ").withStyle(ChatFormatting.YELLOW)
                     .append(Component.translatable("tooltip.orefishfarm.power_fish").withStyle(ChatFormatting.GOLD)));
         }

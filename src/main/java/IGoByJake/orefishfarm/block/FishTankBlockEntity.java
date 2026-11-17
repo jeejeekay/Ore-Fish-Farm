@@ -30,8 +30,8 @@ public class FishTankBlockEntity extends BaseTankBlockEntity {
 
     @Override
     protected boolean canWork() {
-        FishData.Fish f = current();
-        return f != null && f.makesProduct() && outputFits(f.product());
+        // A fish eats whenever it has food, even if there's no room for what it makes: that food is just wasted.
+        return current() != null;
     }
 
     @Override

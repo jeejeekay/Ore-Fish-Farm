@@ -71,10 +71,63 @@ public final class FishData {
     private static Map<Item, Integer> foods = Map.of();
     /** False on a client connected to a remote server, where the files aren't known: slots then accept anything and the server decides. */
     private static boolean loaded;
+    /** True where the files were read from disk (a server, or singleplayer); clients elsewhere get them over the network. */
+    private static boolean fromDisk;
 
     private FishData() {}
 
     public static boolean loaded() { return loaded; }
+
+    /** FE/tick this fish makes in a Power Tank, after the config multiplier. */
+    public static int powerPerTick(Fish f) {
+        return fromDisk ? (int) Math.round(f.power() * Config.POWER.get()) : f.power();
+    }
+
+    /** Sent to each player on join and /reload (see Network): fish (power already multiplied) and foods. */
+    public static void write(net.minecraft.network.FriendlyByteBuf buf) {
+        buf.writeVarInt(fish.size());
+        for (Fish f : fish.values()) {
+            buf.writeResourceLocation(ForgeRegistries.ITEMS.getKey(f.item()));
+            buf.writeItem(f.product());
+            buf.writeFloat(f.productChance());
+            buf.writeFloat(f.breedChance());
+            buf.writeVarInt(powerPerTick(f));
+        }
+        buf.writeVarInt(foods.size());
+        foods.forEach((item, ticks) -> {
+            buf.writeResourceLocation(ForgeRegistries.ITEMS.getKey(item));
+            buf.writeVarInt(ticks);
+        });
+    }
+
+    public record Synced(Map<Item, Fish> fish, Map<Item, Integer> foods) {}
+
+    public static Synced read(net.minecraft.network.FriendlyByteBuf buf) {
+        Map<Item, Fish> f = new HashMap<>();
+        int n = buf.readVarInt();
+        for (int i = 0; i < n; i++) {
+            Item item = ForgeRegistries.ITEMS.getValue(buf.readResourceLocation());
+            ItemStack product = buf.readItem();
+            Fish fish = new Fish(item, product, buf.readFloat(), buf.readFloat(), buf.readVarInt());
+            if (item != null) f.put(item, fish);
+        }
+        Map<Item, Integer> food = new HashMap<>();
+        n = buf.readVarInt();
+        for (int i = 0; i < n; i++) {
+            Item item = ForgeRegistries.ITEMS.getValue(buf.readResourceLocation());
+            int t = buf.readVarInt();
+            if (item != null) food.put(item, t);
+        }
+        return new Synced(f, food);
+    }
+
+    /** Client side: use the server's lists unless this game already read them from disk (singleplayer). */
+    public static void applySynced(Synced s) {
+        if (fromDisk) return;
+        fish = s.fish();
+        foods = s.foods();
+        loaded = true;
+    }
 
     @Nullable
     public static Fish fish(ItemStack stack) {
@@ -121,6 +174,7 @@ public final class FishData {
         protected void apply(Map<ResourceLocation, JsonElement> files, ResourceManager rm, ProfilerFiller profiler) {
             this.loader.load(files);
             loaded = true;
+            fromDisk = true;
         }
     }
 

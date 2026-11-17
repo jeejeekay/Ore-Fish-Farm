@@ -46,8 +46,8 @@ public class BreedingTankBlockEntity extends BaseTankBlockEntity {
 
     @Override
     protected boolean canWork() {
-        Pairing p = pairing();
-        return p != null && outputFits(p.result());
+        // The fish eat whenever there's food, even if they can't breed or the output is full.
+        return FishData.fish(fish(0)) != null || FishData.fish(fish(1)) != null;
     }
 
     @Override

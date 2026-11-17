@@ -33,9 +33,9 @@
   "gui.orefishfarm.status.no_fish": "Add a fish",
   "gui.orefishfarm.status.no_power_fish": "Add a power fish",
   "gui.orefishfarm.status.no_food": "Hungry! Add fish food",
-  "gui.orefishfarm.status.output_full": "Output full",
+  "gui.orefishfarm.status.output_full": "Output full: food is wasted",
   "gui.orefishfarm.status.makes_nothing": "This fish makes nothing here",
-  "gui.orefishfarm.status.energy_full": "Energy full",
+  "gui.orefishfarm.status.energy_full": "Energy full: power is wasted",
   "gui.orefishfarm.status.need_two": "Add two fish",
   "gui.orefishfarm.status.cant_breed": "These two can't breed",
   "entity.orefishfarm.obsidian_fish": "Obsidian Fish",
@@ -51,5 +51,6 @@
   "entity.orefishfarm.brass_bream": "Brass Bream",
   "item.orefishfarm.brass_bream_spawn_egg": "Brass Bream Spawn Egg",
   "entity.orefishfarm.seagull": "Seagull",
-  "item.orefishfarm.seagull_spawn_egg": "Seagull Spawn Egg"
+  "item.orefishfarm.seagull_spawn_egg": "Seagull Spawn Egg",
+  "tooltip.orefishfarm.power_fish_amount": "Power fish: %s FE/t in a Power Tank"
 }

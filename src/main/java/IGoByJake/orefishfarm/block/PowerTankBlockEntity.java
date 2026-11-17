@@ -55,12 +55,13 @@ public class PowerTankBlockEntity extends BaseTankBlockEntity {
 
     private int perTick() {
         FishData.Fish f = current();
-        return f == null ? 0 : (int) Math.round(f.power() * Config.POWER.get());
+        return f == null ? 0 : FishData.powerPerTick(f);
     }
 
     @Override
     protected boolean canWork() {
-        return current() != null && this.energy.getEnergyStored() < this.energy.getMaxEnergyStored();
+        // Keeps eating even when the buffer is full (that power is lost).
+        return current() != null;
     }
 
     @Override
