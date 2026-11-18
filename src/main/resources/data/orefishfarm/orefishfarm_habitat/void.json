@@ -1,5 +1,7 @@
 {
   "look": "void",
   "color": "#2A1046",
-  "kit": "orefishfarm:void_lens"
+  "kit": "orefishfarm:void_lens",
+  "bucket": "orefishfarm:void_bucket",
+  "empty": "orefishfarm:void_bucket"
 }

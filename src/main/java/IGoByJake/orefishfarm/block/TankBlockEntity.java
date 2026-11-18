@@ -60,8 +60,9 @@ import java.util.Set;
  */
 public class TankBlockEntity extends BlockEntity implements MenuProvider {
     public static final int FISH = 2;
-    public static final int FOOD = 6, UPGRADES = 3, OUTPUT = 9;
-    public static final int FOOD_START = 0, UPGRADE_START = FOOD, OUTPUT_START = FOOD + UPGRADES, SHARED = FOOD + UPGRADES + OUTPUT;
+    public static final int FOOD = 6, UPGRADES = 3, OUTPUT = 8;
+    /** Shared slots: food, Love Lattices, one bucket slot (empty buckets for scooping and for babies), output. */
+    public static final int FOOD_START = 0, UPGRADE_START = FOOD, BUCKET_SLOT = FOOD + UPGRADES, OUTPUT_START = BUCKET_SLOT + 1, SHARED = OUTPUT_START + OUTPUT;
     /** Container data indices. */
     public static final int D_FOOD = 0, D_STATUS = 1, D_ENERGY = 2, D_RATE = 3, D_DIES_IN = 4, D_LATTICES = 5, D_FISH = 6, D_BLOCKS = 7, D_PROTECTED = 8, D_COUNT = 9;
     public static final int OK = 0, NO_FISH = 1, NO_FOOD = 2, OUTPUT_FULL = 3, ENERGY_FULL = 4, NEEDS_HABITAT_FOOD = 5, DYING = 6, NO_POWER_FISH = 7;
@@ -92,13 +93,15 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
         @Override
         public boolean isItemValid(int slot, @NotNull ItemStack stack) {
             if (slot < UPGRADE_START) return FishData.isFood(stack) && (!FishData.loaded() || FishData.fish(stack) == null);
-            if (slot < OUTPUT_START) return stack.is(Registry.LOVE_LATTICE.get());
+            if (slot < BUCKET_SLOT) return stack.is(Registry.LOVE_LATTICE.get());
+            if (slot == BUCKET_SLOT) return FishData.isScoopContainer(stack);
             return false;
         }
 
         @Override
         public int getSlotLimit(int slot) {
-            return slot >= UPGRADE_START && slot < OUTPUT_START ? 1 : 64;
+            if (slot >= UPGRADE_START && slot < BUCKET_SLOT) return 1;
+            return slot == BUCKET_SLOT ? 16 : 64;
         }
     };
 
@@ -204,7 +207,7 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
 
     public int latticeCount() {
         int n = 0;
-        for (int i = UPGRADE_START; i < OUTPUT_START; i++) if (this.shared.getStackInSlot(i).is(Registry.LOVE_LATTICE.get())) n++;
+        for (int i = UPGRADE_START; i < BUCKET_SLOT; i++) if (this.shared.getStackInSlot(i).is(Registry.LOVE_LATTICE.get())) n++;
         return n;
     }
 
@@ -235,6 +238,51 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
         return this.burn > 0 && this.habitat.equals(FishData.foodHabitat(this.burnItem));
     }
 
+    /**
+     * Controller: lets a bucketed fish into the aquarium (into the preferred block's slot if it is free, otherwise
+     * the first free slot). Returns what is left of the bucket (an empty bucket, or the Void Bucket), or EMPTY if
+     * there was no room.
+     */
+    public ItemStack releaseFish(ItemStack bucketed, @Nullable TankBlockEntity prefer, int preferSlot) {
+        if (!FishData.isFish(bucketed)) return ItemStack.EMPTY;
+        ItemStack one = bucketed.copyWithCount(1);
+        if (prefer != null && prefer.fish.getStackInSlot(preferSlot).isEmpty() && prefer.canHoldFish(preferSlot, one)) {
+            prefer.fish.setStackInSlot(preferSlot, one);
+        } else if (!insertFishAnywhere(one)) {
+            return ItemStack.EMPTY;
+        }
+        return FishData.releaseReturn(one);
+    }
+
+    /** Controller: the last fish this container can scoop out, as (block, slot), or null. */
+    @Nullable
+    public int[] findScoopable(ItemStack container) {
+        List<TankBlockEntity> mem = memberBEs();
+        if (mem == null) mem = List.of(this);
+        for (int s = FISH - 1; s >= 0; s--) {
+            for (int m = mem.size() - 1; m >= 0; m--) {
+                ItemStack f = mem.get(m).fish.getStackInSlot(s);
+                if (!f.isEmpty() && FishData.canScoop(container, f, this.habitat)) return new int[]{m, s};
+            }
+        }
+        return null;
+    }
+
+    /** Controller: takes one container from the bucket slot that can scoop this fish; EMPTY if none. */
+    public ItemStack takeScoopFromSlot(ItemStack fishStack) {
+        ItemStack b = this.shared.getStackInSlot(BUCKET_SLOT);
+        if (!FishData.canScoop(b, fishStack, this.habitat)) return ItemStack.EMPTY;
+        return this.shared.extractItem(BUCKET_SLOT, 1, false);
+    }
+
+    /** Controller: an empty (or Void) bucket back into the bucket slot, or the output, or nowhere. */
+    public ItemStack storeContainer(ItemStack container) {
+        if (container.isEmpty()) return container;
+        ItemStack rest = this.shared.insertItem(BUCKET_SLOT, container, false);
+        if (!rest.isEmpty()) rest = merge(OUTPUT_START, SHARED, rest);
+        return rest;
+    }
+
     /** Controller: puts a fish in the first open slot anywhere in the aquarium. */
     public boolean insertFishAnywhere(ItemStack one) {
         List<TankBlockEntity> mem = memberBEs();
@@ -258,8 +306,8 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
 
     /** Puts a stack into the same section of this block's shared slots, ignoring slot rules. Returns the rest. */
     ItemStack placeShared(int fromSlot, ItemStack stack) {
-        int start = fromSlot < UPGRADE_START ? FOOD_START : fromSlot < OUTPUT_START ? UPGRADE_START : OUTPUT_START;
-        int end = fromSlot < UPGRADE_START ? UPGRADE_START : fromSlot < OUTPUT_START ? OUTPUT_START : SHARED;
+        int start = fromSlot < UPGRADE_START ? FOOD_START : fromSlot < BUCKET_SLOT ? UPGRADE_START : fromSlot == BUCKET_SLOT ? BUCKET_SLOT : OUTPUT_START;
+        int end = fromSlot < UPGRADE_START ? UPGRADE_START : fromSlot < BUCKET_SLOT ? BUCKET_SLOT : fromSlot == BUCKET_SLOT ? OUTPUT_START : SHARED;
         return merge(start, end, stack);
     }
 
@@ -282,6 +330,16 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
         return stack;
     }
 
+    /** Controller: is there room for this container in the bucket slot or the output? */
+    boolean hasRoomFor(ItemStack container) {
+        if (this.shared.insertItem(BUCKET_SLOT, container, true).isEmpty()) return true;
+        for (int i = OUTPUT_START; i < SHARED; i++) {
+            ItemStack cur = this.shared.getStackInSlot(i);
+            if (cur.isEmpty() || (ItemStack.isSameItemSameTags(cur, container) && cur.getCount() < cur.getMaxStackSize())) return true;
+        }
+        return false;
+    }
+
     void takeEnergy(int fe) {
         TankBlockEntity c = controllerOrSelf();
         c.energy = Math.min(c.energyCapacity(), c.energy + fe);
@@ -294,7 +352,7 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
 
     /** Called by a legacy 1.x tank turning into this block. */
     public void acceptLegacy(List<ItemStack> fishes, ItemStack food, ItemStack output, boolean lattice, int fe) {
-        for (int i = 0; i < Math.min(FISH, fishes.size()); i++) this.fish.setStackInSlot(i, fishes.get(i));
+        for (int i = 0; i < Math.min(FISH, fishes.size()); i++) this.fish.setStackInSlot(i, FishData.wrapLegacy(fishes.get(i)));
         if (!food.isEmpty()) drop(merge(FOOD_START, UPGRADE_START, food));
         if (!output.isEmpty()) drop(merge(OUTPUT_START, SHARED, output));
         if (lattice) this.shared.setStackInSlot(UPGRADE_START, new ItemStack(Registry.LOVE_LATTICE.get()));
@@ -482,7 +540,10 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
     private void breed(List<FishRef> eaters, int lattices, Set<FishRef> busy) {
         float mult = (float) (1 + Config.LATTICE_BONUS.get() * (lattices - 1));
         Map<Item, List<FishRef>> bySpecies = new LinkedHashMap<>();
-        for (FishRef f : eaters) bySpecies.computeIfAbsent(f.stack().getItem(), k -> new ArrayList<>()).add(f);
+        for (FishRef f : eaters) {
+            FishData.Fish d = FishData.fish(f.stack());
+            if (d != null) bySpecies.computeIfAbsent(d.item(), k -> new ArrayList<>()).add(f);
+        }
         List<FishRef> singles = new ArrayList<>();
         for (List<FishRef> same : bySpecies.values()) {
             FishData.Fish d = FishData.fish(same.get(0).stack());
@@ -492,7 +553,7 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
                 for (; i + 1 < same.size(); i += 2) {
                     busy.add(same.get(i));
                     busy.add(same.get(i + 1));
-                    if (this.level.random.nextFloat() < chance * mult) addOutput(new ItemStack(same.get(i).stack().getItem()));
+                    if (this.level.random.nextFloat() < chance * mult) placeBaby(d);
                 }
             }
             for (; i < same.size(); i++) singles.add(same.get(i));
@@ -500,16 +561,34 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
         for (int a = 0; a < singles.size(); a++) {
             FishRef x = singles.get(a);
             if (busy.contains(x)) continue;
+            FishData.Fish fx = FishData.fish(x.stack());
             for (int b = a + 1; b < singles.size(); b++) {
                 FishRef y = singles.get(b);
                 if (busy.contains(y)) continue;
-                FishData.Cross c = FishData.cross(x.stack().getItem(), y.stack().getItem());
+                FishData.Fish fy = FishData.fish(y.stack());
+                FishData.Cross c = fx == null || fy == null ? null : FishData.cross(fx.item(), fy.item());
                 if (c == null) continue;
                 busy.add(x);
                 busy.add(y);
-                if (this.level.random.nextFloat() < FishData.crossChance(c) * mult) addOutput(c.result().copy());
+                if (this.level.random.nextFloat() < FishData.crossChance(c) * mult) {
+                    FishData.Fish child = FishData.fish(c.result());
+                    if (child != null) placeBaby(child);
+                }
                 break;
             }
+        }
+    }
+
+    /**
+     * A new fish: into a free slot of the aquarium if there is one, otherwise bucketed into the output using a
+     * bucket from the bucket slot. With neither, there is no room and it is lost.
+     */
+    private void placeBaby(FishData.Fish species) {
+        ItemStack baby = FishData.bucketOf(species);
+        if (insertFishAnywhere(baby.copy())) return;
+        ItemStack b = this.shared.getStackInSlot(BUCKET_SLOT);
+        if (FishData.canScoop(b, baby, this.habitat) && merge(OUTPUT_START, SHARED, baby.copy()).isEmpty()) {
+            this.shared.extractItem(BUCKET_SLOT, 1, false);
         }
     }
 
@@ -612,6 +691,7 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
     @Override
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
+        tag.putInt("Version", 2);
         tag.put("Fish", this.fish.serializeNBT());
         tag.put("Shared", this.shared.serializeNBT());
         tag.putIntArray("Stress", this.stress);
@@ -633,13 +713,24 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
         super.load(tag);
         if (tag.contains("Fish")) this.fish.deserializeNBT(tag.getCompound("Fish"));
         if (tag.contains("Shared")) this.shared.deserializeNBT(tag.getCompound("Shared"));
+        int version = tag.getInt("Version");
         if (tag.contains("Items") && !tag.contains("Fish")) {
             // A 1.x Fish Tank: [fish, food, output].
             ItemStackHandler old = new ItemStackHandler(3);
             old.deserializeNBT(tag.getCompound("Items"));
-            if (old.getSlots() > 0) this.fish.setStackInSlot(0, old.getStackInSlot(0));
+            if (old.getSlots() > 0) this.fish.setStackInSlot(0, FishData.wrapLegacy(old.getStackInSlot(0)));
             if (old.getSlots() > 1) this.shared.setStackInSlot(FOOD_START, old.getStackInSlot(1));
             if (old.getSlots() > 2) this.shared.setStackInSlot(OUTPUT_START, old.getStackInSlot(2));
+            version = 2;
+        }
+        if (version < 2) {
+            // 2.0 tanks: fish were plain items, and slot 9 was the first output slot (now the bucket slot).
+            for (int i = 0; i < FISH; i++) this.fish.setStackInSlot(i, FishData.wrapLegacy(this.fish.getStackInSlot(i)));
+            ItemStack nine = this.shared.getStackInSlot(BUCKET_SLOT);
+            if (!nine.isEmpty() && !FishData.isScoopContainer(nine)) {
+                ItemStack rest = merge(OUTPUT_START, SHARED, nine);
+                this.shared.setStackInSlot(BUCKET_SLOT, rest);
+            }
         }
         int[] s = tag.getIntArray("Stress");
         for (int i = 0; i < Math.min(s.length, FISH); i++) this.stress[i] = s[i];
@@ -707,48 +798,67 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
             return m == null ? List.of(self) : m;
         }
 
-        @Override public int getSlots() { return mem().size() * FISH + FOOD + OUTPUT; }
+        /** Slots: every fish slot, the food, the bucket slot, the output. */
+        @Override public int getSlots() { return mem().size() * FISH + FOOD + 1 + OUTPUT; }
 
         private int fishSlots() { return mem().size() * FISH; }
+
+        /** Shared slot index for a slot after the fish slots. */
+        private static int shared(int i) { return i < FOOD ? FOOD_START + i : i == FOOD ? BUCKET_SLOT : OUTPUT_START + i - FOOD - 1; }
 
         @Override
         public @NotNull ItemStack getStackInSlot(int slot) {
             int f = fishSlots();
             if (slot < f) return mem().get(slot / FISH).fish.getStackInSlot(slot % FISH);
-            slot -= f;
-            if (slot < FOOD) return c().shared.getStackInSlot(FOOD_START + slot);
-            return c().shared.getStackInSlot(OUTPUT_START + slot - FOOD);
+            return c().shared.getStackInSlot(shared(slot - f));
         }
 
         @Override
         public @NotNull ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
             int f = fishSlots();
             if (slot < f) {
+                // A bucketed fish goes in; its empty bucket goes to the bucket slot (or the output).
                 TankBlockEntity c = c();
+                if (stack.isEmpty() || !FishData.isFish(stack)) return stack;
                 if (c.isForeign(stack) && !c.hasHabitatFood()) return stack;
-                return mem().get(slot / FISH).fish.insertItem(slot % FISH, stack, simulate);
+                TankBlockEntity t = mem().get(slot / FISH);
+                int s = slot % FISH;
+                if (!t.fish.getStackInSlot(s).isEmpty() || !t.canHoldFish(s, stack)) return stack;
+                ItemStack ret = FishData.releaseReturn(stack);
+                if (!c.hasRoomFor(ret)) return stack;
+                if (!simulate) {
+                    t.fish.setStackInSlot(s, stack.copyWithCount(1));
+                    c.storeContainer(ret);
+                }
+                ItemStack rest = stack.copy();
+                rest.shrink(1);
+                return rest;
             }
-            slot -= f;
-            if (slot < FOOD) return c().shared.insertItem(FOOD_START + slot, stack, simulate);
+            int i = slot - f;
+            if (i <= FOOD) return c().shared.insertItem(shared(i), stack, simulate);
             return stack;
         }
 
         @Override
         public @NotNull ItemStack extractItem(int slot, int amount, boolean simulate) {
-            int f = fishSlots();
-            if (slot < f + FOOD) return ItemStack.EMPTY;
-            return c().shared.extractItem(OUTPUT_START + slot - f - FOOD, amount, simulate);
+            int i = slot - fishSlots();
+            if (i <= FOOD) return ItemStack.EMPTY;
+            return c().shared.extractItem(shared(i), amount, simulate);
         }
 
         @Override
-        public int getSlotLimit(int slot) { return slot < fishSlots() ? 1 : 64; }
+        public int getSlotLimit(int slot) {
+            int i = slot - fishSlots();
+            if (i < 0) return 1;
+            return c().shared.getSlotLimit(shared(i));
+        }
 
         @Override
         public boolean isItemValid(int slot, @NotNull ItemStack stack) {
             int f = fishSlots();
-            if (slot < f) return mem().get(slot / FISH).canHoldFish(slot % FISH, stack);
-            slot -= f;
-            return slot < FOOD && c().shared.isItemValid(FOOD_START + slot, stack);
+            if (slot < f) return FishData.isFish(stack) && mem().get(slot / FISH).canHoldFish(slot % FISH, stack);
+            int i = slot - f;
+            return i <= FOOD && c().shared.isItemValid(shared(i), stack);
         }
     }
 

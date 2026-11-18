@@ -63,11 +63,28 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
             if (l > 0) tips.add(Component.translatable("gui.orefishfarm.lattices", l).withStyle(ChatFormatting.LIGHT_PURPLE));
             if (this.menu.get(TankBlockEntity.D_PROTECTED) == 1) tips.add(Component.translatable("gui.orefishfarm.protected").withStyle(ChatFormatting.GREEN));
         }
-        if (this.hoveredSlot instanceof AquariumMenu.FishSlot fs && this.menu.getCarried().isEmpty()) {
+        ItemStack carried = this.menu.getCarried();
+        if (this.hoveredSlot instanceof AquariumMenu.FishSlot fs && (carried.isEmpty() || FishData.isScoopContainer(carried))) {
             if (fs.locked() && !fs.hasItem()) tips.add(Component.translatable("gui.orefishfarm.needs_lattice"));
             else if (fs.hasItem() && this.menu.controller.isForeign(fs.getItem())) {
                 if (this.menu.get(TankBlockEntity.D_PROTECTED) == 1) tips.add(Component.translatable("gui.orefishfarm.kept_alive").withStyle(ChatFormatting.GREEN));
                 else tips.add(Component.translatable("gui.orefishfarm.wrong_habitat", FishData.habitatName(FishData.habitatOf(fs.getItem()))).withStyle(ChatFormatting.RED));
+            }
+            if (fs.hasItem()) {
+                ItemStack fish = fs.getItem();
+                FishData.Habitat fh = FishData.habitat(FishData.habitatOf(fish));
+                boolean ownTank = fh.id().equals(this.menu.controller.habitat());
+                Component need = ownTank && fh.empty() != fh.bucket()
+                        ? Component.translatable("gui.orefishfarm.bucket_or", fh.empty().getDescription(), fh.bucket().getDescription())
+                        : fh.bucket().getDescription();
+                if (!carried.isEmpty()) {
+                    if (!FishData.canScoop(carried, fish, this.menu.controller.habitat())) tips.add(Component.translatable("gui.orefishfarm.scoop_needs", need).withStyle(ChatFormatting.RED));
+                    else tips.add(Component.translatable("gui.orefishfarm.click_scoop_held").withStyle(ChatFormatting.GRAY));
+                } else if (this.minecraft != null && this.menu.canScoopNow(this.minecraft.player, fish)) {
+                    tips.add(Component.translatable("gui.orefishfarm.click_scoop").withStyle(ChatFormatting.GRAY));
+                } else {
+                    tips.add(Component.translatable("gui.orefishfarm.scoop_needs", need).withStyle(ChatFormatting.RED));
+                }
             }
             if (!tips.isEmpty()) {
                 List<Component> all = new ArrayList<>(getTooltipFromContainerItem(fs.getItem()));
@@ -108,7 +125,7 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
         for (int i = 0; i < this.menu.fishSlotCount() && shown < 6; i++) {
             AquariumMenu.FishRef r = this.menu.refByIndex(i);
             if (r == null) continue;
-            ItemStack fish = r.be().fishStack(r.slot());
+            ItemStack fish = FishData.display(r.be().fishStack(r.slot()));
             if (fish.isEmpty()) continue;
             float speed = 0.22F + shown * 0.05F;
             float phase = shown * 2.3F;
@@ -137,6 +154,14 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
         int knobY = max == 0 ? 0 : (int) ((SH - 15) * (this.menu.row() / (float) max));
         g.blit(TEX, l + SX + 1, t + SY + 1 + knobY, max == 0 ? 212 : 200, 0, 12, 15);
 
+        // Carrying a live fish: the free slots it could go in light up.
+        if (FishData.isFish(this.menu.getCarried())) {
+            for (Slot s : this.menu.slots) {
+                if (s instanceof AquariumMenu.FishSlot fs && fs.isActive() && !fs.hasItem() && !fs.locked()) {
+                    g.fill(l + s.x, t + s.y, l + s.x + 16, t + s.y + 16, 0x4060E060);
+                }
+            }
+        }
         // Slot extras: closed second slots, fish out of their habitat, empty food and lattice hints.
         boolean safe = this.menu.get(TankBlockEntity.D_PROTECTED) == 1;
         for (Slot s : this.menu.slots) {
@@ -150,9 +175,9 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
                     boolean flash = !safe && (Util.getMillis() / 300) % 2 == 0;
                     g.fill(sx, sy, sx + 16, sy + 16, safe ? 0x5040A0FF : flash ? 0x90FF2020 : 0x60FF2020);
                 }
-            } else if (s.index >= this.menu.sharedStart && s.index < this.menu.sharedStart + TankBlockEntity.FOOD + TankBlockEntity.UPGRADES && !s.hasItem()) {
-                boolean upgrade = s.index >= this.menu.sharedStart + TankBlockEntity.FOOD;
-                g.blit(TEX, sx, sy, upgrade ? 216 : 200, 32, 16, 16);
+            } else if (s.index >= this.menu.sharedStart && s.index <= this.menu.bucketSlot() && !s.hasItem()) {
+                int u = s.index == this.menu.bucketSlot() ? 232 : s.index >= this.menu.sharedStart + TankBlockEntity.FOOD ? 216 : 200;
+                g.blit(TEX, sx, sy, u, 32, 16, 16);
             }
         }
     }

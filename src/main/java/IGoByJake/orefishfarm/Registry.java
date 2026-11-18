@@ -111,6 +111,10 @@ public final class Registry {
                     .noSave().noSummon().fireImmune().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(5)
                     .build(OreFishFarm.MODID + ":fishing_hook"));
 
+    // Buckets: a live fish of any species, and the bucket that carries void fish.
+    public static final RegistryObject<Item> FISH_BUCKET = ITEMS.register("fish_bucket", () -> new FishBucketItem(new Item.Properties().stacksTo(1)));
+    public static final RegistryObject<Item> VOID_BUCKET = tabbed("void_bucket", () -> new Item(new Item.Properties().stacksTo(16)));
+
     // Kits and upgrades for the Fish Tank
     public static final RegistryObject<Item> HEATING_COIL = item("heating_coil");
     public static final RegistryObject<Item> VOID_LENS = item("void_lens");
@@ -163,11 +167,19 @@ public final class Registry {
             () -> IForgeMenuType.create(AquariumMenu::fromNetwork));
 
     public static final RegistryObject<Codec<AddFishModifier>> ADD_FISH = LOOT_MODIFIERS.register("add_fish", AddFishModifier.CODEC);
+    public static final RegistryObject<Codec<IGoByJake.orefishfarm.loot.LiveCatchModifier>> LIVE_CATCH = LOOT_MODIFIERS.register("live_catch", IGoByJake.orefishfarm.loot.LiveCatchModifier.CODEC);
 
     public static final RegistryObject<CreativeModeTab> TAB = TABS.register("main", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.orefishfarm"))
             .icon(() -> new ItemStack(FERROFIN.get()))
-            .displayItems((params, out) -> TAB_ORDER.forEach(r -> out.accept(r.get())))
+            .displayItems((params, out) -> {
+                TAB_ORDER.forEach(r -> out.accept(r.get()));
+                // Each of our fish alive in a bucket, ready for a tank.
+                for (var m : FISH_MOBS) {
+                    Item fish = ForgeRegistries.ITEMS.getValue(m.getId());
+                    if (fish != null && fish != net.minecraft.world.item.Items.AIR) out.accept(FishBucketItem.of(fish));
+                }
+            })
             .build());
 
     static void register(IEventBus bus) {

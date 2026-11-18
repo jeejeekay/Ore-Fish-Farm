@@ -57,7 +57,7 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
         for (int m = 0; m < members.size() && drawn < MAX_FISH; m++) {
             if (!(level.getBlockEntity(members.get(m)) instanceof TankBlockEntity t)) continue;
             for (int s = 0; s < TankBlockEntity.FISH && drawn < MAX_FISH; s++) {
-                ItemStack fish = t.fishStack(s);
+                ItemStack fish = IGoByJake.orefishfarm.data.FishData.display(t.fishStack(s));
                 if (fish.isEmpty()) continue;
                 Path path = paths.get(m * TankBlockEntity.FISH + s, m);
                 Vec3 p = path.at(time);
@@ -80,12 +80,12 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
 
     /** One block on its own: the fish swim in place, a pair face each other. */
     private static void single(TankBlockEntity be, float time, PoseStack pose, MultiBufferSource buffers, Level level) {
-        ItemStack a = be.fishStack(0), b = be.fishStack(1);
+        ItemStack a = be.fishStack(0), b = be.fishStack(1); // only checked for presence
         boolean pair = !a.isEmpty() && !b.isEmpty();
         float phase0 = (be.getBlockPos().asLong() & 255) / 40F;
         int lit = LevelRenderer.getLightColor(level, be.getBlockPos().above());
         for (int i = 0; i < TankBlockEntity.FISH; i++) {
-            ItemStack fish = be.fishStack(i);
+            ItemStack fish = IGoByJake.orefishfarm.data.FishData.display(be.fishStack(i));
             if (fish.isEmpty()) continue;
             float phase = phase0 + i * 1.7F;
             pose.pushPose();

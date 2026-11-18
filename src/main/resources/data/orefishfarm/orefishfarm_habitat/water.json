@@ -1,5 +1,7 @@
 {
   "look": "water",
   "color": "#3F9FE4",
-  "kit": "minecraft:water_bucket"
+  "kit": "minecraft:water_bucket",
+  "bucket": "minecraft:water_bucket",
+  "empty": "minecraft:bucket"
 }

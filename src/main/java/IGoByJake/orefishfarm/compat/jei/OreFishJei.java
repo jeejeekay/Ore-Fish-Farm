@@ -53,6 +53,8 @@ public class OreFishJei implements IModPlugin {
         info(reg, Registry.VOID_FLAKES.get(), "habitat_food");
         info(reg, Registry.FISH_BONE.get(), "fish_bone");
         info(reg, Registry.LAVA_ROD.get(), "lava_rod");
+        info(reg, Registry.FISH_BUCKET.get(), "fish_bucket");
+        info(reg, Registry.VOID_BUCKET.get(), "void_bucket");
         info(reg, Registry.VOID_ROD.get(), "void_rod");
         added = FishData.loaded();
         if (!added) return;

@@ -37,7 +37,8 @@ import java.util.Map;
  *     "product_chance": 0.25,   chance per food eaten in a Fish Tank
  *     "breed_chance": 0.08,     chance per food eaten in a Breeding Tank with two of this fish
  *     "power": 30,              FE/tick while eating in a power tank (optional; 0 = not a power fish)
- *     "habitat": "orefishfarm:water" }  which tank it lives in (optional; water by default)
+ *     "habitat": "orefishfarm:water",  which tank it lives in (optional; water by default)
+ *     "bucket": "somemod:fish_bucket" } optional: this mod's own bucket for the fish (else the generic Fish Bucket)
  *
  * data/&lt;ns&gt;/orefishfarm_breeding/&lt;name&gt;.json
  *   { "parents": ["orefishfarm:cuprum_eel", "orefishfarm:zincray"],
@@ -50,7 +51,9 @@ import java.util.Map;
  * data/&lt;ns&gt;/orefishfarm_habitat/&lt;name&gt;.json   (the file name is the habitat id)
  *   { "look": "water" | "lava" | "void",   how the tank is drawn
  *     "color": "#3F9FE4",                  tint of the fill (water look only)
- *     "kit": "orefishfarm:heating_coil" }  item that turns a Fish Tank into this habitat
+ *     "kit": "orefishfarm:heating_coil",   item that turns a Fish Tank into this habitat
+ *     "bucket": "minecraft:lava_bucket",   filled container that carries this habitat's fish
+ *     "empty": "minecraft:bucket" }        what is left when such a fish is let out
  * </pre>
  *
  * Any item can be made a fish this way. Items in {@code #orefishfarm:tank_fish} without a file are fish that
@@ -67,13 +70,18 @@ public final class FishData {
     /** Every fish lives here unless its file says otherwise. */
     public static final ResourceLocation WATER = new ResourceLocation(OreFishFarm.MODID, "water");
 
-    public record Habitat(ResourceLocation id, String look, int color, @Nullable Item kit) {}
+    /**
+     * bucket: the filled container that carries a fish of this habitat (water bucket, lava bucket, Void Bucket);
+     * empty: what you get back when such a fish is let out (a bucket; the Void Bucket comes back as itself).
+     */
+    public record Habitat(ResourceLocation id, String look, int color, @Nullable Item kit, Item bucket, Item empty) {}
 
     public record Food(int ticks, @Nullable ResourceLocation habitat) {}
 
-    private static final Habitat DEFAULT_WATER = new Habitat(WATER, "water", 0x3F9FE4, null);
+    private static final Habitat DEFAULT_WATER = new Habitat(WATER, "water", 0x3F9FE4, null, net.minecraft.world.item.Items.WATER_BUCKET, net.minecraft.world.item.Items.BUCKET);
 
-    public record Fish(Item item, ItemStack product, float productChance, float breedChance, int power, ResourceLocation habitat) {
+    /** bucket: another mod's own bucket for this fish, if it has one (else the generic Fish Bucket is used). */
+    public record Fish(Item item, ItemStack product, float productChance, float breedChance, int power, ResourceLocation habitat, @Nullable Item bucket) {
         public boolean makesPower() { return this.power > 0; }
         public boolean makesProduct() { return !this.product.isEmpty() && this.productChance > 0; }
     }
@@ -83,6 +91,7 @@ public final class FishData {
     }
 
     private static Map<Item, Fish> fish = Map.of();
+    private static Map<Item, Fish> byBucket = Map.of();
     private static List<Cross> crosses = List.of();
     private static Map<Item, Food> foods = Map.of();
     private static Map<ResourceLocation, Habitat> habitats = Map.of();
@@ -140,6 +149,8 @@ public final class FishData {
             buf.writeFloat(breedChance(f));
             buf.writeVarInt(powerPerTick(f));
             buf.writeResourceLocation(f.habitat());
+            buf.writeBoolean(f.bucket() != null);
+            if (f.bucket() != null) buf.writeResourceLocation(ForgeRegistries.ITEMS.getKey(f.bucket()));
         }
         buf.writeVarInt(crosses.size());
         for (Cross c : crosses) {
@@ -162,6 +173,8 @@ public final class FishData {
             buf.writeInt(h.color());
             buf.writeBoolean(h.kit() != null);
             if (h.kit() != null) buf.writeResourceLocation(ForgeRegistries.ITEMS.getKey(h.kit()));
+            buf.writeResourceLocation(ForgeRegistries.ITEMS.getKey(h.bucket()));
+            buf.writeResourceLocation(ForgeRegistries.ITEMS.getKey(h.empty()));
         }
     }
 
@@ -173,7 +186,11 @@ public final class FishData {
         for (int i = 0; i < n; i++) {
             Item item = ForgeRegistries.ITEMS.getValue(buf.readResourceLocation());
             ItemStack product = buf.readItem();
-            Fish fish = new Fish(item, product, buf.readFloat(), buf.readFloat(), buf.readVarInt(), buf.readResourceLocation());
+            float pc = buf.readFloat(), bc = buf.readFloat();
+            int pw = buf.readVarInt();
+            ResourceLocation hab = buf.readResourceLocation();
+            Item bucket = buf.readBoolean() ? ForgeRegistries.ITEMS.getValue(buf.readResourceLocation()) : null;
+            Fish fish = new Fish(item, product, pc, bc, pw, hab, bucket);
             if (item != null) f.put(item, fish);
         }
         List<Cross> x = new ArrayList<>();
@@ -200,7 +217,9 @@ public final class FishData {
             String look = buf.readUtf();
             int color = buf.readInt();
             Item kit = buf.readBoolean() ? ForgeRegistries.ITEMS.getValue(buf.readResourceLocation()) : null;
-            hab.put(id, new Habitat(id, look, color, kit));
+            Item bucket = ForgeRegistries.ITEMS.getValue(buf.readResourceLocation());
+            Item empty = ForgeRegistries.ITEMS.getValue(buf.readResourceLocation());
+            hab.put(id, new Habitat(id, look, color, kit, bucket, empty));
         }
         return new Synced(f, x, food, hab);
     }
@@ -209,6 +228,7 @@ public final class FishData {
     public static void applySynced(Synced s) {
         if (fromDisk) return;
         fish = s.fish();
+        byBucket = indexBuckets(s.fish());
         crosses = s.crosses();
         foods = s.foods();
         habitats = s.habitats();
@@ -217,17 +237,88 @@ public final class FishData {
         if (net.minecraftforge.fml.ModList.get().isLoaded("jei")) IGoByJake.orefishfarm.compat.jei.OreFishJei.lateRecipes();
     }
 
+    /** The fish a stack is or carries: a plain fish item, a Fish Bucket, or another mod's fish bucket. */
     @Nullable
     public static Fish fish(ItemStack stack) {
         if (stack.isEmpty()) return null;
-        Fish f = fish.get(stack.getItem());
+        Item species = IGoByJake.orefishfarm.FishBucketItem.species(stack);
+        if (species != null) return byItem(species);
+        Fish b = byBucket.get(stack.getItem());
+        if (b != null) return b;
+        return byItem(stack.getItem());
+    }
+
+    @Nullable
+    private static Fish byItem(Item item) {
+        Fish f = fish.get(item);
         if (f != null) return f;
-        if (stack.is(TANK_FISH)) return new Fish(stack.getItem(), ItemStack.EMPTY, 0, Config.DEFAULT_BREED_CHANCE.get().floatValue(), 0, WATER);
+        if (new ItemStack(item).is(TANK_FISH)) return new Fish(item, ItemStack.EMPTY, 0, Config.DEFAULT_BREED_CHANCE.get().floatValue(), 0, WATER, null);
         return null;
     }
 
+    /** A live fish in a bucket: what tanks hold. */
+    public static boolean isBucketed(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        Item species = IGoByJake.orefishfarm.FishBucketItem.species(stack);
+        if (species != null) return !loaded || byItem(species) != null;
+        return byBucket.containsKey(stack.getItem());
+    }
+
+    /** Whether a tank takes this stack as a fish: only live, bucketed fish. */
     public static boolean isFish(ItemStack stack) {
-        return !loaded || fish(stack) != null;
+        return isBucketed(stack);
+    }
+
+    /** The fish's own item, for drawing it. */
+    public static ItemStack display(ItemStack stack) {
+        Item species = IGoByJake.orefishfarm.FishBucketItem.species(stack);
+        if (species != null) return new ItemStack(species);
+        Fish b = byBucket.get(stack.getItem());
+        return b != null ? new ItemStack(b.item()) : stack;
+    }
+
+    /** A live fish of this kind in its bucket: the fish's own mod bucket if it has one, else a Fish Bucket. */
+    public static ItemStack bucketOf(Fish f) {
+        return f.bucket() != null ? new ItemStack(f.bucket()) : IGoByJake.orefishfarm.FishBucketItem.of(f.item());
+    }
+
+    /** A plain fish item from before buckets (1.x and 2.0 tanks) becomes a bucketed fish. */
+    public static ItemStack wrapLegacy(ItemStack stack) {
+        if (stack.isEmpty() || stack.getItem() instanceof IGoByJake.orefishfarm.FishBucketItem) return stack;
+        if (stack.getItem() instanceof IGoByJake.orefishfarm.FishItem) return IGoByJake.orefishfarm.FishBucketItem.of(stack.getItem());
+        return stack;
+    }
+
+    /** Can this container scoop that fish out of a tank of the given habitat? */
+    public static boolean canScoop(ItemStack container, ItemStack fishStack, ResourceLocation tankHabitat) {
+        if (container.isEmpty() || fishStack.isEmpty()) return false;
+        Habitat h = habitat(habitatOf(fishStack));
+        return container.is(h.bucket()) || (h.id().equals(tankHabitat) && container.is(h.empty()));
+    }
+
+    /** Is this the container scooping prefers (the cheap one: an empty bucket in the fish's own tank)? */
+    public static boolean isCheapScoop(ItemStack container, ItemStack fishStack, ResourceLocation tankHabitat) {
+        Habitat h = habitat(habitatOf(fishStack));
+        return h.id().equals(tankHabitat) && container.is(h.empty());
+    }
+
+    /** What you get back when this fish is let out of its bucket. */
+    public static ItemStack releaseReturn(ItemStack fishStack) {
+        return new ItemStack(habitat(habitatOf(fishStack)).empty());
+    }
+
+    /** Any habitat's bucket or empty: what the tank's bucket slot holds. */
+    public static boolean isScoopContainer(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        if (stack.is(net.minecraft.world.item.Items.BUCKET) || stack.is(net.minecraft.world.item.Items.WATER_BUCKET)) return true;
+        for (Habitat h : habitats.values()) if (stack.is(h.bucket()) || stack.is(h.empty())) return true;
+        return false;
+    }
+
+    private static Map<Item, Fish> indexBuckets(Map<Item, Fish> all) {
+        Map<Item, Fish> m = new HashMap<>();
+        for (Fish f : all.values()) if (f.bucket() != null) m.put(f.bucket(), f);
+        return m;
     }
 
     public static int foodTicks(ItemStack stack) {
@@ -342,13 +433,15 @@ public final class FishData {
                     product = p;
                 }
                 ResourceLocation hab = o.has("habitat") ? new ResourceLocation(GsonHelper.getAsString(o, "habitat")) : WATER;
+                Item bucket = o.has("bucket") ? item(GsonHelper.getAsString(o, "bucket")) : null;
                 out.put(f, new Fish(f, product, GsonHelper.getAsFloat(o, "product_chance", 0.25F),
-                        GsonHelper.getAsFloat(o, "breed_chance", 0.1F), GsonHelper.getAsInt(o, "power", 0), hab));
+                        GsonHelper.getAsFloat(o, "breed_chance", 0.1F), GsonHelper.getAsInt(o, "power", 0), hab, bucket));
             } catch (Exception ex) {
                 LOG.error("Bad fish file {}: {}", id, ex.getMessage());
             }
         });
         fish = out;
+        byBucket = indexBuckets(out);
         LOG.info("Ore Fish Farm: {} fish", out.size());
     }
 
@@ -394,7 +487,11 @@ public final class FishData {
                 if (!look.equals("water") && !look.equals("lava") && !look.equals("void")) look = "water";
                 String c = GsonHelper.getAsString(o, "color", "#3F9FE4").replace("#", "");
                 Item kit = o.has("kit") ? item(GsonHelper.getAsString(o, "kit")) : null;
-                out.put(id, new Habitat(id, look, Integer.parseInt(c, 16) & 0xFFFFFF, kit));
+                Item bucket = o.has("bucket") ? item(GsonHelper.getAsString(o, "bucket")) : null;
+                Item empty = o.has("empty") ? item(GsonHelper.getAsString(o, "empty")) : null;
+                if (bucket == null) bucket = net.minecraft.world.item.Items.WATER_BUCKET;
+                if (empty == null) empty = net.minecraft.world.item.Items.BUCKET;
+                out.put(id, new Habitat(id, look, Integer.parseInt(c, 16) & 0xFFFFFF, kit, bucket, empty));
             } catch (Exception ex) {
                 LOG.error("Bad habitat file {}: {}", id, ex.getMessage());
             }

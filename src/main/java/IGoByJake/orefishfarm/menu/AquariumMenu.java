@@ -10,6 +10,8 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ClickType;
+import IGoByJake.orefishfarm.data.FishData;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
@@ -51,6 +53,7 @@ public class AquariumMenu extends AbstractContainerMenu {
         ItemStackHandler shared = controller.sharedHandler();
         for (int i = 0; i < TankBlockEntity.FOOD; i++) addSlot(new SlotItemHandler(shared, TankBlockEntity.FOOD_START + i, 8 + i * 18, FOOD_Y));
         for (int i = 0; i < TankBlockEntity.UPGRADES; i++) addSlot(new SlotItemHandler(shared, TankBlockEntity.UPGRADE_START + i, UPGRADE_X + 6 + i * 18, FOOD_Y));
+        addSlot(new SlotItemHandler(shared, TankBlockEntity.BUCKET_SLOT, 8 + 8 * 18, OUTPUT_Y));
         for (int i = 0; i < TankBlockEntity.OUTPUT; i++) addSlot(new SlotItemHandler(shared, TankBlockEntity.OUTPUT_START + i, 8 + i * 18, OUTPUT_Y));
         this.playerStart = this.slots.size();
         for (int r = 0; r < 3; r++) for (int c = 0; c < 9; c++) addSlot(new Slot(inv, c + r * 9 + 9, 8 + c * 18, INV_Y + 12 + r * 18));
@@ -101,32 +104,108 @@ public class AquariumMenu extends AbstractContainerMenu {
         return true;
     }
 
+    /** Index of the bucket slot among the menu's slots. */
+    public int bucketSlot() { return this.sharedStart + TankBlockEntity.FOOD + TankBlockEntity.UPGRADES; }
+
+    /**
+     * Fish slots work with buckets, not by moving items:
+     * <ul>
+     *   <li>click while holding a bucketed fish: it goes in (this slot, or the first free one) and you hold the
+     *       empty bucket;</li>
+     *   <li>click a fish while holding a bucket that can carry it: you hold the fish in that bucket;</li>
+     *   <li>click a fish with an empty hand: it is scooped with a bucket from the tank's bucket slot, or else from
+     *       your inventory (an empty bucket first, a filled one only if needed);</li>
+     *   <li>shift-click a fish: the same, straight into your inventory.</li>
+     * </ul>
+     */
+    @Override
+    public void clicked(int id, int button, ClickType type, Player player) {
+        if (id >= this.fishStart && id < VISIBLE && this.slots.get(id) instanceof FishSlot fs) {
+            clickFish(fs, type, player);
+            return;
+        }
+        super.clicked(id, button, type, player);
+    }
+
+    private void clickFish(FishSlot fs, ClickType type, Player player) {
+        FishRef r = fs.target();
+        if (r == null || (type != ClickType.PICKUP && type != ClickType.QUICK_MOVE)) return;
+        ItemStack carried = getCarried();
+        ItemStack inSlot = r.be().fishHandler().getStackInSlot(r.slot());
+        if (type == ClickType.PICKUP && FishData.isFish(carried)) {
+            ItemStack ret = this.controller.releaseFish(carried, r.be(), r.slot());
+            if (!ret.isEmpty()) {
+                carried.shrink(1);
+                if (carried.isEmpty()) setCarried(ret);
+                else give(player, ret);
+            }
+            return;
+        }
+        if (inSlot.isEmpty()) return;
+        ItemStack container = ItemStack.EMPTY;
+        if (type == ClickType.PICKUP && !carried.isEmpty()) {
+            if (!FishData.canScoop(carried, inSlot, this.controller.habitat())) return;
+            container = carried.split(1);
+        } else {
+            container = this.controller.takeScoopFromSlot(inSlot);
+            if (container.isEmpty()) container = takeFromInventory(player, inSlot);
+            if (container.isEmpty()) return;
+        }
+        ItemStack fish = inSlot.copy();
+        r.be().fishHandler().setStackInSlot(r.slot(), ItemStack.EMPTY);
+        if (type == ClickType.PICKUP && getCarried().isEmpty()) setCarried(fish);
+        else give(player, fish);
+    }
+
+    /** One bucket from the player that can scoop this fish: the cheap empty kind first, a filled one if needed. */
+    private ItemStack takeFromInventory(Player player, ItemStack fish) {
+        var inv = player.getInventory();
+        for (int pass = 0; pass < 2; pass++) {
+            for (int i = 0; i < inv.getContainerSize(); i++) {
+                ItemStack s = inv.getItem(i);
+                if (!FishData.canScoop(s, fish, this.controller.habitat())) continue;
+                if (pass == 0 && !FishData.isCheapScoop(s, fish, this.controller.habitat())) continue;
+                return s.split(1);
+            }
+        }
+        return ItemStack.EMPTY;
+    }
+
+    /** Whether a fish could be scooped right now with an empty hand (for the screen's hint). */
+    public boolean canScoopNow(Player player, ItemStack fish) {
+        if (FishData.canScoop(this.controller.sharedHandler().getStackInSlot(TankBlockEntity.BUCKET_SLOT), fish, this.controller.habitat())) return true;
+        var inv = player.getInventory();
+        for (int i = 0; i < inv.getContainerSize(); i++) if (FishData.canScoop(inv.getItem(i), fish, this.controller.habitat())) return true;
+        return false;
+    }
+
+    private static void give(Player player, ItemStack s) {
+        if (!player.getInventory().add(s)) player.drop(s, false);
+    }
+
+    @Override
+    public boolean canTakeItemForPickAll(ItemStack stack, Slot slot) {
+        return !(slot instanceof FishSlot) && super.canTakeItemForPickAll(stack, slot);
+    }
+
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
         Slot slot = this.slots.get(index);
-        if (!slot.hasItem()) return ItemStack.EMPTY;
+        if (!slot.hasItem() || index < VISIBLE) return ItemStack.EMPTY;
         ItemStack stack = slot.getItem();
         ItemStack copy = stack.copy();
         if (index < this.playerStart) {
             if (!moveItemStackTo(stack, this.playerStart, this.slots.size(), true)) return ItemStack.EMPTY;
-            if (index < VISIBLE) {
-                // Fish slots aren't backed by a Container: write the change through.
-                slot.set(stack.isEmpty() ? ItemStack.EMPTY : stack);
-                return copy;
-            }
+        } else if (FishData.isFish(stack)) {
+            // A bucketed fish from the inventory: into the aquarium, the empty bucket takes its place.
+            ItemStack ret = this.controller.releaseFish(stack, null, 0);
+            if (ret.isEmpty()) return ItemStack.EMPTY;
+            stack.shrink(1);
+            if (stack.isEmpty()) slot.set(ret);
+            else give(player, ret);
+            return ItemStack.EMPTY;
         } else {
-            boolean moved = false;
-            // A fish goes into the first open fish slot anywhere in the aquarium, not just the rows on show.
-            for (FishRef r : this.refs) {
-                if (stack.isEmpty()) break;
-                ItemStackHandler h = r.be().fishHandler();
-                if (h.getStackInSlot(r.slot()).isEmpty() && h.isItemValid(r.slot(), stack)) {
-                    h.setStackInSlot(r.slot(), stack.split(1));
-                    moved = true;
-                }
-            }
-            if (!stack.isEmpty()) moved |= moveItemStackTo(stack, this.sharedStart, this.sharedStart + TankBlockEntity.FOOD + TankBlockEntity.UPGRADES, false);
-            if (!moved) return ItemStack.EMPTY;
+            if (!moveItemStackTo(stack, this.sharedStart, bucketSlot() + 1, false)) return ItemStack.EMPTY;
         }
         if (stack.isEmpty()) slot.set(ItemStack.EMPTY);
         else slot.setChanged();
@@ -169,15 +248,15 @@ public class AquariumMenu extends AbstractContainerMenu {
         @Override
         public void setChanged() {}
 
+        /** Fish go in and out only through clicks with buckets (see clicked). */
         @Override
         public boolean mayPlace(ItemStack stack) {
-            FishRef r = target();
-            return r != null && r.be().fishHandler().isItemValid(r.slot(), stack);
+            return false;
         }
 
         @Override
         public boolean mayPickup(Player player) {
-            return target() != null;
+            return false;
         }
 
         @Override

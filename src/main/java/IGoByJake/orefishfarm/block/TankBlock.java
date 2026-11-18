@@ -165,9 +165,44 @@ public class TankBlock extends BaseEntityBlock {
         ItemStack held = player.getItemInHand(hand);
         boolean sneak = player.isShiftKeyDown();
 
-        // Habitat kits: refill the whole aquarium.
+        // A bucketed fish: let it into the aquarium, hand back the empty bucket.
+        if (!sneak && FishData.isFish(held)) {
+            ItemStack ret = c.releaseFish(held, be, 0);
+            if (ret.isEmpty() && !FishData.releaseReturn(held).isEmpty()) {
+                player.displayClientMessage(Component.translatable("message.orefishfarm.tank_full"), true);
+                return InteractionResult.CONSUME;
+            }
+            if (!player.getAbilities().instabuild) {
+                held.shrink(1);
+                if (held.isEmpty()) player.setItemInHand(hand, ret);
+                else give(player, ret);
+            }
+            level.playSound(null, pos, SoundEvents.BUCKET_EMPTY_FISH, SoundSource.BLOCKS, 1F, 1F);
+            return InteractionResult.CONSUME;
+        }
+        // A bucket (empty in the fish's own tank, or the fish's habitat bucket anywhere): scoop a fish out.
+        // A water bucket is also the water kit: it only converts the tank when there is nothing to scoop.
         FishData.Habitat h = FishData.habitatForKit(held);
-        if (h != null && !sneak) {
+        if (!sneak && FishData.isScoopContainer(held)) {
+            int[] at = c.findScoopable(held);
+            if (at != null) {
+                List<TankBlockEntity> mem = c.memberBEs();
+                TankBlockEntity t = mem == null ? c : mem.get(at[0]);
+                ItemStack fish = t.fishStack(at[1]).copy();
+                t.fishHandler().setStackInSlot(at[1], ItemStack.EMPTY);
+                if (!player.getAbilities().instabuild) held.shrink(1);
+                if (held.isEmpty()) player.setItemInHand(hand, fish);
+                else give(player, fish);
+                level.playSound(null, pos, SoundEvents.BUCKET_FILL_FISH, SoundSource.BLOCKS, 1F, 1F);
+                return InteractionResult.CONSUME;
+            }
+            if (h == null || h.id().equals(c.habitat())) {
+                player.displayClientMessage(Component.translatable("message.orefishfarm.nothing_to_scoop", held.getHoverName()), true);
+                return InteractionResult.CONSUME;
+            }
+        }
+        // Habitat kits: refill the whole aquarium.
+        if (h != null) {
             if (h.id().equals(c.habitat())) {
                 player.displayClientMessage(Component.translatable("message.orefishfarm.already_habitat", FishData.habitatName(h.id())), true);
                 return InteractionResult.CONSUME;
@@ -194,10 +229,9 @@ public class TankBlock extends BaseEntityBlock {
             return InteractionResult.CONSUME;
         }
         if (!sneak && !held.isEmpty()) {
-            // A fish: into the first free slot anywhere in the aquarium.
-            if (FishData.fish(held) != null && c.insertFishAnywhere(held.copyWithCount(1))) {
-                if (!player.getAbilities().instabuild) held.shrink(1);
-                level.playSound(null, pos, SoundEvents.BUCKET_EMPTY_FISH, SoundSource.BLOCKS, 1F, 1F);
+            // A plain (dead) fish can't go in: say so.
+            if (FishData.loaded() && FishData.fish(held) != null) {
+                player.displayClientMessage(Component.translatable("message.orefishfarm.needs_live_fish"), true);
                 return InteractionResult.CONSUME;
             }
             // Love Lattice or food: straight into the shared slots.

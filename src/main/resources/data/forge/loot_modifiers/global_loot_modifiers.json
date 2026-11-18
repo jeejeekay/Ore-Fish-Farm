@@ -1,6 +1,7 @@
 {
   "replace": false,
   "entries": [
-    "orefishfarm:fish_in_fishing"
+    "orefishfarm:fish_in_fishing",
+    "orefishfarm:live_catch"
   ]
 }
