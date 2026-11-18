@@ -1,15 +1,15 @@
 {
-  "render_type": "minecraft:translucent",
+  "render_type": "minecraft:cutout",
   "ambientocclusion": false,
   "textures": {
-    "glass": "orefishfarm:block/tank_glass",
-    "particle": "orefishfarm:block/tank_glass"
+    "glass": "orefishfarm:block/tank_glass_cutout",
+    "particle": "orefishfarm:block/tank_glass_cutout"
   },
   "elements": [
     {
       "from": [
         0.4,
-        2,
+        3,
         0
       ],
       "to": [

@@ -35,10 +35,15 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
     public AquariumScreen(AquariumMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
         this.imageWidth = 194;
-        this.imageHeight = 238;
-        this.inventoryLabelY = AquariumMenu.INV_Y + 2;
+        this.imageHeight = 238 + menu.extra;
+        this.inventoryLabelY = menu.extra + AquariumMenu.INV_Y + 2;
         this.titleLabelY = 5;
     }
+
+    /** Window height and scroll bar top for this aquarium's size. */
+    private int wh() { return WH + this.menu.extra; }
+
+    private int sy() { return SY + this.menu.extra; }
 
     private boolean power() {
         return this.menu.controller.role() == TankRole.POWER;
@@ -56,7 +61,7 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
             tips.add(Component.translatable("gui.orefishfarm.energy", this.menu.get(TankBlockEntity.D_ENERGY) / 10));
             tips.add(Component.translatable("gui.orefishfarm.power_rate", this.menu.get(TankBlockEntity.D_RATE)).withStyle(ChatFormatting.GOLD));
         }
-        if (in(x, y, WX, WY, WW, WH)) {
+        if (in(x, y, WX, WY, WW, wh())) {
             tips.add(Component.translatable("gui.orefishfarm.aquarium_info", this.menu.get(TankBlockEntity.D_FISH), this.menu.get(TankBlockEntity.D_BLOCKS)));
             tips.add(Component.translatable("gui.orefishfarm.habitat", FishData.habitatName(this.menu.controller.habitat())).withStyle(ChatFormatting.AQUA));
             int l = this.menu.get(TankBlockEntity.D_LATTICES);
@@ -64,27 +69,11 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
             if (this.menu.get(TankBlockEntity.D_PROTECTED) == 1) tips.add(Component.translatable("gui.orefishfarm.protected").withStyle(ChatFormatting.GREEN));
         }
         ItemStack carried = this.menu.getCarried();
-        if (this.hoveredSlot instanceof AquariumMenu.FishSlot fs && (carried.isEmpty() || FishData.isScoopContainer(carried))) {
+        if (this.hoveredSlot instanceof AquariumMenu.FishSlot fs && carried.isEmpty()) {
             if (fs.locked() && !fs.hasItem()) tips.add(Component.translatable("gui.orefishfarm.needs_lattice"));
             else if (fs.hasItem() && this.menu.controller.isForeign(fs.getItem())) {
                 if (this.menu.get(TankBlockEntity.D_PROTECTED) == 1) tips.add(Component.translatable("gui.orefishfarm.kept_alive").withStyle(ChatFormatting.GREEN));
                 else tips.add(Component.translatable("gui.orefishfarm.wrong_habitat", FishData.habitatName(FishData.habitatOf(fs.getItem()))).withStyle(ChatFormatting.RED));
-            }
-            if (fs.hasItem()) {
-                ItemStack fish = fs.getItem();
-                FishData.Habitat fh = FishData.habitat(FishData.habitatOf(fish));
-                boolean ownTank = fh.id().equals(this.menu.controller.habitat());
-                Component need = ownTank && fh.empty() != fh.bucket()
-                        ? Component.translatable("gui.orefishfarm.bucket_or", fh.empty().getDescription(), fh.bucket().getDescription())
-                        : fh.bucket().getDescription();
-                if (!carried.isEmpty()) {
-                    if (!FishData.canScoop(carried, fish, this.menu.controller.habitat())) tips.add(Component.translatable("gui.orefishfarm.scoop_needs", need).withStyle(ChatFormatting.RED));
-                    else tips.add(Component.translatable("gui.orefishfarm.click_scoop_held").withStyle(ChatFormatting.GRAY));
-                } else if (this.minecraft != null && this.menu.canScoopNow(this.minecraft.player, fish)) {
-                    tips.add(Component.translatable("gui.orefishfarm.click_scoop").withStyle(ChatFormatting.GRAY));
-                } else {
-                    tips.add(Component.translatable("gui.orefishfarm.scoop_needs", need).withStyle(ChatFormatting.RED));
-                }
             }
             if (!tips.isEmpty()) {
                 List<Component> all = new ArrayList<>(getTooltipFromContainerItem(fs.getItem()));
@@ -104,38 +93,42 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
     @Override
     protected void renderBg(GuiGraphics g, float partial, int mx, int my) {
         int l = this.leftPos, t = this.topPos;
-        g.blit(TEX, l, t, 0, 0, this.imageWidth, this.imageHeight);
+        // Background: the top down to the window's last row, that row repeated for a taller window, then the rest.
+        int e = this.menu.extra, cut = WY + WH - 1;
+        g.blit(TEX, l, t, 0, 0, this.imageWidth, cut);
+        for (int k = 0; k < e; k++) g.blit(TEX, l, t + cut + k, 0, cut - 1, this.imageWidth, 1);
+        g.blit(TEX, l, t + cut + e, 0, cut, this.imageWidth, 238 - cut);
         float time = (Util.getMillis() % 1_000_000L) / 1000F;
+        int wh = wh();
 
         // Window: the habitat's colour, darker toward the bottom, a sand strip and a few bubbles.
         FishData.Habitat h = FishData.habitat(this.menu.controller.habitat());
         int c = h.color();
         int top = 0xFF000000 | shade(c, 1.15F), bottom = 0xFF000000 | shade(c, 0.55F);
-        g.fillGradient(l + WX, t + WY, l + WX + WW, t + WY + WH, top, bottom);
+        g.fillGradient(l + WX, t + WY, l + WX + WW, t + WY + wh, top, bottom);
         int sand = h.look().equals("lava") ? 0xFF5A2A1A : h.look().equals("void") ? 0xFFD8D6A0 : 0xFFD9C78F;
-        g.fill(l + WX, t + WY + WH - 3, l + WX + WW, t + WY + WH, sand);
-        g.enableScissor(l + WX, t + WY, l + WX + WW, t + WY + WH);
+        g.fill(l + WX, t + WY + wh - 3, l + WX + WW, t + WY + wh, sand);
+        g.enableScissor(l + WX, t + WY, l + WX + WW, t + WY + wh);
         for (int k = 0; k < 4; k++) {
             int bx = l + WX + 10 + (int) (Mth.sin(time * 1.7F + k * 1.9F) * 1.5F);
-            int by = t + WY + WH - 6 - (int) ((time * 11 + k * 9) % (WH - 6));
+            int by = t + WY + wh - 6 - (int) ((time * 11 + k * 9) % (wh - 6));
             g.blit(ICONS, bx, by, k % 2 == 0 ? 204 : 210, 18, k % 2 == 0 ? 4 : 6, k % 2 == 0 ? 4 : 6);
         }
-        // Up to six fish, each in its own lane.
-        int shown = 0;
-        for (int i = 0; i < this.menu.fishSlotCount() && shown < 6; i++) {
+        g.disableScissor();
+        // Fish bob in place, six to a row; a bigger aquarium shows more rows.
+        int rows = 1 + e / 20, shown = 0;
+        for (int i = 0; i < this.menu.fishSlotCount() && shown < rows * 6; i++) {
             AquariumMenu.FishRef r = this.menu.refByIndex(i);
             if (r == null) continue;
-            ItemStack fish = FishData.display(r.be().fishStack(r.slot()));
-            if (fish.isEmpty()) continue;
-            float speed = 0.22F + shown * 0.05F;
-            float phase = shown * 2.3F;
-            float off = FishRender.swimOffset(time + phase, speed);
-            float fx = l + WX + WW / 2F + off * (WW / 2F - 14);
-            float fy = t + WY + 9 + (shown % 3) * 8 + Mth.sin(time * 0.8F + phase) * 0.8F;
-            FishRender.renderGui(g, fish, fx, fy, 20F, FishRender.swimYaw(time + phase, speed), FishRender.tailWag(time, phase));
+            ItemStack bucket = r.be().fishStack(r.slot());
+            if (bucket.isEmpty()) continue;
+            int row = shown / 6, col = shown % 6;
+            float phase = i * 1.3F;
+            int fx = l + WX + 16 + col * 26 + (row % 2) * 10;
+            int fy = t + WY + 13 + row * 20 + Math.round(Mth.sin(time * 1.6F + phase) * 1.5F);
+            drawFish(g, bucket, fx, fy);
             shown++;
         }
-        g.disableScissor();
 
         // Food meter.
         g.blit(ICONS, l + MX, t + MY, 176, 18, 14, 14);
@@ -145,14 +138,14 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
         // Energy bar (power tanks).
         if (power()) {
             g.blit(TEX, l + EX, t + EY, 224, 0, 8, EH);
-            int e = Mth.ceil(this.menu.get(TankBlockEntity.D_ENERGY) / 1000F * EH);
-            if (e > 0) g.blit(TEX, l + EX, t + EY + EH - e, 232, EH - e, 8, e);
+            int en = Mth.ceil(this.menu.get(TankBlockEntity.D_ENERGY) / 1000F * EH);
+            if (en > 0) g.blit(TEX, l + EX, t + EY + EH - en, 232, EH - en, 8, en);
         }
 
         // Scroll bar.
         int max = this.menu.maxRow();
         int knobY = max == 0 ? 0 : (int) ((SH - 15) * (this.menu.row() / (float) max));
-        g.blit(TEX, l + SX + 1, t + SY + 1 + knobY, max == 0 ? 212 : 200, 0, 12, 15);
+        g.blit(TEX, l + SX + 1, t + sy() + 1 + knobY, max == 0 ? 212 : 200, 0, 12, 15);
 
         // Carrying a live fish: the free slots it could go in light up.
         if (FishData.isFish(this.menu.getCarried())) {
@@ -182,6 +175,19 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
         }
     }
 
+    /** The mob from the bucket, side-on and about 20 pixels long, centred on (x, y); the bucket if it has no mob. */
+    private static void drawFish(GuiGraphics g, ItemStack bucket, int x, int y) {
+        net.minecraft.world.entity.Entity mob = FishLook.mob(bucket);
+        if (mob instanceof net.minecraft.world.entity.LivingEntity living) {
+            float big = Math.max(0.2F, Math.max(mob.getBbWidth(), mob.getBbHeight()));
+            int scale = Math.max(4, Math.round(20 / big));
+            org.joml.Quaternionf q = new org.joml.Quaternionf().rotateZ((float) Math.PI).mul(new org.joml.Quaternionf().rotateY((float) Math.PI / 2));
+            net.minecraft.client.gui.screens.inventory.InventoryScreen.renderEntityInInventory(g, x, y + Math.round(mob.getBbHeight() * scale / 2), scale, q, null, living);
+        } else {
+            g.renderItem(bucket, x - 8, y - 8);
+        }
+    }
+
     private static int shade(int rgb, float f) {
         int r = Mth.clamp((int) (((rgb >> 16) & 255) * f), 0, 255);
         int gr = Mth.clamp((int) (((rgb >> 8) & 255) * f), 0, 255);
@@ -198,7 +204,7 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
             int w = this.font.width(s);
             g.pose().pushPose();
             g.pose().translate(0, 0, 300);
-            g.drawString(this.font, s, WX + (WW - w) / 2, WY + WH - 12, 0xFFFFFF, true);
+            g.drawString(this.font, s, WX + (WW - w) / 2, WY + wh() - 12, 0xFFFFFF, true);
             g.pose().popPose();
         }
     }
@@ -237,7 +243,7 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
 
     @Override
     public boolean mouseClicked(double mx, double my, int button) {
-        if (button == 0 && in((int) mx - this.leftPos, (int) my - this.topPos, SX, SY, 14, SH) && this.menu.maxRow() > 0) {
+        if (button == 0 && in((int) mx - this.leftPos, (int) my - this.topPos, SX, sy(), 14, SH) && this.menu.maxRow() > 0) {
             this.dragging = true;
             dragTo(my);
             return true;
@@ -261,7 +267,7 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
     }
 
     private void dragTo(double my) {
-        float f = (float) ((my - this.topPos - SY - 7.5) / (SH - 15));
+        float f = (float) ((my - this.topPos - sy() - 7.5) / (SH - 15));
         scrollTo(Math.round(Mth.clamp(f, 0F, 1F) * this.menu.maxRow()));
     }
 }

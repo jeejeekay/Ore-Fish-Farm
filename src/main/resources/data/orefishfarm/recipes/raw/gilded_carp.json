@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "type": "forge:partial_nbt",
+      "item": "orefishfarm:fish_bucket",
+      "nbt": {
+        "Fish": "orefishfarm:gilded_carp"
+      }
+    }
+  ],
+  "result": {
+    "item": "minecraft:raw_gold"
+  }
+}

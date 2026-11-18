@@ -28,7 +28,7 @@ public final class TankRecipes {
         List<ItemStack> foods = FishData.allFoods();
         List<Product> out = new ArrayList<>();
         for (FishData.Fish f : sorted()) {
-            if (f.makesProduct()) out.add(new Product(new ItemStack(f.item()), f.product().copy(), FishData.productChance(f), foods));
+            if (f.makesProduct()) out.add(new Product(FishData.bucketOf(f), f.product().copy(), FishData.productChance(f), foods));
         }
         return out;
     }
@@ -38,10 +38,10 @@ public final class TankRecipes {
         List<Breeding> out = new ArrayList<>();
         for (FishData.Fish f : sorted()) {
             float c = FishData.breedChance(f);
-            if (c > 0) out.add(new Breeding(new ItemStack(f.item()), new ItemStack(f.item()), new ItemStack(f.item()), c, false, foods));
+            if (c > 0) out.add(new Breeding(FishData.bucketOf(f), FishData.bucketOf(f), FishData.bucketOf(f), c, false, foods));
         }
         for (FishData.Cross x : FishData.allCrosses()) {
-            out.add(new Breeding(new ItemStack(x.a()), new ItemStack(x.b()), x.result().copy(), FishData.crossChance(x), true, foods));
+            out.add(new Breeding(bucket(x.a()), bucket(x.b()), bucket(x.result().getItem()), FishData.crossChance(x), true, foods));
         }
         return out;
     }
@@ -50,8 +50,14 @@ public final class TankRecipes {
         List<ItemStack> foods = FishData.allFoods();
         List<Power> out = new ArrayList<>();
         for (FishData.Fish f : sorted()) {
-            if (f.makesPower()) out.add(new Power(new ItemStack(f.item()), FishData.powerPerTick(f), foods));
+            if (f.makesPower()) out.add(new Power(FishData.bucketOf(f), FishData.powerPerTick(f), foods));
         }
         return out;
+    }
+
+    /** A species shown as its live, bucketed form (what tanks hold). */
+    private static ItemStack bucket(net.minecraft.world.item.Item item) {
+        FishData.Fish f = FishData.fish(new ItemStack(item));
+        return f != null ? FishData.bucketOf(f) : new ItemStack(item);
     }
 }

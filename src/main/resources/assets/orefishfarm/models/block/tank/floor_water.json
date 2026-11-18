@@ -11,27 +11,15 @@
     {
       "from": [
         0,
-        2,
+        3.01,
         0
       ],
       "to": [
         16,
-        3,
+        3.01,
         16
       ],
       "faces": {
-        "north": {
-          "texture": "#floor"
-        },
-        "south": {
-          "texture": "#floor"
-        },
-        "east": {
-          "texture": "#floor"
-        },
-        "west": {
-          "texture": "#floor"
-        },
         "up": {
           "texture": "#floor"
         }
@@ -40,7 +28,7 @@
     {
       "from": [
         2,
-        3,
+        3.01,
         12.5
       ],
       "to": [
@@ -70,7 +58,7 @@
     {
       "from": [
         2,
-        3,
+        3.01,
         12.5
       ],
       "to": [
@@ -100,7 +88,7 @@
     {
       "from": [
         11,
-        3,
+        3.01,
         3
       ],
       "to": [

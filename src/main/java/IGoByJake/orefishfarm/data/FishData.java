@@ -72,7 +72,8 @@ public final class FishData {
 
     /**
      * bucket: the filled container that carries a fish of this habitat (water bucket, lava bucket, Void Bucket);
-     * empty: what you get back when such a fish is let out (a bucket; the Void Bucket comes back as itself).
+     * empty: the empty container for one (a bucket; the Void Bucket); a newborn fish uses one, and crafting a
+     * fish bucket into something gives it back.
      */
     public record Habitat(ResourceLocation id, String look, int color, @Nullable Item kit, Item bucket, Item empty) {}
 
@@ -245,7 +246,13 @@ public final class FishData {
         if (species != null) return byItem(species);
         Fish b = byBucket.get(stack.getItem());
         if (b != null) return b;
-        return byItem(stack.getItem());
+        Fish f = byItem(stack.getItem());
+        if (f != null) return f;
+        // Any other mob bucket (cod, axolotl, another mod's fish): a plain water fish with no product.
+        if (stack.getItem() instanceof net.minecraft.world.item.MobBucketItem) {
+            return new Fish(stack.getItem(), ItemStack.EMPTY, 0, Config.DEFAULT_BREED_CHANCE.get().floatValue(), 0, WATER, stack.getItem());
+        }
+        return null;
     }
 
     @Nullable
@@ -261,7 +268,7 @@ public final class FishData {
         if (stack.isEmpty()) return false;
         Item species = IGoByJake.orefishfarm.FishBucketItem.species(stack);
         if (species != null) return !loaded || byItem(species) != null;
-        return byBucket.containsKey(stack.getItem());
+        return byBucket.containsKey(stack.getItem()) || stack.getItem() instanceof net.minecraft.world.item.MobBucketItem;
     }
 
     /** Whether a tank takes this stack as a fish: only live, bucketed fish. */
@@ -289,29 +296,11 @@ public final class FishData {
         return stack;
     }
 
-    /** Can this container scoop that fish out of a tank of the given habitat? */
-    public static boolean canScoop(ItemStack container, ItemStack fishStack, ResourceLocation tankHabitat) {
-        if (container.isEmpty() || fishStack.isEmpty()) return false;
-        Habitat h = habitat(habitatOf(fishStack));
-        return container.is(h.bucket()) || (h.id().equals(tankHabitat) && container.is(h.empty()));
-    }
-
-    /** Is this the container scooping prefers (the cheap one: an empty bucket in the fish's own tank)? */
-    public static boolean isCheapScoop(ItemStack container, ItemStack fishStack, ResourceLocation tankHabitat) {
-        Habitat h = habitat(habitatOf(fishStack));
-        return h.id().equals(tankHabitat) && container.is(h.empty());
-    }
-
-    /** What you get back when this fish is let out of its bucket. */
-    public static ItemStack releaseReturn(ItemStack fishStack) {
-        return new ItemStack(habitat(habitatOf(fishStack)).empty());
-    }
-
-    /** Any habitat's bucket or empty: what the tank's bucket slot holds. */
-    public static boolean isScoopContainer(ItemStack stack) {
+    /** An empty container a newborn fish can go in: any habitat's "empty" (a bucket, a Void Bucket). */
+    public static boolean isBabyBucket(ItemStack stack) {
         if (stack.isEmpty()) return false;
-        if (stack.is(net.minecraft.world.item.Items.BUCKET) || stack.is(net.minecraft.world.item.Items.WATER_BUCKET)) return true;
-        for (Habitat h : habitats.values()) if (stack.is(h.bucket()) || stack.is(h.empty())) return true;
+        if (stack.is(net.minecraft.world.item.Items.BUCKET)) return true;
+        for (Habitat h : habitats.values()) if (stack.is(h.empty())) return true;
         return false;
     }
 

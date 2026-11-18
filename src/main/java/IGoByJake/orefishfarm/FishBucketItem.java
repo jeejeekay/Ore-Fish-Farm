@@ -29,8 +29,9 @@ import java.util.function.Consumer;
  * fish can name its own bucket in its fish file instead). The species is stored as the fish item's id under
  * "Fish"; the rest of the tag is the mob's bucket data, so whatever the fish carries travels with it.
  *
- * <p>Emptied into the world it places water and lets the fish out (if the species has a mob with the same id);
- * used on a Fish Tank it goes into the tank (see TankBlock).
+ * <p>Emptied into the world it places water and lets the fish out (if the species has a mob with the same id).
+ * Fish Tanks hold these buckets as they are. Only a fish in a bucket is alive, so it is what recipes, tanks and
+ * (later) the Fish Checker use.
  */
 public class FishBucketItem extends MobBucketItem {
     public static final String KEY = "Fish";
@@ -90,6 +91,17 @@ public class FishBucketItem extends MobBucketItem {
                 return IGoByJake.orefishfarm.client.FishBucketRenderer.get();
             }
         });
+    }
+
+    /** Crafting with a fish bucket (into its raw ore, say) leaves the empty bucket. */
+    @Override
+    public boolean hasCraftingRemainingItem(ItemStack stack) {
+        return true;
+    }
+
+    @Override
+    public ItemStack getCraftingRemainingItem(ItemStack stack) {
+        return new ItemStack(FishData.habitat(FishData.habitatOf(stack)).empty());
     }
 
     /** The habitat bucket this fish's bucket looks like (water, lava or void). */

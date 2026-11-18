@@ -1,0 +1,21 @@
+{
+  "conditions": [
+    {
+      "type": "forge:mod_loaded",
+      "modid": "create"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "type": "forge:partial_nbt",
+      "item": "orefishfarm:fish_bucket",
+      "nbt": {
+        "Fish": "orefishfarm:zincray"
+      }
+    }
+  ],
+  "result": {
+    "item": "create:raw_zinc"
+  }
+}

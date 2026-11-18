@@ -102,12 +102,7 @@
   "item.orefishfarm.fish_bucket.of": "Bucket of %s",
   "item.orefishfarm.void_bucket": "Void Bucket",
   "message.orefishfarm.tank_full": "No free fish slot in this aquarium",
-  "message.orefishfarm.nothing_to_scoop": "No fish here that a %s can carry",
-  "message.orefishfarm.needs_live_fish": "Only live fish go in a tank: catch one with a bucket in your inventory, or scoop one up",
-  "gui.orefishfarm.click_scoop": "Click to scoop it out (uses a bucket from the tank or your inventory)",
-  "gui.orefishfarm.click_scoop_held": "Click to scoop it into the bucket you are holding",
-  "gui.orefishfarm.scoop_needs": "Scooping it needs: %s",
-  "gui.orefishfarm.bucket_or": "%s or %s",
-  "jei.orefishfarm.info.fish_bucket": "A live fish. Use it on a Fish Tank (or click it into a fish slot, or shift-click it in the tank screen) to let it in; you get the empty bucket back. Use a bucket on a tank, or click a fish in the screen, to scoop one out: an empty bucket works in the fish's own kind of tank, otherwise its habitat's bucket. Fish come up alive when you fish with that bucket in your inventory, or scoop a wild one with a water bucket.",
-  "jei.orefishfarm.info.void_bucket": "Carries void fish: keep one in your inventory while void fishing to catch them alive, and use it to scoop a void fish out of any tank. Letting a void fish out gives the Void Bucket back."
+  "message.orefishfarm.needs_live_fish": "Only live fish go in a tank: a fish in a bucket",
+  "jei.orefishfarm.info.fish_bucket": "A live fish. Fish Tanks hold buckets of fish: use one on a tank, or put it in a fish slot. Catch fish alive by fishing with their habitat's bucket in your inventory (a water bucket for water fish), or scoop a wild one with a water bucket. Any mob bucket works in a tank, from vanilla or other mods. Newborn fish need an empty bucket in the tank's bucket slot.",
+  "jei.orefishfarm.info.void_bucket": "Carries void fish: keep one in your inventory while void fishing to catch them alive. Newborn void fish need one in the tank's bucket slot."
 }

@@ -63,6 +63,15 @@ public class OreFishJei implements IModPlugin {
         reg.addRecipes(POWER, TankRecipes.power());
     }
 
+    /** Each species' Fish Bucket is its own entry in JEI. */
+    @Override
+    public void registerItemSubtypes(mezz.jei.api.registration.ISubtypeRegistration reg) {
+        reg.registerSubtypeInterpreter(mezz.jei.api.constants.VanillaTypes.ITEM_STACK, Registry.FISH_BUCKET.get(), (stack, ctx) -> {
+            var t = stack.getTag();
+            return t != null && t.contains(IGoByJake.orefishfarm.FishBucketItem.KEY) ? t.getString(IGoByJake.orefishfarm.FishBucketItem.KEY) : "";
+        });
+    }
+
     private static void info(IRecipeRegistration reg, net.minecraft.world.level.ItemLike item, String key) {
         reg.addIngredientInfo(new ItemStack(item), mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
                 net.minecraft.network.chat.Component.translatable("jei.orefishfarm.info." + key));
