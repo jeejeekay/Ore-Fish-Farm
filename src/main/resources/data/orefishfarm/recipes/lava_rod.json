@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SSS",
+    "SRS",
+    "SSS"
+  ],
+  "key": {
+    "S": {
+      "item": "orefishfarm:obsidian_scale"
+    },
+    "R": {
+      "item": "minecraft:fishing_rod"
+    }
+  },
+  "result": {
+    "item": "orefishfarm:lava_rod"
+  }
+}

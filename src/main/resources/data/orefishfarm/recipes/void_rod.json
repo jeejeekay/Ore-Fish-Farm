@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " P ",
+    "PRP",
+    " E "
+  ],
+  "key": {
+    "P": {
+      "item": "minecraft:popped_chorus_fruit"
+    },
+    "R": {
+      "item": "minecraft:fishing_rod"
+    },
+    "E": {
+      "item": "minecraft:ender_eye"
+    }
+  },
+  "result": {
+    "item": "orefishfarm:void_rod"
+  }
+}

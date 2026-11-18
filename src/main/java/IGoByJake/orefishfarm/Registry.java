@@ -53,6 +53,12 @@ public final class Registry {
         return r;
     }
 
+    private static RegistryObject<Item> tabbed(String name, java.util.function.Supplier<Item> sup) {
+        RegistryObject<Item> r = ITEMS.register(name, sup);
+        TAB_ORDER.add(r);
+        return r;
+    }
+
     private static RegistryObject<Item> item(String name) {
         RegistryObject<Item> r = ITEMS.register(name, () -> new Item(new Item.Properties()));
         TAB_ORDER.add(r);
@@ -94,6 +100,16 @@ public final class Registry {
     public static final RegistryObject<Item> EMBER_PELLETS = item("ember_pellets");
     public static final RegistryObject<Item> VOID_FLAKES = item("void_flakes");
     public static final RegistryObject<Item> FISH_BONE = item("fish_bone");
+
+    // Rods: plain fishing rods; the item tags #orefishfarm:lava_rods / #orefishfarm:void_rods give them their fluid.
+    public static final RegistryObject<Item> LAVA_ROD = tabbed("lava_rod",
+            () -> new IGoByJake.orefishfarm.fishing.RodItem(new Item.Properties().durability(128).fireResistant(), "item.orefishfarm.lava_rod.desc"));
+    public static final RegistryObject<Item> VOID_ROD = tabbed("void_rod",
+            () -> new IGoByJake.orefishfarm.fishing.RodItem(new Item.Properties().durability(128), "item.orefishfarm.void_rod.desc"));
+    public static final RegistryObject<EntityType<IGoByJake.orefishfarm.fishing.OreFishingHook>> ORE_FISHING_HOOK = ENTITIES.register("fishing_hook",
+            () -> EntityType.Builder.<IGoByJake.orefishfarm.fishing.OreFishingHook>of(IGoByJake.orefishfarm.fishing.OreFishingHook::new, MobCategory.MISC)
+                    .noSave().noSummon().fireImmune().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(5)
+                    .build(OreFishFarm.MODID + ":fishing_hook"));
 
     // Kits and upgrades for the Fish Tank
     public static final RegistryObject<Item> HEATING_COIL = item("heating_coil");

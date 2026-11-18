@@ -24,12 +24,22 @@ public final class ClientSetup {
     public static void onClientSetup(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
             MenuScreens.register(Registry.AQUARIUM_MENU.get(), AquariumScreen::new);
+            // Vanilla's "cast" switch for the rods, so the line leaves the rod while fishing.
+            for (var rod : java.util.List.of(Registry.LAVA_ROD, Registry.VOID_ROD)) {
+                net.minecraft.client.renderer.item.ItemProperties.register(rod.get(), new net.minecraft.resources.ResourceLocation("cast"), (stack, level, entity, seed) -> {
+                    if (!(entity instanceof net.minecraft.world.entity.player.Player player) || player.fishing == null) return 0.0F;
+                    boolean main = entity.getMainHandItem() == stack;
+                    boolean off = entity.getOffhandItem() == stack && !(entity.getMainHandItem().getItem() instanceof net.minecraft.world.item.FishingRodItem);
+                    return main || off ? 1.0F : 0.0F;
+                });
+            }
         });
     }
 
     @SubscribeEvent
     public static void onRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(Registry.FISH_TANK_BE.get(), AquariumRenderer::new);
+        event.registerEntityRenderer(Registry.ORE_FISHING_HOOK.get(), net.minecraft.client.renderer.entity.FishingHookRenderer::new);
         for (var fish : Registry.FISH_MOBS) event.registerEntityRenderer(fish.get(), OreFishRenderer::new);
     }
 

@@ -24,6 +24,7 @@ public class OreFishFarm {
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
         MinecraftForge.EVENT_BUS.addListener(FishData::onAddReloadListeners);
         MinecraftForge.EVENT_BUS.addListener(Network::onDatapackSync);
+        MinecraftForge.EVENT_BUS.addListener(IGoByJake.orefishfarm.fishing.FishingEvents::onJoin);
         Network.register();
     }
 }
