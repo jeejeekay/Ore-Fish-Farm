@@ -23,8 +23,8 @@ import java.util.Map;
 
 /**
  * Draws whatever mob is in a fish bucket: our Fish Buckets (the species' mob), vanilla buckets (cod, axolotl,
- * tropical fish with its pattern) and any mod's mob bucket. One still copy of each mob is kept per bucket, so a
- * tank just poses and draws it: no AI, no ticking.
+ * tropical fish with its pattern) and any mod's mob bucket. One copy of each mob is kept per bucket and posed by
+ * the tank: no AI and no ticking, only its age is set before each draw so its own swim animation (tail, fins) plays.
  */
 public final class FishLook {
     private static final Map<String, Entity> CACHE = new HashMap<>();
@@ -91,7 +91,8 @@ public final class FishLook {
      * Draws the mob centred on the current pose origin, side-on (its length along x), fitted into a box of the
      * given size.
      */
-    public static void render(Entity e, float size, PoseStack pose, MultiBufferSource buffers, int light) {
+    public static void render(Entity e, float size, long age, float partial, PoseStack pose, MultiBufferSource buffers, int light) {
+        e.tickCount = (int) age;
         EntityRenderDispatcher d = Minecraft.getInstance().getEntityRenderDispatcher();
         float big = Math.max(e.getBbWidth(), e.getBbHeight());
         float sc = size / Math.max(0.2F, big);
@@ -101,7 +102,7 @@ public final class FishLook {
         // Mobs face +z at yaw 0; turn them side-on.
         pose.mulPose(Axis.YP.rotationDegrees(90));
         d.setRenderShadow(false);
-        d.render(e, 0, 0, 0, 0, 0, pose, buffers, light);
+        d.render(e, 0, 0, 0, 0, partial, pose, buffers, light);
         d.setRenderShadow(true);
         pose.popPose();
     }

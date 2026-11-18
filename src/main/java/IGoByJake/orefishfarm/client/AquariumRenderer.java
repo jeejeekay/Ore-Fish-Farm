@@ -20,15 +20,18 @@ import net.minecraft.world.phys.Vec3;
 import java.util.List;
 
 /**
- * Draws an aquarium's fish, once per aquarium (from its controller block). Each fish stays in its own tank
- * block and bobs gently in place, side-on to the viewer: the mob from its bucket, or the bucket's own sprite if
- * it has no mob. Two fish in one block sit side by side. At most 24 fish are drawn per aquarium, and none past
- * 32 blocks.
+ * Draws an aquarium's fish, once per aquarium (from its controller block). Each fish stays inside its own tank
+ * block, side-on to the viewer: it swims slowly back and forth across the block, turns round at each end, bobs,
+ * and its tail moves (the mob's own swim animation). It never leaves its block, so it never crosses air in an
+ * odd-shaped aquarium. The mob comes from its bucket, or the bucket's own sprite is drawn if it has no mob. Two
+ * fish in one block each keep to their own half. At most 24 fish are drawn per aquarium, and none past 32 blocks.
  */
 public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
     private static final float SIZE_ALONE = 0.5F, SIZE_PAIR = 0.38F;
     private static final int MAX_FISH = 24;
     private static final double MAX_DIST = 32;
+    /** How far a fish swims each way from the middle of its block (or its half of a shared block). */
+    private static final float RANGE_ALONE = 0.2F, RANGE_PAIR = 0.09F;
 
     public AquariumRenderer(BlockEntityRendererProvider.Context ctx) {}
 
@@ -52,17 +55,21 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
                 ItemStack bucket = t.fishStack(s);
                 if (bucket.isEmpty()) continue;
                 float phase = (p.asLong() & 255) / 40F + s * 1.7F;
+                float swim = time * 0.45F + phase;
+                float range = pair ? RANGE_PAIR : RANGE_ALONE;
+                // heading: +1 swimming right, -1 left; eased through the turn so the fish swings round
+                float heading = Mth.clamp(Mth.cos(swim) * 3F, -1F, 1F);
                 pose.pushPose();
                 pose.translate(p.getX() - origin.getX() + 0.5, p.getY() - origin.getY() + 0.55, p.getZ() - origin.getZ() + 0.5);
                 pose.mulPose(Axis.YP.rotationDegrees(-camYaw));
-                if (pair) pose.translate(s == 0 ? -0.18 : 0.18, s == 0 ? 0.04 : -0.04, 0);
-                pose.translate(0, Mth.sin(time * 1.6F + phase) * 0.035F, 0);
-                pose.mulPose(Axis.ZP.rotationDegrees(Mth.sin(time * 1.1F + phase) * 3F));
-                if (pair && s == 1) pose.mulPose(Axis.YP.rotationDegrees(180));
+                if (pair) pose.translate(s == 0 ? -0.2 : 0.2, s == 0 ? 0.05 : -0.05, 0);
+                pose.translate(Mth.sin(swim) * range, Mth.sin(time * 1.6F + phase) * 0.05F, 0);
+                pose.mulPose(Axis.YP.rotationDegrees(90F - heading * 90F));
+                pose.mulPose(Axis.ZP.rotationDegrees(Mth.sin(time * 1.1F + phase) * 4F));
                 float size = pair ? SIZE_PAIR : SIZE_ALONE;
                 Entity mob = FishLook.mob(bucket);
                 if (mob != null) {
-                    FishLook.render(mob, size, pose, buffers, lit);
+                    FishLook.render(mob, size, level.getGameTime() + (long) (phase * 40), partial, pose, buffers, lit);
                 } else {
                     pose.scale(size, size, size);
                     Minecraft.getInstance().getItemRenderer().renderStatic(bucket, ItemDisplayContext.FIXED, lit,
