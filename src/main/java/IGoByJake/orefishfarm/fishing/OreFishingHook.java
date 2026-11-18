@@ -50,8 +50,9 @@ import java.util.List;
  *   <li>drops off an edge over the open void (void rods, in a dimension type tagged
  *       {@code #orefishfarm:void_fishing}): stops a few blocks down, hovers and fishes the void table.</li>
  * </ul>
- * What it catches depends only on the liquid: {@code orefishfarm:gameplay/lava_fishing} or
- * {@code orefishfarm:gameplay/void_fishing}. Bite timing is vanilla's (100-600 ticks, minus Lure); Luck of the Sea
+ * What it catches depends on the liquid and the dimension: {@code orefishfarm:gameplay/lava_fishing/<dim ns>/<dim path>}
+ * (for example {@code .../lava_fishing/minecraft/the_nether}) if that table exists, otherwise the liquid's
+ * plain table {@code orefishfarm:gameplay/lava_fishing} or {@code orefishfarm:gameplay/void_fishing}. Bite timing is vanilla's (100-600 ticks, minus Lure); Luck of the Sea
  * counts. Catches go straight to the player, since nothing could be pulled out of lava or the void.
  */
 public class OreFishingHook extends FishingHook {
@@ -267,7 +268,7 @@ public class OreFishingHook extends FishingHook {
                     .withParameter(LootContextParams.THIS_ENTITY, this)
                     .withLuck(this.luck + player.getLuck())
                     .create(LootContextParamSets.FISHING);
-            LootTable table = level.getServer().getLootData().getLootTable(mode == LAVA ? LAVA_TABLE : VOID_TABLE);
+            LootTable table = tableFor(level, mode == LAVA ? LAVA_TABLE : VOID_TABLE);
             List<ItemStack> loot = table.getRandomItems(params);
             ItemFishedEvent event = new ItemFishedEvent(loot, this.onGround() ? 2 : 1, this);
             MinecraftForge.EVENT_BUS.post(event);
@@ -291,5 +292,13 @@ public class OreFishingHook extends FishingHook {
         if (this.onGround()) damage = 2;
         this.discard();
         return damage;
+    }
+
+    /** The dimension's own table for this liquid if a datapack has one, else the liquid's plain table. */
+    private static LootTable tableFor(ServerLevel level, ResourceLocation base) {
+        ResourceLocation dim = level.dimension().location();
+        ResourceLocation own = new ResourceLocation(base.getNamespace(), base.getPath() + "/" + dim.getNamespace() + "/" + dim.getPath());
+        LootTable t = level.getServer().getLootData().getLootTable(own);
+        return t != LootTable.EMPTY ? t : level.getServer().getLootData().getLootTable(base);
     }
 }
