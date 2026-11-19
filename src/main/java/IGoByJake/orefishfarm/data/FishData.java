@@ -34,8 +34,8 @@ import java.util.Map;
  * data/&lt;ns&gt;/orefishfarm_fish/&lt;name&gt;.json
  *   { "fish": "orefishfarm:ferrofin",
  *     "product": { "item": "orefishfarm:iron_scale", "count": 1 },   (optional: a fish can make nothing)
- *     "product_chance": 0.25,   chance per food eaten in a Fish Tank
- *     "breed_chance": 0.08,     chance per food eaten in a Breeding Tank with two of this fish
+ *     "product_chance": 0.75,   chance per bite (every biteTicks of eating) in a Fish Tank
+ *     "breed_chance": 0.08,     chance per bite for a pair of this fish in a tank with a Love Lattice
  *     "power": 30,              FE/tick while eating in a power tank (optional; 0 = not a power fish)
  *     "habitat": "orefishfarm:water",  which tank it lives in (optional; water by default)
  *     "bucket": "somemod:fish_bucket" } optional: this mod's own bucket for the fish (else the generic Fish Bucket)
@@ -45,7 +45,7 @@ import java.util.Map;
  *     "result": { "item": "orefishfarm:brass_bream", "count": 1 }, "chance": 0.04 }
  *
  * data/&lt;ns&gt;/orefishfarm_food/&lt;name&gt;.json
- *   { "item": "orefishfarm:fish_food", "ticks": 400,
+ *   { "item": "orefishfarm:fish_food", "ticks": 4800,   how long one piece feeds one fish
  *     "habitat": "orefishfarm:void" }   optional: while it is being eaten, any fish survives in a tank of this habitat
  *
  * data/&lt;ns&gt;/orefishfarm_habitat/&lt;name&gt;.json   (the file name is the habitat id)
@@ -423,7 +423,7 @@ public final class FishData {
                 }
                 ResourceLocation hab = o.has("habitat") ? new ResourceLocation(GsonHelper.getAsString(o, "habitat")) : WATER;
                 Item bucket = o.has("bucket") ? item(GsonHelper.getAsString(o, "bucket")) : null;
-                out.put(f, new Fish(f, product, GsonHelper.getAsFloat(o, "product_chance", 0.25F),
+                out.put(f, new Fish(f, product, GsonHelper.getAsFloat(o, "product_chance", 0.75F),
                         GsonHelper.getAsFloat(o, "breed_chance", 0.1F), GsonHelper.getAsInt(o, "power", 0), hab, bucket));
             } catch (Exception ex) {
                 LOG.error("Bad fish file {}: {}", id, ex.getMessage());
@@ -459,7 +459,7 @@ public final class FishData {
                 JsonObject o = json.getAsJsonObject();
                 Item i = item(GsonHelper.getAsString(o, "item"));
                 ResourceLocation hab = o.has("habitat") ? new ResourceLocation(GsonHelper.getAsString(o, "habitat")) : null;
-                if (i != null) out.put(i, new Food(Math.max(1, GsonHelper.getAsInt(o, "ticks", 400)), hab));
+                if (i != null) out.put(i, new Food(Math.max(1, GsonHelper.getAsInt(o, "ticks", 4800)), hab));
             } catch (Exception ex) {
                 LOG.error("Bad fish food file {}: {}", id, ex.getMessage());
             }

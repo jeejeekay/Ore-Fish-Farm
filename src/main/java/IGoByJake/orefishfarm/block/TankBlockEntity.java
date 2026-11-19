@@ -50,9 +50,10 @@ import java.util.Set;
  * slots, the food timer and the energy buffer, and is the only block that ticks any logic. The others just hold
  * their fish and point at it.
  *
- * <p>Food: one timer for the whole aquarium. A piece of food lasts its ticks divided by the number of fish eating,
- * and when it finishes every eating fish rolls once, so N fish use food and make scales exactly like N separate
- * tanks. Power fish in a power tank make FE every tick food is burning.
+ * <p>Food: one timer for the whole aquarium. A piece of food lasts its ticks divided by the number of fish eating.
+ * While food is being eaten a second timer counts bites: every {@code biteTicks} every eating fish rolls once, so N
+ * fish use food and make scales exactly like N separate tanks, and how long food lasts never changes how often they
+ * roll. Power fish in a power tank make FE every tick food is burning.
  *
  * <p>Habitats: a fish in a tank of another habitat gets a grace period (the tank reaches for that habitat's food
  * at once). With the habitat food being eaten, it is fine. Without, after the grace it is hurt a few times and
@@ -115,6 +116,8 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
     boolean needsCheck = true;
 
     int burn, burnTotal;
+    /** Ticks eaten since the last bite. Carries over from one piece of food to the next. */
+    int bite;
     ItemStack burnItem = ItemStack.EMPTY;
     int energy;
 
@@ -352,7 +355,7 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
             int slot = findFood(true);
             if (slot >= 0 && this.habitat.equals(FishData.foodHabitat(this.shared.getStackInSlot(slot)))) {
                 List<FishRef> eaters = eaters(fishes);
-                if (this.burn > 0) finishFood(eaters, power);
+                this.burn = 0;
                 startFood(slot, Math.max(1, eaters.size()));
             }
         }
@@ -397,7 +400,10 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
                 }
                 this.energy = (int) Math.min(energyCapacity(), (long) this.energy + rate);
             }
-            if (this.burn == 0) finishFood(eaters, power);
+            if (++this.bite >= Config.BITE_TICKS.get()) {
+                this.bite = 0;
+                takeBite(eaters, power);
+            }
             setChanged();
         }
         if (this.burn <= 0 && !eaters.isEmpty()) {
@@ -464,9 +470,8 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
         setChanged();
     }
 
-    /** One finished piece of food: lattice pairs try to breed, every other eating fish rolls its product. */
-    private void finishFood(List<FishRef> eaters, boolean power) {
-        this.burn = 0;
+    /** One bite: lattice pairs try to breed, every other eating fish rolls its product. */
+    private void takeBite(List<FishRef> eaters, boolean power) {
         if (this.level == null) return;
         Set<FishRef> busy = new HashSet<>();
         int lattices = latticeCount();
@@ -477,7 +482,7 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
             FishData.Fish d = FishData.fish(f.stack());
             if (d != null && d.makesProduct() && this.level.random.nextFloat() < FishData.productChance(d)) {
                 ItemStack rest = addOutput(d.product().copy());
-                if (!rest.isEmpty()) break; // output full: the rest of this food is wasted
+                if (!rest.isEmpty()) break; // output full: the rest of this bite is wasted
             }
         }
     }
@@ -649,6 +654,7 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
         }
         tag.putInt("Burn", this.burn);
         tag.putInt("BurnTotal", this.burnTotal);
+        tag.putInt("Bite", this.bite);
         if (!this.burnItem.isEmpty()) tag.put("BurnItem", this.burnItem.save(new CompoundTag()));
         tag.putInt("Energy", this.energy);
     }
@@ -688,6 +694,7 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
         this.memberCache = null;
         this.burn = tag.getInt("Burn");
         this.burnTotal = tag.getInt("BurnTotal");
+        this.bite = tag.getInt("Bite");
         this.burnItem = tag.contains("BurnItem") ? ItemStack.of(tag.getCompound("BurnItem")) : ItemStack.EMPTY;
         this.energy = tag.getInt("Energy");
         this.needsCheck = true;

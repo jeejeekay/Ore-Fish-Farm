@@ -12,6 +12,7 @@ public final class Config {
     public static final ForgeConfigSpec.DoubleValue FOOD_TIME;
     public static final ForgeConfigSpec.DoubleValue DEFAULT_BREED_CHANCE;
     public static final ForgeConfigSpec.IntValue DEFAULT_FOOD_TICKS;
+    public static final ForgeConfigSpec.IntValue BITE_TICKS;
     public static final ForgeConfigSpec.IntValue ENERGY_CAPACITY;
     public static final ForgeConfigSpec.IntValue ENERGY_OUTPUT;
     public static final ForgeConfigSpec.IntValue MAX_AQUARIUM_SIZE;
@@ -21,7 +22,7 @@ public final class Config {
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
-        b.comment("Chances are rolled once per piece of food a tank finishes eating.",
+        b.comment("Chances are rolled once per bite: every biteTicks (see [food]) that a tank spends eating.",
                 "Each fish's own numbers live in data/<namespace>/orefishfarm_fish/*.json; these multiply them.").push("odds");
         PRODUCT_CHANCE = b.comment("Multiplier on every fish's scale/product chance.").defineInRange("productChanceMultiplier", 1.0, 0.0, 100.0);
         BREED_CHANCE = b.comment("Multiplier on same-species breeding chances.").defineInRange("breedChanceMultiplier", 1.0, 0.0, 100.0);
@@ -29,7 +30,9 @@ public final class Config {
         DEFAULT_BREED_CHANCE = b.comment("Breeding chance for fish in the #orefishfarm:tank_fish tag that have no fish file (e.g. cod).").defineInRange("defaultBreedChance", 0.1, 0.0, 1.0);
         b.pop().push("food");
         FOOD_TIME = b.comment("Multiplier on how long each piece of food lasts.").defineInRange("foodTimeMultiplier", 1.0, 0.01, 100.0);
-        DEFAULT_FOOD_TICKS = b.comment("Ticks one item lasts for foods in the #orefishfarm:fish_food tag that have no food file.").defineInRange("defaultFoodTicks", 400, 1, 72000);
+        DEFAULT_FOOD_TICKS = b.comment("Ticks one item lasts for foods in the #orefishfarm:fish_food tag that have no food file.").defineInRange("defaultFoodTicks", 4800, 1, 72000);
+        BITE_TICKS = b.comment("Ticks of eating between bites. Every bite, each eating fish rolls its scale/product chance and pairs roll to breed.",
+                "How long a piece of food lasts does not change how often fish roll.").defineInRange("biteTicks", 400, 1, 72000);
         b.pop().push("power");
         POWER = b.comment("Multiplier on the FE/tick power fish make.").defineInRange("powerMultiplier", 1.0, 0.0, 100.0);
         ENERGY_CAPACITY = b.comment("FE each block of a power tank can hold (an aquarium holds this times its blocks).").defineInRange("energyCapacity", 20000, 100, Integer.MAX_VALUE);

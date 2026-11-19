@@ -4,7 +4,7 @@
     "item": "orefishfarm:obsidian_scale",
     "count": 1
   },
-  "product_chance": 0.3,
+  "product_chance": 0.9,
   "breed_chance": 0.1,
   "habitat": "orefishfarm:water"
 }

@@ -4,7 +4,7 @@
     "item": "orefishfarm:gold_scale",
     "count": 1
   },
-  "product_chance": 0.2,
+  "product_chance": 0.6,
   "breed_chance": 0.07,
   "habitat": "orefishfarm:water"
 }

@@ -66,7 +66,7 @@ public final class TankCategories {
         }
     }
 
-    // ---- Fish Tank: fish (+ food) -> product, X% per food
+    // ---- Fish Tank: fish (+ food) -> product, X% per bite
     static class ProductCategory extends Base<TankRecipes.Product> {
         ProductCategory(IGuiHelper gui) { super(gui, Registry.FISH_TANK.get()); }
 
@@ -88,7 +88,7 @@ public final class TankCategories {
         }
     }
 
-    // ---- Breeding Tank: fish + fish (+ food) -> baby or hybrid, X% per food
+    // ---- Breeding Tank: fish + fish (+ food) -> baby or hybrid, X% per bite
     static class BreedingCategory extends Base<TankRecipes.Breeding> {
         BreedingCategory(IGuiHelper gui) { super(gui, Registry.LOVE_LATTICE.get()); }
 
