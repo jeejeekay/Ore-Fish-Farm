@@ -3,7 +3,7 @@
 Forge 1.20.1. Ore fish you keep in tanks.
 
 - **Fish Tank**: one fish + fish food. One piece of food feeds one fish for 4 minutes. Every 20 seconds of eating is a bite, and each bite rolls the fish's product chance (scales, teeth). One output slot: pipe it out.
-- **Rarity tiers** (chance per bite): common 90% (Obsidian Fish), uncommon 75% (Ferrofin, Zincray, Cuprum Eel), rare 60% (Gilded Carp, Brass Bream). Rarer tiers for new fish: epic 40%, legendary 25%.
+- **Rarity tiers** (chance per bite): common 90% (Obsidian Fish), uncommon 75% (Ferrofin, Zincray, Cuprum Eel), rare 60% (Gilded Carp, Brass Bream). Rarer tiers for new fish: epic 45%, legendary 25%, mythic 10%.
 - **Breeding Tank**: two fish + food. Same fish -> a baby (breed_chance). Different fish -> a hybrid if a breeding file pairs them.
 - **Power Tank**: one power fish (e.g. Cuprum Eel) + food -> Forge Energy every tick it eats, on every side.
 - Hoppers, pipes and funnels: fish and food go in, only the output comes out.
