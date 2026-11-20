@@ -21,7 +21,8 @@ import java.util.List;
 
 /**
  * The aquarium screen: a window with up to six of its fish swimming in the habitat's colour, a status line,
- * two rows of fish slots with a scroll bar, the shared food and Love Lattice slots, and the output.
+ * two rows of fish slots with a scroll bar, the shared food slots, the breeding switch, and the output.
+ * A newborn's slot shows a yellow asterisk until it is hovered.
  */
 public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
     private static final ResourceLocation TEX = new ResourceLocation(OreFishFarm.MODID, "textures/gui/aquarium.png");
@@ -31,6 +32,9 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
     private static final int MX = 174, MY = 16; // food meter
     private static final int EX = 177, EY = 33, EH = 17; // energy bar
     private boolean dragging;
+    private net.minecraft.client.gui.components.Button breedButton;
+    /** Newborns already reported as seen (so the server is told once). */
+    private final java.util.Set<Integer> seenSent = new java.util.HashSet<>();
 
     public AquariumScreen(AquariumMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
@@ -38,6 +42,25 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
         this.imageHeight = 238 + menu.extra;
         this.inventoryLabelY = menu.extra + AquariumMenu.INV_Y + 2;
         this.titleLabelY = 5;
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        this.breedButton = addRenderableWidget(net.minecraft.client.gui.components.Button.builder(breedLabel(), b -> {
+            if (this.minecraft != null && this.minecraft.gameMode != null)
+                this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId, AquariumMenu.BREEDING_BUTTON);
+        }).bounds(this.leftPos + AquariumMenu.BREED_X + 6, this.topPos + this.menu.extra + AquariumMenu.FOOD_Y - 1, 54, 18).build());
+    }
+
+    private Component breedLabel() {
+        return Component.translatable(this.menu.get(TankBlockEntity.D_BREEDING) == 1 ? "gui.orefishfarm.breeding_on" : "gui.orefishfarm.breeding_off");
+    }
+
+    @Override
+    protected void containerTick() {
+        super.containerTick();
+        if (this.breedButton != null) this.breedButton.setMessage(breedLabel());
     }
 
     /** Window height and scroll bar top for this aquarium's size. */
@@ -64,14 +87,16 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
         if (in(x, y, WX, WY, WW, wh())) {
             tips.add(Component.translatable("gui.orefishfarm.aquarium_info", this.menu.get(TankBlockEntity.D_FISH), this.menu.get(TankBlockEntity.D_BLOCKS)));
             tips.add(Component.translatable("gui.orefishfarm.habitat", FishData.habitatName(this.menu.controller.habitat())).withStyle(ChatFormatting.AQUA));
-            int l = this.menu.get(TankBlockEntity.D_LATTICES);
-            if (l > 0) tips.add(Component.translatable("gui.orefishfarm.lattices", l).withStyle(ChatFormatting.LIGHT_PURPLE));
             if (this.menu.get(TankBlockEntity.D_PROTECTED) == 1) tips.add(Component.translatable("gui.orefishfarm.protected").withStyle(ChatFormatting.GREEN));
         }
         ItemStack carried = this.menu.getCarried();
+        // Hovering a newborn marks it seen (tells the server once).
+        if (this.hoveredSlot instanceof AquariumMenu.FishSlot seen && seen.hasItem() && IGoByJake.orefishfarm.data.FishGenes.isUnseen(seen.getItem())
+                && this.seenSent.add(seen.index()) && this.minecraft != null && this.minecraft.gameMode != null) {
+            this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId, AquariumMenu.SEEN_BUTTON + seen.index());
+        }
         if (this.hoveredSlot instanceof AquariumMenu.FishSlot fs && carried.isEmpty()) {
-            if (fs.locked() && !fs.hasItem()) tips.add(Component.translatable("gui.orefishfarm.needs_lattice"));
-            else if (fs.hasItem() && this.menu.controller.isForeign(fs.getItem())) {
+            if (fs.hasItem() && this.menu.controller.isForeign(fs.getItem())) {
                 if (this.menu.get(TankBlockEntity.D_PROTECTED) == 1) tips.add(Component.translatable("gui.orefishfarm.kept_alive").withStyle(ChatFormatting.GREEN));
                 else tips.add(Component.translatable("gui.orefishfarm.wrong_habitat", FishData.habitatName(FishData.habitatOf(fs.getItem()))).withStyle(ChatFormatting.RED));
             }
@@ -150,27 +175,24 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
         // Carrying a live fish: the free slots it could go in light up.
         if (FishData.isFish(this.menu.getCarried())) {
             for (Slot s : this.menu.slots) {
-                if (s instanceof AquariumMenu.FishSlot fs && fs.isActive() && !fs.hasItem() && !fs.locked()) {
+                if (s instanceof AquariumMenu.FishSlot fs && fs.isActive() && !fs.hasItem()) {
                     g.fill(l + s.x, t + s.y, l + s.x + 16, t + s.y + 16, 0x4060E060);
                 }
             }
         }
-        // Slot extras: closed second slots, fish out of their habitat, empty food and lattice hints.
+        // Slot extras: fish out of their habitat, empty food hints.
         boolean safe = this.menu.get(TankBlockEntity.D_PROTECTED) == 1;
         for (Slot s : this.menu.slots) {
             int sx = l + s.x, sy = t + s.y;
             if (s instanceof AquariumMenu.FishSlot fs) {
                 if (!fs.isActive()) {
                     g.fill(sx, sy, sx + 16, sy + 16, 0x80373737);
-                } else if (fs.locked() && !fs.hasItem()) {
-                    g.blit(TEX, sx, sy, 200, 16, 16, 16);
                 } else if (fs.hasItem() && this.menu.controller.isForeign(fs.getItem())) {
                     boolean flash = !safe && (Util.getMillis() / 300) % 2 == 0;
                     g.fill(sx, sy, sx + 16, sy + 16, safe ? 0x5040A0FF : flash ? 0x90FF2020 : 0x60FF2020);
                 }
-            } else if (s.index >= this.menu.sharedStart && s.index <= this.menu.bucketSlot() && !s.hasItem()) {
-                int u = s.index == this.menu.bucketSlot() ? 232 : s.index >= this.menu.sharedStart + TankBlockEntity.FOOD ? 216 : 200;
-                g.blit(TEX, sx, sy, u, 32, 16, 16);
+            } else if (s.index >= this.menu.sharedStart && s.index < this.menu.foodEnd() && !s.hasItem()) {
+                g.blit(TEX, sx, sy, 200, 32, 16, 16);
             }
         }
     }
@@ -197,6 +219,15 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
 
     @Override
     protected void renderLabels(GuiGraphics g, int mx, int my) {
+        // Newborns not yet looked at: a yellow asterisk in the slot's corner.
+        g.pose().pushPose();
+        g.pose().translate(0, 0, 300);
+        for (Slot s : this.menu.slots) {
+            if (s instanceof AquariumMenu.FishSlot fs && fs.hasItem() && IGoByJake.orefishfarm.data.FishGenes.isUnseen(fs.getItem()) && !this.seenSent.contains(fs.index())) {
+                g.drawString(this.font, "*", s.x + 11, s.y - 1, 0xFFFF55, true);
+            }
+        }
+        g.pose().popPose();
         g.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 0x404040, false);
         g.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 0x404040, false);
         Component s = statusText();

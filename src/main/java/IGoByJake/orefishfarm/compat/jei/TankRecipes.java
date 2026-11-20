@@ -14,7 +14,9 @@ public final class TankRecipes {
 
     public record Product(ItemStack fish, ItemStack product, float chance, List<ItemStack> foods) {}
 
-    public record Breeding(ItemStack a, ItemStack b, ItemStack result, float chance, boolean hybrid, List<ItemStack> foods) {}
+    /** genes: genes the parents must carry for this crossbreed (shown under the arrow). */
+    public record Breeding(ItemStack a, ItemStack b, ItemStack result, float chance, boolean hybrid, List<ItemStack> foods,
+                           List<net.minecraft.resources.ResourceLocation> genes) {}
 
     public record Power(ItemStack fish, int fePerTick, List<ItemStack> foods) {}
 
@@ -38,10 +40,13 @@ public final class TankRecipes {
         List<Breeding> out = new ArrayList<>();
         for (FishData.Fish f : sorted()) {
             float c = FishData.breedChance(f);
-            if (c > 0) out.add(new Breeding(FishData.bucketOf(f), FishData.bucketOf(f), FishData.bucketOf(f), c, false, foods));
+            if (c > 0) out.add(new Breeding(FishData.bucketOf(f), FishData.bucketOf(f), FishData.bucketOf(f), c, false, foods, List.of()));
         }
         for (FishData.Cross x : FishData.allCrosses()) {
-            out.add(new Breeding(bucket(x.a()), bucket(x.b()), bucket(x.result().getItem()), FishData.crossChance(x), true, foods));
+            java.util.LinkedHashSet<net.minecraft.resources.ResourceLocation> g = new java.util.LinkedHashSet<>(x.aGenes());
+            g.addAll(x.bGenes());
+            g.addAll(x.requires());
+            out.add(new Breeding(bucket(x.a()), bucket(x.b()), bucket(x.result().getItem()), FishData.crossChance(x), true, foods, new ArrayList<>(g)));
         }
         return out;
     }

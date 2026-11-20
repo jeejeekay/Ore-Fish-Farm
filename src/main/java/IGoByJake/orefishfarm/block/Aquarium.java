@@ -138,6 +138,8 @@ public final class Aquarium {
                 t.burnItem = ItemStack.EMPTY;
                 energy += t.energy;
                 t.energy = 0;
+                if (!t.breeding) c.breeding = false; // switched off anywhere: stays off
+                t.breeding = true;
                 t.members = List.of();
             }
             t.controller = ctrlPos;

@@ -38,9 +38,7 @@ public final class TooltipEvents {
         if (event.getItemStack().is(Registry.DYNAMO_COIL.get())) {
             event.getToolTip().add(Component.translatable("tooltip.orefishfarm.dynamo_coil").withStyle(ChatFormatting.GOLD));
         }
-        if (event.getItemStack().is(Registry.LOVE_LATTICE.get())) {
-            event.getToolTip().add(Component.translatable("tooltip.orefishfarm.love_lattice").withStyle(ChatFormatting.LIGHT_PURPLE));
-        }
+        if (fish != null) IGoByJake.orefishfarm.data.FishGenes.tooltip(event.getItemStack(), event.getToolTip(), fish.makesPower());
         if (event.getItemStack().is(FishItem.HYBRID_FISH)) {
             event.getToolTip().add(Component.literal("❤ ").withStyle(ChatFormatting.LIGHT_PURPLE)
                     .append(Component.translatable("tooltip.orefishfarm.hybrid_fish").withStyle(ChatFormatting.DARK_PURPLE)));

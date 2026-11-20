@@ -119,7 +119,11 @@ public class TankBlock extends BaseEntityBlock {
         if (!state.is(newState.getBlock()) && !level.isClientSide && level.getBlockEntity(pos) instanceof TankBlockEntity be) {
             // Its own fish drop. If it was running the aquarium, the shared food, upgrades and output pass to a
             // neighbour that was part of it (the rebuild then hands them to the new controller); else they drop.
-            for (int i = 0; i < TankBlockEntity.FISH; i++) drop(level, pos, be.fish.getStackInSlot(i));
+            // A newborn hasn't been scooped into a bucket yet: it comes out as a plain (dead) fish.
+            for (int i = 0; i < TankBlockEntity.FISH; i++) {
+                ItemStack f = be.fish.getStackInSlot(i);
+                drop(level, pos, IGoByJake.orefishfarm.data.FishGenes.isNewborn(f) ? FishData.display(f) : f);
+            }
             TankBlockEntity heir = null;
             for (Direction d : Direction.values()) {
                 if (be.isMemberOfSameGroup(pos.relative(d)) && level.getBlockEntity(pos.relative(d)) instanceof TankBlockEntity n) {
@@ -209,8 +213,8 @@ public class TankBlock extends BaseEntityBlock {
                 player.displayClientMessage(Component.translatable("message.orefishfarm.needs_live_fish"), true);
                 return InteractionResult.CONSUME;
             }
-            // Love Lattice or food: straight into the shared slots.
-            if (held.is(Registry.LOVE_LATTICE.get()) || (FishData.loaded() && FishData.foodTicks(held) > 0 && FishData.fish(held) == null)) {
+            // Food: straight into the shared slots.
+            if (FishData.loaded() && FishData.foodTicks(held) > 0 && FishData.fish(held) == null) {
                 ItemStack rest = c.insertShared(held.copy());
                 if (rest.getCount() != held.getCount()) {
                     if (!player.getAbilities().instabuild) held.setCount(rest.getCount());

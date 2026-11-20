@@ -33,6 +33,35 @@ public class OreFish extends AbstractFish {
         return fish.isEmpty() ? new ItemStack(net.minecraft.world.item.Items.WATER_BUCKET) : IGoByJake.orefishfarm.FishBucketItem.of(fish.getItem());
     }
 
+    /** Stats and genes carried by a fish let out of a bucket, so scooping it again keeps them. */
+    @org.jetbrains.annotations.Nullable private net.minecraft.nbt.CompoundTag genes;
+
+    /** Scooped: the bucket gets the fish's stats and genes (rolled now if it never had any). */
+    @Override
+    public void saveToBucketTag(ItemStack bucket) {
+        super.saveToBucketTag(bucket);
+        if (this.genes != null) bucket.getOrCreateTag().put(IGoByJake.orefishfarm.data.FishGenes.KEY, this.genes.copy());
+        IGoByJake.orefishfarm.data.FishGenes.ensure(bucket, getRandom());
+    }
+
+    @Override
+    public void loadFromBucketTag(net.minecraft.nbt.CompoundTag tag) {
+        super.loadFromBucketTag(tag);
+        if (tag.contains(IGoByJake.orefishfarm.data.FishGenes.KEY)) this.genes = tag.getCompound(IGoByJake.orefishfarm.data.FishGenes.KEY).copy();
+    }
+
+    @Override
+    public void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+        if (this.genes != null) tag.put(IGoByJake.orefishfarm.data.FishGenes.KEY, this.genes);
+    }
+
+    @Override
+    public void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        if (tag.contains(IGoByJake.orefishfarm.data.FishGenes.KEY)) this.genes = tag.getCompound(IGoByJake.orefishfarm.data.FishGenes.KEY);
+    }
+
     @Override
     protected SoundEvent getFlopSound() {
         return SoundEvents.COD_FLOP;

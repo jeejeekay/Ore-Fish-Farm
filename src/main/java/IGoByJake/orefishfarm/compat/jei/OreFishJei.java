@@ -47,14 +47,12 @@ public class OreFishJei implements IModPlugin {
         info(reg, Registry.HEATING_COIL.get(), "heating_coil");
         info(reg, Registry.VOID_LENS.get(), "void_lens");
         info(reg, Registry.DYNAMO_COIL.get(), "dynamo_coil");
-        info(reg, Registry.LOVE_LATTICE.get(), "love_lattice");
         info(reg, Registry.BRINE_FLAKES.get(), "habitat_food");
         info(reg, Registry.EMBER_PELLETS.get(), "habitat_food");
         info(reg, Registry.VOID_FLAKES.get(), "habitat_food");
         info(reg, Registry.FISH_BONE.get(), "fish_bone");
         info(reg, Registry.LAVA_ROD.get(), "lava_rod");
         info(reg, Registry.FISH_BUCKET.get(), "fish_bucket");
-        info(reg, Registry.VOID_BUCKET.get(), "void_bucket");
         info(reg, Registry.VOID_ROD.get(), "void_rod");
         added = FishData.loaded();
         if (!added) return;
@@ -80,7 +78,7 @@ public class OreFishJei implements IModPlugin {
     @Override
     public void registerRecipeCatalysts(IRecipeCatalystRegistration reg) {
         reg.addRecipeCatalyst(new ItemStack(Registry.FISH_TANK.get()), PRODUCT);
-        reg.addRecipeCatalyst(new ItemStack(Registry.LOVE_LATTICE.get()), BREEDING);
+        reg.addRecipeCatalyst(new ItemStack(Registry.FISH_TANK.get()), BREEDING);
         reg.addRecipeCatalyst(new ItemStack(Registry.FISH_TANK.get()), BREEDING);
         reg.addRecipeCatalyst(new ItemStack(Registry.DYNAMO_COIL.get()), POWER);
         reg.addRecipeCatalyst(new ItemStack(Registry.FISH_TANK.get()), POWER);

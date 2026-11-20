@@ -111,15 +111,13 @@ public final class Registry {
                     .noSave().noSummon().fireImmune().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(5)
                     .build(OreFishFarm.MODID + ":fishing_hook"));
 
-    // Buckets: a live fish of any species, and the bucket that carries void fish.
+    // A live fish of any species, in its habitat's bucket.
     public static final RegistryObject<Item> FISH_BUCKET = ITEMS.register("fish_bucket", () -> new FishBucketItem(new Item.Properties().stacksTo(1)));
-    public static final RegistryObject<Item> VOID_BUCKET = tabbed("void_bucket", () -> new Item(new Item.Properties().stacksTo(16)));
 
     // Kits and upgrades for the Fish Tank
     public static final RegistryObject<Item> HEATING_COIL = item("heating_coil");
     public static final RegistryObject<Item> VOID_LENS = item("void_lens");
     public static final RegistryObject<Item> DYNAMO_COIL = item("dynamo_coil");
-    public static final RegistryObject<Item> LOVE_LATTICE = item("love_lattice");
 
     // Spawn eggs (fish colours: body, accent)
     private static void egg(String name, java.util.function.Supplier<? extends EntityType<? extends net.minecraft.world.entity.Mob>> type, int bg, int fg) {

@@ -11,6 +11,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import IGoByJake.orefishfarm.data.FishData;
+import IGoByJake.orefishfarm.data.FishGenes;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
@@ -25,8 +26,11 @@ import java.util.List;
 
 /**
  * The aquarium screen. Fish slots: two per block, shown nine to a row, two rows at a time with a scroll bar
- * (the scroll position is a menu button, so the server's slots follow). Then the shared food and Love Lattice
- * slots, the output, and the player's inventory.
+ * (the scroll position is a menu button, so the server's slots follow). Then the shared food slots, the breeding
+ * switch, the output, and the player's inventory.
+ *
+ * <p>Menu buttons: below {@link #BREEDING_BUTTON} the new top row; {@link #BREEDING_BUTTON} toggles breeding;
+ * {@link #SEEN_BUTTON} + fish index marks a newborn as seen (its asterisk goes).
  */
 public class AquariumMenu extends AbstractContainerMenu {
     public static final int COLS = 9, ROWS = 2, VISIBLE = COLS * ROWS;
@@ -39,7 +43,9 @@ public class AquariumMenu extends AbstractContainerMenu {
 
     /** This screen's window growth (all slots below the window move down by it). */
     public final int extra;
-    public static final int UPGRADE_X = 116;
+    /** Where the breeding switch sits (the old lattice slots' place). */
+    public static final int BREED_X = 116;
+    public static final int BREEDING_BUTTON = 100_000, SEEN_BUTTON = 200_000;
 
     public final TankBlockEntity controller;
     public final ContainerData data;
@@ -60,8 +66,6 @@ public class AquariumMenu extends AbstractContainerMenu {
         for (int i = 0; i < VISIBLE; i++) addSlot(new FishSlot(this, i, FISH_X + (i % COLS) * 18, e + FISH_Y + (i / COLS) * 18));
         ItemStackHandler shared = controller.sharedHandler();
         for (int i = 0; i < TankBlockEntity.FOOD; i++) addSlot(new SlotItemHandler(shared, TankBlockEntity.FOOD_START + i, 8 + i * 18, e + FOOD_Y));
-        for (int i = 0; i < TankBlockEntity.UPGRADES; i++) addSlot(new SlotItemHandler(shared, TankBlockEntity.UPGRADE_START + i, UPGRADE_X + 6 + i * 18, e + FOOD_Y));
-        addSlot(new SlotItemHandler(shared, TankBlockEntity.BUCKET_SLOT, 8 + 8 * 18, e + OUTPUT_Y));
         for (int i = 0; i < TankBlockEntity.OUTPUT; i++) addSlot(new SlotItemHandler(shared, TankBlockEntity.OUTPUT_START + i, 8 + i * 18, e + OUTPUT_Y));
         this.playerStart = this.slots.size();
         for (int r = 0; r < 3; r++) for (int c = 0; c < 9; c++) addSlot(new Slot(inv, c + r * 9 + 9, 8 + c * 18, e + INV_Y + 12 + r * 18));
@@ -105,15 +109,56 @@ public class AquariumMenu extends AbstractContainerMenu {
         return i >= 0 && i < this.refs.size() ? this.refs.get(i) : null;
     }
 
-    /** Scroll: the button id is the new top row. */
     @Override
     public boolean clickMenuButton(Player player, int id) {
+        if (id == BREEDING_BUTTON) {
+            this.controller.toggleBreeding();
+            return true;
+        }
+        if (id >= SEEN_BUTTON) {
+            FishRef r = refByIndex(id - SEEN_BUTTON);
+            if (r != null) {
+                ItemStack f = r.be().fishHandler().getStackInSlot(r.slot()).copy();
+                if (FishGenes.isUnseen(f)) {
+                    FishGenes.markSeen(f);
+                    r.be().fishHandler().setStackInSlot(r.slot(), f);
+                }
+            }
+            return true;
+        }
         setRow(id);
         return true;
     }
 
-    /** Index of the bucket slot among the menu's slots. */
-    public int bucketSlot() { return this.sharedStart + TankBlockEntity.FOOD + TankBlockEntity.UPGRADES; }
+    /** Index of the last food slot among the menu's slots, plus one. */
+    public int foodEnd() { return this.sharedStart + TankBlockEntity.FOOD; }
+
+    /**
+     * A newborn only comes out when scooped: click its slot holding its habitat's bucket (a water bucket, a lava
+     * bucket, or an empty bucket for void fish). The bucket becomes the fish in a bucket.
+     */
+    @Override
+    public void clicked(int slotId, int button, net.minecraft.world.inventory.ClickType type, Player player) {
+        if (slotId >= 0 && slotId < VISIBLE && this.slots.get(slotId) instanceof FishSlot fs) {
+            ItemStack fish = fs.getItem();
+            if (FishGenes.isNewborn(fish)) {
+                ItemStack carried = getCarried();
+                if (type == net.minecraft.world.inventory.ClickType.PICKUP && !carried.isEmpty() && carried.is(FishData.scoop(fish))) {
+                    ItemStack out = fish.copy();
+                    FishGenes.clearNewborn(out);
+                    fs.set(ItemStack.EMPTY);
+                    if (carried.getCount() == 1) {
+                        setCarried(out);
+                    } else {
+                        carried.shrink(1);
+                        give(player, out);
+                    }
+                }
+                return; // no other way out for a newborn
+            }
+        }
+        super.clicked(slotId, button, type, player);
+    }
 
     private static void give(Player player, ItemStack s) {
         if (!player.getInventory().add(s)) player.drop(s, false);
@@ -126,6 +171,7 @@ public class AquariumMenu extends AbstractContainerMenu {
         ItemStack stack = slot.getItem();
         ItemStack copy = stack.copy();
         if (index < this.playerStart) {
+            if (index < VISIBLE && FishGenes.isNewborn(stack)) return ItemStack.EMPTY;
             if (!moveItemStackTo(stack, this.playerStart, this.slots.size(), true)) return ItemStack.EMPTY;
             if (index < VISIBLE) {
                 // Fish slots aren't backed by a Container: write the change through.
@@ -145,7 +191,7 @@ public class AquariumMenu extends AbstractContainerMenu {
             }
             if (!moved) return ItemStack.EMPTY;
         } else {
-            if (!moveItemStackTo(stack, this.sharedStart, bucketSlot() + 1, false)) return ItemStack.EMPTY;
+            if (!moveItemStackTo(stack, this.sharedStart, foodEnd(), false)) return ItemStack.EMPTY;
         }
         if (stack.isEmpty()) slot.set(ItemStack.EMPTY);
         else slot.setChanged();
@@ -196,7 +242,7 @@ public class AquariumMenu extends AbstractContainerMenu {
 
         @Override
         public boolean mayPickup(Player player) {
-            return target() != null;
+            return target() != null && !FishGenes.isNewborn(getItem());
         }
 
         @Override
@@ -214,10 +260,7 @@ public class AquariumMenu extends AbstractContainerMenu {
         @Override
         public boolean isActive() { return target() != null; }
 
-        /** Open only while the aquarium has a Love Lattice (the second fish of each block). */
-        public boolean locked() {
-            FishRef r = target();
-            return r != null && r.slot() > 0 && this.menu.controller.latticeCount() == 0;
-        }
+        /** This slot's index among all the aquarium's fish slots. */
+        public int index() { return this.menu.row * COLS + this.visible; }
     }
 }

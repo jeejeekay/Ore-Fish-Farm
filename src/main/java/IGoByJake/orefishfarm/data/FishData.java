@@ -35,14 +35,19 @@ import java.util.Map;
  *   { "fish": "orefishfarm:ferrofin",
  *     "product": { "item": "orefishfarm:iron_scale", "count": 1 },   (optional: a fish can make nothing)
  *     "product_chance": 0.75,   chance per bite (every biteTicks of eating) in a Fish Tank
- *     "breed_chance": 0.08,     chance per bite for a pair of this fish in a tank with a Love Lattice
+ *     "breed_chance": 0.08,     chance per bite for a pair of this fish (while the tank's breeding is on)
  *     "power": 30,              FE/tick while eating in a power tank (optional; 0 = not a power fish)
  *     "habitat": "orefishfarm:water",  which tank it lives in (optional; water by default)
  *     "bucket": "somemod:fish_bucket" } optional: this mod's own bucket for the fish (else the generic Fish Bucket)
  *
  * data/&lt;ns&gt;/orefishfarm_breeding/&lt;name&gt;.json
- *   { "parents": ["orefishfarm:cuprum_eel", "orefishfarm:zincray"],
+ *   { "parents": ["orefishfarm:cuprum_eel",
+ *                 { "species": "orefishfarm:zincray", "genes": ["orefishfarm:mutagenic"] }],   a parent can need genes
+ *     "requires": ["somemod:gene"],   optional: genes at least one of the two parents must have
  *     "result": { "item": "orefishfarm:brass_bream", "count": 1 }, "chance": 0.04 }
+ *
+ * data/&lt;ns&gt;/orefishfarm_gene/&lt;gene&gt;.json   (optional; the gene itself is a genes/ item tag, see FishGenes)
+ *   { "color": "#C040C0" }
  *
  * data/&lt;ns&gt;/orefishfarm_food/&lt;name&gt;.json
  *   { "item": "orefishfarm:fish_food", "ticks": 4800,   how long one piece feeds one fish
@@ -71,9 +76,9 @@ public final class FishData {
     public static final ResourceLocation WATER = new ResourceLocation(OreFishFarm.MODID, "water");
 
     /**
-     * bucket: the filled container that carries a fish of this habitat (water bucket, lava bucket, Void Bucket);
-     * empty: the empty container for one (a bucket; the Void Bucket); a newborn fish uses one, and crafting a
-     * fish bucket into something gives it back.
+     * bucket: the filled container that carries a fish of this habitat (water bucket, lava bucket, or a plain
+     * bucket for void fish); it also scoops a newborn out of a tank. empty: what is left when such a fish is let out;
+     * crafting a fish bucket into something gives it back.
      */
     public record Habitat(ResourceLocation id, String look, int color, @Nullable Item kit, Item bucket, Item empty) {}
 
@@ -87,8 +92,19 @@ public final class FishData {
         public boolean makesProduct() { return !this.product.isEmpty() && this.productChance > 0; }
     }
 
-    public record Cross(Item a, Item b, ItemStack result, float chance) {
+    /** aGenes / bGenes: genes that parent must have; requires: genes at least one parent must have. */
+    public record Cross(Item a, Item b, ItemStack result, float chance, List<ResourceLocation> aGenes, List<ResourceLocation> bGenes,
+                        List<ResourceLocation> requires) {
         boolean matches(Item x, Item y) { return (x == a && y == b) || (x == b && y == a); }
+
+        boolean matches(ItemStack x, Item xi, ItemStack y, Item yi) {
+            boolean ok;
+            if (xi == a && yi == b && FishGenes.hasAll(x, aGenes) && FishGenes.hasAll(y, bGenes)) ok = true;
+            else ok = xi == b && yi == a && FishGenes.hasAll(x, bGenes) && FishGenes.hasAll(y, aGenes);
+            if (!ok) return false;
+            for (ResourceLocation g : requires) if (!FishGenes.hasGene(x, g) && !FishGenes.hasGene(y, g)) return false;
+            return true;
+        }
     }
 
     private static Map<Item, Fish> fish = Map.of();
@@ -96,6 +112,7 @@ public final class FishData {
     private static List<Cross> crosses = List.of();
     private static Map<Item, Food> foods = Map.of();
     private static Map<ResourceLocation, Habitat> habitats = Map.of();
+    private static Map<ResourceLocation, Integer> geneColors = Map.of();
     /** False on a client connected to a remote server, where the files aren't known: slots then accept anything and the server decides. */
     private static boolean loaded;
     /** True where the files were read from disk (a server, or singleplayer); clients elsewhere get them over the network. */
@@ -159,6 +176,9 @@ public final class FishData {
             buf.writeResourceLocation(ForgeRegistries.ITEMS.getKey(c.b()));
             buf.writeItem(c.result());
             buf.writeFloat(crossChance(c));
+            writeIds(buf, c.aGenes());
+            writeIds(buf, c.bGenes());
+            writeIds(buf, c.requires());
         }
         buf.writeVarInt(foods.size());
         foods.forEach((item, food) -> {
@@ -177,9 +197,27 @@ public final class FishData {
             buf.writeResourceLocation(ForgeRegistries.ITEMS.getKey(h.bucket()));
             buf.writeResourceLocation(ForgeRegistries.ITEMS.getKey(h.empty()));
         }
+        buf.writeVarInt(geneColors.size());
+        geneColors.forEach((id, c) -> {
+            buf.writeResourceLocation(id);
+            buf.writeInt(c);
+        });
     }
 
-    public record Synced(Map<Item, Fish> fish, List<Cross> crosses, Map<Item, Food> foods, Map<ResourceLocation, Habitat> habitats) {}
+    private static void writeIds(net.minecraft.network.FriendlyByteBuf buf, List<ResourceLocation> ids) {
+        buf.writeVarInt(ids.size());
+        ids.forEach(buf::writeResourceLocation);
+    }
+
+    private static List<ResourceLocation> readIds(net.minecraft.network.FriendlyByteBuf buf) {
+        int n = buf.readVarInt();
+        List<ResourceLocation> out = new ArrayList<>();
+        for (int i = 0; i < n; i++) out.add(buf.readResourceLocation());
+        return out;
+    }
+
+    public record Synced(Map<Item, Fish> fish, List<Cross> crosses, Map<Item, Food> foods, Map<ResourceLocation, Habitat> habitats,
+                         Map<ResourceLocation, Integer> geneColors) {}
 
     public static Synced read(net.minecraft.network.FriendlyByteBuf buf) {
         Map<Item, Fish> f = new HashMap<>();
@@ -201,7 +239,8 @@ public final class FishData {
             Item b = ForgeRegistries.ITEMS.getValue(buf.readResourceLocation());
             ItemStack r = buf.readItem();
             float c = buf.readFloat();
-            if (a != null && b != null) x.add(new Cross(a, b, r, c));
+            List<ResourceLocation> ag = readIds(buf), bg = readIds(buf), rq = readIds(buf);
+            if (a != null && b != null) x.add(new Cross(a, b, r, c, ag, bg, rq));
         }
         Map<Item, Food> food = new HashMap<>();
         n = buf.readVarInt();
@@ -222,7 +261,10 @@ public final class FishData {
             Item empty = ForgeRegistries.ITEMS.getValue(buf.readResourceLocation());
             hab.put(id, new Habitat(id, look, color, kit, bucket, empty));
         }
-        return new Synced(f, x, food, hab);
+        Map<ResourceLocation, Integer> gc = new HashMap<>();
+        n = buf.readVarInt();
+        for (int i = 0; i < n; i++) gc.put(buf.readResourceLocation(), buf.readInt());
+        return new Synced(f, x, food, hab, gc);
     }
 
     /** Client side: use the server's lists unless this game already read them from disk (singleplayer). */
@@ -233,6 +275,7 @@ public final class FishData {
         crosses = s.crosses();
         foods = s.foods();
         habitats = s.habitats();
+        geneColors = s.geneColors();
         loaded = true;
         // JEI may already have built its lists before this arrived (on a server): give it the tank pages now.
         if (net.minecraftforge.fml.ModList.get().isLoaded("jei")) IGoByJake.orefishfarm.compat.jei.OreFishJei.lateRecipes();
@@ -296,12 +339,15 @@ public final class FishData {
         return stack;
     }
 
-    /** An empty container a newborn fish can go in: any habitat's "empty" (a bucket, a Void Bucket). */
-    public static boolean isBabyBucket(ItemStack stack) {
-        if (stack.isEmpty()) return false;
-        if (stack.is(net.minecraft.world.item.Items.BUCKET)) return true;
-        for (Habitat h : habitats.values()) if (stack.is(h.empty())) return true;
-        return false;
+    /** The container that scoops this fish out of a tank: its habitat's bucket (water, lava, or an empty bucket). */
+    public static Item scoop(ItemStack fish) {
+        return habitat(habitatOf(fish)).bucket();
+    }
+
+    /** A gene's colour from its orefishfarm_gene file, or null. */
+    @Nullable
+    public static Integer geneColor(ResourceLocation gene) {
+        return geneColors.get(gene);
     }
 
     private static Map<Item, Fish> indexBuckets(Map<Item, Fish> all) {
@@ -369,11 +415,21 @@ public final class FishData {
         return null;
     }
 
+    /** The crossbreed these two fish make, checking the genes each entry asks for. */
+    @Nullable
+    public static Cross cross(ItemStack x, ItemStack y) {
+        Fish fx = fish(x), fy = fish(y);
+        if (fx == null || fy == null) return null;
+        for (Cross c : crosses) if (c.matches(x, fx.item(), y, fy.item())) return c;
+        return null;
+    }
+
     public static void onAddReloadListeners(AddReloadListenerEvent event) {
         event.addListener(new Listener("orefishfarm_fish", FishData::loadFish));
         event.addListener(new Listener("orefishfarm_breeding", FishData::loadCrosses));
         event.addListener(new Listener("orefishfarm_food", FishData::loadFoods));
         event.addListener(new Listener("orefishfarm_habitat", FishData::loadHabitats));
+        event.addListener(new Listener("orefishfarm_gene", FishData::loadGenes));
     }
 
     private interface Loader { void load(Map<ResourceLocation, JsonElement> files); }
@@ -440,16 +496,45 @@ public final class FishData {
             try {
                 JsonObject o = json.getAsJsonObject();
                 JsonArray p = GsonHelper.getAsJsonArray(o, "parents");
-                Item a = item(p.get(0).getAsString());
-                Item b = item(p.get(1).getAsString());
+                Item a = parentItem(p.get(0)), b = parentItem(p.get(1));
                 ItemStack r = stack(o.get("result"));
                 if (a == null || b == null || r == null) return;
-                out.add(new Cross(a, b, r, GsonHelper.getAsFloat(o, "chance", 0.05F)));
+                out.add(new Cross(a, b, r, GsonHelper.getAsFloat(o, "chance", 0.05F), parentGenes(p.get(0)), parentGenes(p.get(1)),
+                        o.has("requires") ? ids(GsonHelper.getAsJsonArray(o, "requires")) : List.of()));
             } catch (Exception ex) {
                 LOG.error("Bad breeding file {}: {}", id, ex.getMessage());
             }
         });
         crosses = out;
+    }
+
+    @Nullable
+    private static Item parentItem(JsonElement e) {
+        return item(e.isJsonPrimitive() ? e.getAsString() : GsonHelper.getAsString(e.getAsJsonObject(), "species"));
+    }
+
+    private static List<ResourceLocation> parentGenes(JsonElement e) {
+        if (e.isJsonPrimitive() || !e.getAsJsonObject().has("genes")) return List.of();
+        return ids(GsonHelper.getAsJsonArray(e.getAsJsonObject(), "genes"));
+    }
+
+    private static List<ResourceLocation> ids(JsonArray a) {
+        List<ResourceLocation> out = new ArrayList<>();
+        for (JsonElement e : a) out.add(new ResourceLocation(e.getAsString()));
+        return out;
+    }
+
+    private static void loadGenes(Map<ResourceLocation, JsonElement> files) {
+        Map<ResourceLocation, Integer> out = new HashMap<>();
+        files.forEach((id, json) -> {
+            try {
+                String c = GsonHelper.getAsString(json.getAsJsonObject(), "color").replace("#", "");
+                out.put(id, Integer.parseInt(c, 16) & 0xFFFFFF);
+            } catch (Exception ex) {
+                LOG.error("Bad gene file {}: {}", id, ex.getMessage());
+            }
+        });
+        geneColors = out;
     }
 
     private static void loadFoods(Map<ResourceLocation, JsonElement> files) {

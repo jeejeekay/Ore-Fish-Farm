@@ -20,8 +20,9 @@ import java.util.function.Supplier;
 
 /**
  * Live catches: when any fishing (water, lava, void, any mod's) pulls up a tank fish and the angler carries that
- * fish's habitat bucket (a water bucket for water fish, a lava bucket for heated fish, a Void Bucket for void
- * fish), the fish comes up alive in it and that bucket is used up. Without one it is a plain fish.
+ * fish's habitat bucket (a water bucket for water fish, a lava bucket for heated fish, an empty bucket for void
+ * fish), the fish comes up alive in it and that bucket is used up; it gets its stats and genes then. Without
+ * one it is a plain fish.
  * Runs on every loot table; it only does anything when a fishing bobber is the one looting.
  */
 public class LiveCatchModifier extends LootModifier {
@@ -43,7 +44,11 @@ public class LiveCatchModifier extends LootModifier {
             if (FishData.isBucketed(s)) continue;
             FishData.Fish f = FishData.fish(s);
             if (f == null) continue;
-            if (takeOne(player.getInventory(), FishData.habitat(f.habitat()))) loot.set(i, FishData.bucketOf(f));
+            if (takeOne(player.getInventory(), FishData.habitat(f.habitat()))) {
+                ItemStack live = FishData.bucketOf(f);
+                IGoByJake.orefishfarm.data.FishGenes.ensure(live, ctx.getRandom());
+                loot.set(i, live);
+            }
         }
         return loot;
     }

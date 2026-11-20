@@ -26,7 +26,7 @@ public final class TankCategories {
     private TankCategories() {}
 
     static final ResourceLocation TEX = new ResourceLocation(OreFishFarm.MODID, "textures/gui/tank.png");
-    static final int W = 130, H = 46;
+    static final int W = 130, H = 52;
 
     abstract static class Base<T> implements IRecipeCategory<T> {
         protected final IDrawable background;
@@ -90,7 +90,7 @@ public final class TankCategories {
 
     // ---- Breeding Tank: fish + fish (+ food) -> baby or hybrid, X% per bite
     static class BreedingCategory extends Base<TankRecipes.Breeding> {
-        BreedingCategory(IGuiHelper gui) { super(gui, Registry.LOVE_LATTICE.get()); }
+        BreedingCategory(IGuiHelper gui) { super(gui, Registry.FISH_TANK.get().asItem()); }
 
         @Override public RecipeType<TankRecipes.Breeding> getRecipeType() { return OreFishJei.BREEDING; }
 
@@ -108,6 +108,11 @@ public final class TankCategories {
         public void draw(TankRecipes.Breeding r, IRecipeSlotsView v, GuiGraphics g, double mx, double my) {
             this.arrow.draw(g, 70, 6);
             centred(g, Component.translatable(r.hybrid() ? "jei.orefishfarm.hybrid" : "jei.orefishfarm.baby", pct(r.chance())), 80, 30);
+            if (!r.genes().isEmpty()) {
+                net.minecraft.network.chat.MutableComponent needs = Component.translatable("jei.orefishfarm.needs_genes");
+                for (int i = 0; i < r.genes().size(); i++) needs.append(i == 0 ? " " : ", ").append(IGoByJake.orefishfarm.data.FishGenes.geneName(r.genes().get(i)));
+                centred(g, needs, 64, 42);
+            }
         }
     }
 

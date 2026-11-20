@@ -1,44 +1,7 @@
 {
- "texture_size": [
-  32,
-  32
- ],
+ "parent": "orefishfarm:fish_category/alloy_tail",
  "textures": {
   "t": "orefishfarm:item/fish/brass_bream",
   "particle": "orefishfarm:item/fish/brass_bream"
- },
- "elements": [
-  {
-   "from": [
-    2,
-    5,
-    8
-   ],
-   "to": [
-    5,
-    11,
-    8
-   ],
-   "faces": {
-    "north": {
-     "uv": [
-      4.0,
-      4.0,
-      5.5,
-      7.0
-     ],
-     "texture": "#t"
-    },
-    "south": {
-     "uv": [
-      5.5,
-      4.0,
-      7.0,
-      7.0
-     ],
-     "texture": "#t"
-    }
-   }
-  }
- ]
+ }
 }
