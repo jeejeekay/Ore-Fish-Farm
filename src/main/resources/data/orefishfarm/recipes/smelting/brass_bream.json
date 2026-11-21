@@ -1,0 +1,16 @@
+{
+  "conditions": [
+    {
+      "type": "forge:mod_loaded",
+      "modid": "create"
+    }
+  ],
+  "type": "minecraft:smelting",
+  "category": "misc",
+  "ingredient": {
+    "item": "orefishfarm:brass_bream"
+  },
+  "result": "create:brass_ingot",
+  "experience": 0.2,
+  "cookingtime": 200
+}

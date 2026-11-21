@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:smelting",
+  "category": "misc",
+  "ingredient": {
+    "item": "orefishfarm:gilded_carp"
+  },
+  "result": "minecraft:raw_gold",
+  "experience": 0.2,
+  "cookingtime": 200
+}

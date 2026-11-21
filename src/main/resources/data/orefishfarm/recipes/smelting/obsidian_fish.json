@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:smelting",
+  "category": "misc",
+  "ingredient": {
+    "item": "orefishfarm:obsidian_fish"
+  },
+  "result": "minecraft:obsidian",
+  "experience": 0.2,
+  "cookingtime": 200
+}

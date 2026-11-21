@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:smelting",
+  "category": "misc",
+  "ingredient": {
+    "item": "orefishfarm:ferrofin"
+  },
+  "result": "minecraft:raw_iron",
+  "experience": 0.2,
+  "cookingtime": 200
+}

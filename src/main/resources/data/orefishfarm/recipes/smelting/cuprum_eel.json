@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:smelting",
+  "category": "misc",
+  "ingredient": {
+    "item": "orefishfarm:cuprum_eel"
+  },
+  "result": "minecraft:raw_copper",
+  "experience": 0.2,
+  "cookingtime": 200
+}

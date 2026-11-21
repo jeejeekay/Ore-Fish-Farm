@@ -72,6 +72,7 @@ public final class Registry {
     public static final RegistryObject<Item> ZINCRAY = fish("zincray");
     public static final RegistryObject<Item> CUPRUM_EEL = fish("cuprum_eel");
     public static final RegistryObject<Item> BRASS_BREAM = fish("brass_bream");
+    public static final RegistryObject<Item> GLASS_EEL = fish("glass_eel");
 
     // Living fish: same ids as the items.
     private static RegistryObject<EntityType<OreFish>> fishMob(String name) {
@@ -85,8 +86,9 @@ public final class Registry {
     public static final RegistryObject<EntityType<OreFish>> ZINCRAY_MOB = fishMob("zincray");
     public static final RegistryObject<EntityType<OreFish>> CUPRUM_EEL_MOB = fishMob("cuprum_eel");
     public static final RegistryObject<EntityType<OreFish>> BRASS_BREAM_MOB = fishMob("brass_bream");
+    public static final RegistryObject<EntityType<OreFish>> GLASS_EEL_MOB = fishMob("glass_eel");
     public static final List<RegistryObject<EntityType<OreFish>>> FISH_MOBS =
-            List.of(OBSIDIAN_FISH_MOB, FERROFIN_MOB, GILDED_CARP_MOB, ZINCRAY_MOB, CUPRUM_EEL_MOB, BRASS_BREAM_MOB);
+            List.of(OBSIDIAN_FISH_MOB, FERROFIN_MOB, GILDED_CARP_MOB, ZINCRAY_MOB, CUPRUM_EEL_MOB, BRASS_BREAM_MOB, GLASS_EEL_MOB);
 
     // What they make
     public static final RegistryObject<Item> OBSIDIAN_SCALE = item("obsidian_scale");
@@ -131,6 +133,7 @@ public final class Registry {
         egg("zincray", ZINCRAY_MOB, 0x9AA9B5, 0xEEF5FA);
         egg("cuprum_eel", CUPRUM_EEL_MOB, 0xD4683F, 0x4FB59A);
         egg("brass_bream", BRASS_BREAM_MOB, 0xD9A944, 0x8A6A1F);
+        egg("glass_eel", GLASS_EEL_MOB, 0xA8DCE6, 0x3E8A9A);
     }
 
     // Tanks

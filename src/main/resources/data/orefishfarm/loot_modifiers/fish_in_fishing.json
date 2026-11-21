@@ -12,6 +12,10 @@
       "chance": 0.04
     },
     {
+      "item": "orefishfarm:glass_eel",
+      "chance": 0.02
+    },
+    {
       "item": "orefishfarm:ferrofin",
       "chance": 0.01
     },

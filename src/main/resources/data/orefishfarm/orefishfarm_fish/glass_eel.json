@@ -1,0 +1,10 @@
+{
+  "fish": "orefishfarm:glass_eel",
+  "product": {
+    "item": "minecraft:sand",
+    "count": 1
+  },
+  "product_chance": 0.75,
+  "breed_chance": 0.1,
+  "habitat": "orefishfarm:water"
+}
