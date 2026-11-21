@@ -2,6 +2,7 @@
   "replace": false,
   "entries": [
     "orefishfarm:fish_in_fishing",
+    "orefishfarm:tackle",
     "orefishfarm:live_catch"
   ]
 }

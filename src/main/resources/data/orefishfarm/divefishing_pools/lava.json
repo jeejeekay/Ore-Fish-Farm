@@ -1,0 +1,7 @@
+{
+  "fluid": "#minecraft:lava",
+  "loot_table": "orefishfarm:gameplay/lava_fishing",
+  "theme": "lava",
+  "hook": "orefishfarm:fishing_hook",
+  "direct": true
+}

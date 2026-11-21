@@ -106,5 +106,17 @@
   "tooltip.orefishfarm.genes": "Genes:",
   "tooltip.orefishfarm.newborn": "Newborn: scoop it out with its habitat's bucket",
   "gene.orefishfarm.mutagenic": "Mutagenic",
-  "jei.orefishfarm.needs_genes": "Needs:"
+  "jei.orefishfarm.needs_genes": "Needs:",
+  "item.orefishfarm.squid_spinner": "Squid Spinner",
+  "item.orefishfarm.squid_spinner.desc": "Tackle. A flash of silver ore fish can't ignore",
+  "item.orefishfarm.shell_sinker": "Shell Sinker",
+  "item.orefishfarm.shell_sinker.desc": "Tackle. Sinks to where the rays rest",
+  "item.orefishfarm.puffloater": "Puffloater",
+  "item.orefishfarm.puffloater.desc": "Tackle. A grumpy float eels can't resist",
+  "item.orefishfarm.skim_pickle": "Skim Pickle",
+  "item.orefishfarm.skim_pickle.desc": "Tackle. Its glow draws up gilded carp",
+  "item.orefishfarm.tackle.how": "Click onto a rod to clip on; right-click the rod to take off",
+  "tooltip.orefishfarm.tackle_on": "Tackle: %s (%s/%s)",
+  "message.orefishfarm.tackle_broke": "Your %s broke",
+  "message.orefishfarm.tackle_replaced": "Your %s broke; clipped on a spare"
 }

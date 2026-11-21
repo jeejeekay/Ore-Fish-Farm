@@ -39,7 +39,8 @@ public final class ClientSetup {
     @SubscribeEvent
     public static void onRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(Registry.FISH_TANK_BE.get(), AquariumRenderer::new);
-        event.registerEntityRenderer(Registry.ORE_FISHING_HOOK.get(), net.minecraft.client.renderer.entity.FishingHookRenderer::new);
+        event.registerEntityRenderer(Registry.ORE_FISHING_HOOK.get(), TackleBobberRenderer::new);
+        event.registerEntityRenderer(net.minecraft.world.entity.EntityType.FISHING_BOBBER, TackleBobberRenderer::new);
         for (var fish : Registry.FISH_MOBS) event.registerEntityRenderer(fish.get(), OreFishRenderer::new);
     }
 

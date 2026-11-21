@@ -1,0 +1,20 @@
+{
+  "item": "orefishfarm:puffloater",
+  "bonuses": [
+    {
+      "fish": "orefishfarm:cuprum_eel",
+      "chance": 0.06,
+      "liquid": "water"
+    },
+    {
+      "fish": "orefishfarm:zincray",
+      "chance": 0.03,
+      "liquid": "water"
+    },
+    {
+      "fish": "orefishfarm:ferrofin",
+      "chance": 0.02,
+      "liquid": "water"
+    }
+  ]
+}

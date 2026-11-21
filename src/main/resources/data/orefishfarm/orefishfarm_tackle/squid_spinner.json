@@ -1,0 +1,10 @@
+{
+  "item": "orefishfarm:squid_spinner",
+  "bonuses": [
+    {
+      "fish": "orefishfarm:ferrofin",
+      "chance": 0.06,
+      "liquid": "water"
+    }
+  ]
+}

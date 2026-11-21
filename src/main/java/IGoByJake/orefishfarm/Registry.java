@@ -114,6 +114,16 @@ public final class Registry {
     // A live fish of any species, in its habitat's bucket.
     public static final RegistryObject<Item> FISH_BUCKET = ITEMS.register("fish_bucket", () -> new FishBucketItem(new Item.Properties().stacksTo(1)));
 
+    // Tackle: one piece per rod, one per tech age (see tackle/Tackle)
+    private static RegistryObject<Item> tackle(String name, int durability) {
+        return tabbed(name, () -> new IGoByJake.orefishfarm.tackle.TackleItem(durability));
+    }
+
+    public static final RegistryObject<Item> SQUID_SPINNER = tackle("squid_spinner", 32);
+    public static final RegistryObject<Item> SHELL_SINKER = tackle("shell_sinker", 48);
+    public static final RegistryObject<Item> PUFFLOATER = tackle("puffloater", 64);
+    public static final RegistryObject<Item> SKIM_PICKLE = tackle("skim_pickle", 96);
+
     // Kits and upgrades for the Fish Tank
     public static final RegistryObject<Item> HEATING_COIL = item("heating_coil");
     public static final RegistryObject<Item> VOID_LENS = item("void_lens");
@@ -165,6 +175,7 @@ public final class Registry {
             () -> IForgeMenuType.create(AquariumMenu::fromNetwork));
 
     public static final RegistryObject<Codec<AddFishModifier>> ADD_FISH = LOOT_MODIFIERS.register("add_fish", AddFishModifier.CODEC);
+    public static final RegistryObject<Codec<IGoByJake.orefishfarm.loot.TackleModifier>> TACKLE = LOOT_MODIFIERS.register("tackle", IGoByJake.orefishfarm.loot.TackleModifier.CODEC);
     public static final RegistryObject<Codec<IGoByJake.orefishfarm.loot.LiveCatchModifier>> LIVE_CATCH = LOOT_MODIFIERS.register("live_catch", IGoByJake.orefishfarm.loot.LiveCatchModifier.CODEC);
 
     public static final RegistryObject<CreativeModeTab> TAB = TABS.register("main", () -> CreativeModeTab.builder()
