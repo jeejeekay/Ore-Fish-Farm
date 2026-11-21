@@ -1,7 +1,7 @@
 {
   "look": "void",
   "color": "#2A1046",
-  "kit": "orefishfarm:void_lens",
+  "kit": "minecraft:bucket",
   "bucket": "minecraft:bucket",
   "empty": "minecraft:bucket"
 }

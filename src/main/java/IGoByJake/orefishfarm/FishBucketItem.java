@@ -72,8 +72,9 @@ public class FishBucketItem extends MobBucketItem {
         Item species = species(stack);
         if (species == null) return;
         ResourceLocation id = ForgeRegistries.ITEMS.getKey(species);
-        if (id == null || !ForgeRegistries.ENTITY_TYPES.containsKey(id)) return;
-        EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(id);
+        if (id == null) return;
+        // The species' own mob, or the shared data fish for species without one.
+        EntityType<?> type = ForgeRegistries.ENTITY_TYPES.containsKey(id) ? ForgeRegistries.ENTITY_TYPES.getValue(id) : Registry.DATA_FISH_MOB.get();
         if (type == null) return;
         Entity e = type.spawn(server, stack, null, pos, MobSpawnType.BUCKET, true, false);
         if (e instanceof Bucketable b) {

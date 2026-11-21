@@ -67,6 +67,10 @@ import java.util.Set;
 public class TankBlockEntity extends BlockEntity implements MenuProvider {
     public static final int FISH = 2;
     public static final int FOOD = 6, OUTPUT = 9;
+    /** Food slots in use: one per tank block, up to this many (the rest of {@link #FOOD} stays unused). */
+    public static final int MAX_FOOD_SLOTS = 4;
+    /** Breeding needs an aquarium of at least this many blocks. */
+    public static final int BREED_MIN_BLOCKS = 3;
     /** Shared slots: food, then output. */
     public static final int FOOD_START = 0, OUTPUT_START = FOOD, SHARED = OUTPUT_START + OUTPUT;
     /** Shared-slot layout before 2.4 (food, 3 Love Lattices, a bucket slot, 8 output), for old saves. */
@@ -234,9 +238,20 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
         return FishData.loaded() && !FishData.habitatOf(fishStack).equals(controllerOrSelf().habitat);
     }
 
+    /** Food slots in use for an aquarium of this many blocks: one per block, up to {@link #MAX_FOOD_SLOTS}. */
+    public static int foodSlots(int blocks) {
+        return Math.max(1, Math.min(MAX_FOOD_SLOTS, blocks));
+    }
+
+    /** Controller: end of the food slots in use. */
+    public int foodEnd() {
+        List<TankBlockEntity> mem = memberBEs();
+        return FOOD_START + foodSlots(mem == null ? 1 : mem.size());
+    }
+
     /** Controller: is there food in the shared slots that makes this tank's habitat livable? */
     boolean hasHabitatFood() {
-        for (int i = FOOD_START; i < OUTPUT_START; i++) if (this.habitat.equals(FishData.foodHabitat(this.shared.getStackInSlot(i)))) return true;
+        for (int i = FOOD_START; i < foodEnd(); i++) if (this.habitat.equals(FishData.foodHabitat(this.shared.getStackInSlot(i)))) return true;
         return false;
     }
 
@@ -262,13 +277,13 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
 
     /** Controller: food into the shared slots. Returns what didn't fit. */
     public ItemStack insertShared(ItemStack stack) {
-        for (int i = FOOD_START; i < OUTPUT_START && !stack.isEmpty(); i++) stack = this.shared.insertItem(i, stack, false);
+        for (int i = FOOD_START, end = foodEnd(); i < end && !stack.isEmpty(); i++) stack = this.shared.insertItem(i, stack, false);
         return stack;
     }
 
     /** Puts a stack into the same section of this block's shared slots, ignoring slot rules. Returns the rest. */
     ItemStack placeShared(int fromSlot, ItemStack stack) {
-        return fromSlot < OUTPUT_START ? merge(FOOD_START, OUTPUT_START, stack) : merge(OUTPUT_START, SHARED, stack);
+        return fromSlot < OUTPUT_START ? merge(FOOD_START, foodEnd(), stack) : merge(OUTPUT_START, SHARED, stack);
     }
 
     private ItemStack merge(int start, int end, ItemStack stack) {
@@ -303,7 +318,7 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
     /** Called by a legacy 1.x tank turning into this block. */
     public void acceptLegacy(List<ItemStack> fishes, ItemStack food, ItemStack output, boolean lattice, int fe) {
         for (int i = 0; i < Math.min(FISH, fishes.size()); i++) this.fish.setStackInSlot(i, FishData.wrapLegacy(fishes.get(i)));
-        if (!food.isEmpty()) drop(merge(FOOD_START, OUTPUT_START, food));
+        if (!food.isEmpty()) drop(merge(FOOD_START, foodEnd(), food));
         if (!output.isEmpty()) drop(merge(OUTPUT_START, SHARED, output));
         this.energy = fe;
         setChanged();
@@ -343,6 +358,14 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
 
     private void tickController() {
         List<TankBlockEntity> mem = memberBEs();
+        // Food in slots the aquarium no longer uses (it got smaller): into the used ones, or dropped.
+        int foodEnd = foodEnd();
+        for (int i = foodEnd; i < OUTPUT_START; i++) {
+            ItemStack extra = this.shared.getStackInSlot(i);
+            if (extra.isEmpty()) continue;
+            this.shared.setStackInSlot(i, ItemStack.EMPTY);
+            drop(merge(FOOD_START, foodEnd, extra));
+        }
         if (mem == null || this.level == null) return; // part of the aquarium isn't loaded: wait
         boolean power = role() == TankRole.POWER;
 
@@ -446,16 +469,16 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
     /** Index of the food to eat next: habitat food first when needed, otherwise ordinary food before habitat food. */
     private int findFood(boolean habitatFirst) {
         if (habitatFirst) {
-            for (int i = FOOD_START; i < OUTPUT_START; i++) {
+            for (int i = FOOD_START; i < foodEnd(); i++) {
                 ItemStack s = this.shared.getStackInSlot(i);
                 if (FishData.foodTicks(s) > 0 && this.habitat.equals(FishData.foodHabitat(s))) return i;
             }
         }
-        for (int i = FOOD_START; i < OUTPUT_START; i++) {
+        for (int i = FOOD_START; i < foodEnd(); i++) {
             ItemStack s = this.shared.getStackInSlot(i);
             if (FishData.foodTicks(s) > 0 && FishData.foodHabitat(s) == null) return i;
         }
-        for (int i = FOOD_START; i < OUTPUT_START; i++) if (FishData.foodTicks(this.shared.getStackInSlot(i)) > 0) return i;
+        for (int i = FOOD_START; i < foodEnd(); i++) if (FishData.foodTicks(this.shared.getStackInSlot(i)) > 0) return i;
         return -1;
     }
 
@@ -476,7 +499,8 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
     /** One bite: pairs may breed (while breeding is on), then every eating fish rolls its product. */
     private void takeBite(List<FishRef> eaters, boolean power) {
         if (this.level == null) return;
-        if (this.breeding) breed(eaters);
+        List<TankBlockEntity> mem = memberBEs();
+        if (this.breeding && mem != null && mem.size() >= BREED_MIN_BLOCKS) breed(eaters);
         if (power) return;
         for (FishRef f : eaters) {
             FishData.Fish d = FishData.fish(f.stack());
@@ -785,7 +809,7 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
                 return mem().get(slot / FISH).fish.insertItem(slot % FISH, stack, simulate);
             }
             int i = slot - f;
-            if (i < FOOD) return c().shared.insertItem(shared(i), stack, simulate);
+            if (i < FOOD) return i < c().foodEnd() ? c().shared.insertItem(shared(i), stack, simulate) : stack;
             return stack;
         }
 
@@ -808,7 +832,7 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
             int f = fishSlots();
             if (slot < f) return FishData.isFish(stack) && mem().get(slot / FISH).canHoldFish(slot % FISH, stack);
             int i = slot - f;
-            return i < FOOD && c().shared.isItemValid(shared(i), stack);
+            return i < c().foodEnd() && c().shared.isItemValid(shared(i), stack);
         }
     }
 

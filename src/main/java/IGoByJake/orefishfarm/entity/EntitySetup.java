@@ -18,6 +18,7 @@ public final class EntitySetup {
     @SubscribeEvent
     public static void onAttributes(EntityAttributeCreationEvent event) {
         for (var fish : Registry.FISH_MOBS) event.put(fish.get(), AbstractFish.createAttributes().build());
+        event.put(Registry.DATA_FISH_MOB.get(), AbstractFish.createAttributes().build());
     }
 
     @SubscribeEvent

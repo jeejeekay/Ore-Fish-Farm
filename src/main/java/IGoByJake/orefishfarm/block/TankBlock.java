@@ -188,8 +188,10 @@ public class TankBlock extends BaseEntityBlock {
             }
             FishData.Habitat old = FishData.habitat(c.habitat());
             Aquarium.convert(level, c, h.id(), null);
-            useUp(player, hand, held);
-            if (old.kit() != null && !new ItemStack(old.kit()).hasCraftingRemainingItem()) give(player, new ItemStack(old.kit()));
+            // The habitat's bucket is poured in (a lava bucket comes back empty); an empty bucket (void) is kept.
+            if (!held.is(net.minecraft.world.item.Items.BUCKET)) useUp(player, hand, held);
+            if (old.kit() != null && old.kit() != net.minecraft.world.item.Items.BUCKET
+                    && !new ItemStack(old.kit()).hasCraftingRemainingItem()) give(player, new ItemStack(old.kit()));
             level.playSound(null, pos, h.look().equals("lava") ? SoundEvents.BUCKET_EMPTY_LAVA : SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1F, 1F);
             player.displayClientMessage(Component.translatable("message.orefishfarm.now_habitat", FishData.habitatName(h.id())), true);
             return InteractionResult.CONSUME;

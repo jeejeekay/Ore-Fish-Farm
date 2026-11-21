@@ -70,7 +70,9 @@ public final class FishLook {
             var species = FishBucketItem.species(bucket);
             if (species != null) {
                 ResourceLocation id = ForgeRegistries.ITEMS.getKey(species);
-                return id != null && ForgeRegistries.ENTITY_TYPES.containsKey(id) ? ForgeRegistries.ENTITY_TYPES.getValue(id) : null;
+                if (id == null) return null;
+                // The species' own mob, or the shared data fish (it takes its species from the bucket).
+                return ForgeRegistries.ENTITY_TYPES.containsKey(id) ? ForgeRegistries.ENTITY_TYPES.getValue(id) : IGoByJake.orefishfarm.Registry.DATA_FISH_MOB.get();
             }
         }
         if (bucket.getItem() instanceof MobBucketItem mb) {

@@ -56,7 +56,7 @@ import java.util.Map;
  * data/&lt;ns&gt;/orefishfarm_habitat/&lt;name&gt;.json   (the file name is the habitat id)
  *   { "look": "water" | "lava" | "void",   how the tank is drawn
  *     "color": "#3F9FE4",                  tint of the fill (water look only)
- *     "kit": "orefishfarm:heating_coil",   item that turns a Fish Tank into this habitat
+ *     "kit": "minecraft:lava_bucket",     item that turns a Fish Tank into this habitat (its bucket)
  *     "bucket": "minecraft:lava_bucket",   filled container that carries this habitat's fish
  *     "empty": "minecraft:bucket" }        what is left when such a fish is let out
  * </pre>

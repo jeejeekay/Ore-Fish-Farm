@@ -44,8 +44,6 @@ public class OreFishJei implements IModPlugin {
     @Override
     public void registerRecipes(IRecipeRegistration reg) {
         info(reg, Registry.FISH_TANK.get(), "fish_tank");
-        info(reg, Registry.HEATING_COIL.get(), "heating_coil");
-        info(reg, Registry.VOID_LENS.get(), "void_lens");
         info(reg, Registry.DYNAMO_COIL.get(), "dynamo_coil");
         info(reg, Registry.BRINE_FLAKES.get(), "habitat_food");
         info(reg, Registry.EMBER_PELLETS.get(), "habitat_food");

@@ -85,6 +85,10 @@ public final class Registry {
     public static final RegistryObject<EntityType<OreFish>> ZINCRAY_MOB = fishMob("zincray");
     public static final RegistryObject<EntityType<OreFish>> CUPRUM_EEL_MOB = fishMob("cuprum_eel");
     public static final RegistryObject<EntityType<OreFish>> BRASS_BREAM_MOB = fishMob("brass_bream");
+    /** One mob for every fish species without its own (data-pack and other mods' fish). */
+    public static final RegistryObject<EntityType<IGoByJake.orefishfarm.entity.DataFish>> DATA_FISH_MOB = ENTITIES.register("data_fish",
+            () -> EntityType.Builder.<IGoByJake.orefishfarm.entity.DataFish>of(IGoByJake.orefishfarm.entity.DataFish::new, MobCategory.WATER_AMBIENT)
+                    .sized(0.5F, 0.35F).clientTrackingRange(4).build("data_fish"));
     public static final List<RegistryObject<EntityType<OreFish>>> FISH_MOBS =
             List.of(OBSIDIAN_FISH_MOB, FERROFIN_MOB, GILDED_CARP_MOB, ZINCRAY_MOB, CUPRUM_EEL_MOB, BRASS_BREAM_MOB);
 
@@ -125,8 +129,6 @@ public final class Registry {
     public static final RegistryObject<Item> SKIM_PICKLE = tackle("skim_pickle", 96);
 
     // Kits and upgrades for the Fish Tank
-    public static final RegistryObject<Item> HEATING_COIL = item("heating_coil");
-    public static final RegistryObject<Item> VOID_LENS = item("void_lens");
     public static final RegistryObject<Item> DYNAMO_COIL = item("dynamo_coil");
 
     // Spawn eggs (fish colours: body, accent)

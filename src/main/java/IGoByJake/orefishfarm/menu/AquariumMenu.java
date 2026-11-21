@@ -43,8 +43,8 @@ public class AquariumMenu extends AbstractContainerMenu {
 
     /** This screen's window growth (all slots below the window move down by it). */
     public final int extra;
-    /** Where the breeding switch sits (the old lattice slots' place). */
-    public static final int BREED_X = 116;
+    /** Where the breeding switch sits: right of the (at most four) food slots. */
+    public static final int BREED_X = 8 + TankBlockEntity.MAX_FOOD_SLOTS * 18 + 6, BREED_W = 88;
     public static final int BREEDING_BUTTON = 100_000, SEEN_BUTTON = 200_000;
 
     public final TankBlockEntity controller;
@@ -53,6 +53,10 @@ public class AquariumMenu extends AbstractContainerMenu {
     private final List<FishRef> refs = new ArrayList<>();
     private int row;
     public final int fishStart = 0, sharedStart = VISIBLE, playerStart;
+    /** Food slots shown: one per tank block, up to four. */
+    public final int foodCount;
+    /** Blocks in this aquarium (breeding needs {@link TankBlockEntity#BREED_MIN_BLOCKS}). */
+    public final int blocks;
 
     public record FishRef(TankBlockEntity be, int slot) {}
 
@@ -61,11 +65,13 @@ public class AquariumMenu extends AbstractContainerMenu {
         this.controller = controller;
         this.data = data;
         this.extra = extraFor(members.size());
+        this.blocks = members.size();
         int e = this.extra;
         for (int s = 0; s < TankBlockEntity.FISH; s++) for (TankBlockEntity t : members) this.refs.add(new FishRef(t, s));
         for (int i = 0; i < VISIBLE; i++) addSlot(new FishSlot(this, i, FISH_X + (i % COLS) * 18, e + FISH_Y + (i / COLS) * 18));
         ItemStackHandler shared = controller.sharedHandler();
-        for (int i = 0; i < TankBlockEntity.FOOD; i++) addSlot(new SlotItemHandler(shared, TankBlockEntity.FOOD_START + i, 8 + i * 18, e + FOOD_Y));
+        this.foodCount = TankBlockEntity.foodSlots(members.size());
+        for (int i = 0; i < this.foodCount; i++) addSlot(new SlotItemHandler(shared, TankBlockEntity.FOOD_START + i, 8 + i * 18, e + FOOD_Y));
         for (int i = 0; i < TankBlockEntity.OUTPUT; i++) addSlot(new SlotItemHandler(shared, TankBlockEntity.OUTPUT_START + i, 8 + i * 18, e + OUTPUT_Y));
         this.playerStart = this.slots.size();
         for (int r = 0; r < 3; r++) for (int c = 0; c < 9; c++) addSlot(new Slot(inv, c + r * 9 + 9, 8 + c * 18, e + INV_Y + 12 + r * 18));
@@ -131,7 +137,7 @@ public class AquariumMenu extends AbstractContainerMenu {
     }
 
     /** Index of the last food slot among the menu's slots, plus one. */
-    public int foodEnd() { return this.sharedStart + TankBlockEntity.FOOD; }
+    public int foodEnd() { return this.sharedStart + this.foodCount; }
 
     /**
      * A newborn only comes out when scooped: click its slot holding its habitat's bucket (a water bucket, a lava

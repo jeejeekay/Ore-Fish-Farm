@@ -42,6 +42,7 @@ public final class ClientSetup {
         event.registerEntityRenderer(Registry.ORE_FISHING_HOOK.get(), TackleBobberRenderer::new);
         event.registerEntityRenderer(net.minecraft.world.entity.EntityType.FISHING_BOBBER, TackleBobberRenderer::new);
         for (var fish : Registry.FISH_MOBS) event.registerEntityRenderer(fish.get(), OreFishRenderer::new);
+        event.registerEntityRenderer(Registry.DATA_FISH_MOB.get(), OreFishRenderer::new);
     }
 
     @SubscribeEvent

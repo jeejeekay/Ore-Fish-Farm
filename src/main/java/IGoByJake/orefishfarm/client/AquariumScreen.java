@@ -50,17 +50,32 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
         this.breedButton = addRenderableWidget(net.minecraft.client.gui.components.Button.builder(breedLabel(), b -> {
             if (this.minecraft != null && this.minecraft.gameMode != null)
                 this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId, AquariumMenu.BREEDING_BUTTON);
-        }).bounds(this.leftPos + AquariumMenu.BREED_X + 6, this.topPos + this.menu.extra + AquariumMenu.FOOD_Y - 1, 54, 18).build());
+        }).bounds(this.leftPos + AquariumMenu.BREED_X, this.topPos + this.menu.extra + AquariumMenu.FOOD_Y - 1, AquariumMenu.BREED_W, 18).build());
+        updateBreedButton();
+    }
+
+    /** No free fish slot: a baby would have nowhere to go. */
+    private boolean breedingFull() {
+        return this.menu.get(TankBlockEntity.D_FISH) >= this.menu.blocks * TankBlockEntity.FISH;
     }
 
     private Component breedLabel() {
+        if (breedingFull()) return Component.translatable("gui.orefishfarm.breeding_full");
         return Component.translatable(this.menu.get(TankBlockEntity.D_BREEDING) == 1 ? "gui.orefishfarm.breeding_on" : "gui.orefishfarm.breeding_off");
+    }
+
+    /** Shown only on aquariums big enough to breed in; greyed out when there's no room for a baby. */
+    private void updateBreedButton() {
+        if (this.breedButton == null) return;
+        this.breedButton.visible = this.menu.blocks >= TankBlockEntity.BREED_MIN_BLOCKS;
+        this.breedButton.active = !breedingFull();
+        this.breedButton.setMessage(breedLabel());
     }
 
     @Override
     protected void containerTick() {
         super.containerTick();
-        if (this.breedButton != null) this.breedButton.setMessage(breedLabel());
+        updateBreedButton();
     }
 
     /** Window height and scroll bar top for this aquarium's size. */
@@ -123,6 +138,8 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
         g.blit(TEX, l, t, 0, 0, this.imageWidth, cut);
         for (int k = 0; k < e; k++) g.blit(TEX, l, t + cut + k, 0, cut - 1, this.imageWidth, 1);
         g.blit(TEX, l, t + cut + e, 0, cut, this.imageWidth, 238 - cut);
+        // The texture has six food slots and the old lattice spot; cover the ones this aquarium doesn't use.
+        g.fill(l + 8 + this.menu.foodCount * 18 - 1, t + e + AquariumMenu.FOOD_Y - 1, l + 177, t + e + AquariumMenu.FOOD_Y + 17, 0xFFC6C6C6);
         float time = (Util.getMillis() % 1_000_000L) / 1000F;
         int wh = wh();
 
