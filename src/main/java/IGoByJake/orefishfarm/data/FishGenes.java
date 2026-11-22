@@ -41,8 +41,8 @@ import java.util.List;
 public final class FishGenes {
     public static final String KEY = "OreFishGenes";
     public static final int MAX_GENES = 3;
-    public static final String YIELD = "yield", HUNGER = "hunger", CHARGE = "charge";
-    public static final List<String> STATS = List.of(YIELD, HUNGER, CHARGE);
+    public static final String YIELD = "yield", HUNGER = "hunger", CHARGE = "charge", HEAT = "heat";
+    public static final List<String> STATS = List.of(YIELD, HUNGER, CHARGE, HEAT);
     private static final String GENE_FOLDER = "genes/";
 
     private FishGenes() {}
@@ -225,6 +225,7 @@ public final class FishGenes {
         return switch (stat) {
             case YIELD -> 0xE8B830;
             case HUNGER -> 0x6BBF4A;
+            case HEAT -> 0xF0702A;
             default -> 0x3FD0E0;
         };
     }
@@ -240,11 +241,17 @@ public final class FishGenes {
 
     /** Tooltip lines for a live fish (nothing for one that hasn't been bucketed yet). */
     public static void tooltip(ItemStack stack, List<Component> lines, boolean power) {
+        tooltip(stack, lines, power, false);
+    }
+
+    /** As above; heat fish also show their Heat stat. */
+    public static void tooltip(ItemStack stack, List<Component> lines, boolean power, boolean heat) {
         if (!has(stack)) return;
         if (isNewborn(stack)) lines.add(Component.translatable("tooltip.orefishfarm.newborn").withStyle(ChatFormatting.YELLOW));
         lines.add(statLine(stack, YIELD));
         lines.add(statLine(stack, HUNGER));
         if (power) lines.add(statLine(stack, CHARGE));
+        if (heat) lines.add(statLine(stack, HEAT));
         List<ResourceLocation> genes = genes(stack);
         if (!genes.isEmpty()) {
             MutableComponent g = Component.translatable("tooltip.orefishfarm.genes").withStyle(ChatFormatting.GRAY).append(" ");

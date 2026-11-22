@@ -26,6 +26,9 @@ public class OreFishFarm {
             if (e.getRegistryKey().equals(net.minecraftforge.registries.ForgeRegistries.Keys.RECIPE_SERIALIZERS))
                 net.minecraftforge.common.crafting.CraftingHelper.register(IGoByJake.orefishfarm.data.FishIngredient.ID, IGoByJake.orefishfarm.data.FishIngredient.SERIALIZER);
         });
+        // With Create: aquariums warmed by heat fish count as boiler heaters.
+        modBus.addListener((net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent e) ->
+                e.enqueueWork(() -> IGoByJake.orefishfarm.compat.CreateHeat.registerBoilerHeater(Registry.FISH_TANK.get())));
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
         MinecraftForge.EVENT_BUS.addListener(FishData::onAddReloadListeners);
         MinecraftForge.EVENT_BUS.addListener(Network::onDatapackSync);

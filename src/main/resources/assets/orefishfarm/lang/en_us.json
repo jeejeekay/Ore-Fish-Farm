@@ -101,6 +101,7 @@
   "stat.orefishfarm.yield": "Yield",
   "stat.orefishfarm.hunger": "Hunger",
   "stat.orefishfarm.charge": "Charge",
+  "stat.orefishfarm.heat": "Heat",
   "tooltip.orefishfarm.genes": "Genes:",
   "tooltip.orefishfarm.newborn": "Newborn: scoop it out with its habitat's bucket",
   "gene.orefishfarm.mutagenic": "Mutagenic",

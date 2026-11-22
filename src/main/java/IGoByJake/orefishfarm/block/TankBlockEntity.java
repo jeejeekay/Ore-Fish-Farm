@@ -71,6 +71,10 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
     public static final int MAX_FOOD_SLOTS = 4;
     /** Breeding needs an aquarium of at least this many blocks. */
     public static final int BREED_MIN_BLOCKS = 3;
+    /** Heat per tank block (eating heat fish × their Heat factor, summed) for each Create heat level. */
+    public static final float HEAT_SMOULDERING = 0.25F, HEAT_KINDLED = 0.7F, HEAT_SEETHING = 1.4F;
+    /** The aquarium's heat level now (0 none, 1 smouldering, 2 kindled, 3 seething); not saved, worked out each tick. */
+    private int heatLevel = -1;
     /** Shared slots: food, then output. */
     public static final int FOOD_START = 0, OUTPUT_START = FOOD, SHARED = OUTPUT_START + OUTPUT;
     /** Shared-slot layout before 2.4 (food, 3 Love Lattices, a bucket slot, 8 output), for old saves. */
@@ -435,6 +439,20 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
         }
 
         if (power && this.energy > 0) pushEnergy(mem);
+
+        // Heat: the eating heat fish, each times its Heat stat factor, per tank block.
+        float heat = 0;
+        if (this.burn > 0) for (FishRef f : eaters) {
+            FishData.Fish d = FishData.fish(f.stack());
+            if (d != null && d.makesHeat()) heat += d.heat() * FishGenes.factor(f.stack(), FishGenes.HEAT);
+        }
+        heat /= Math.max(1, mem.size());
+        int heatLevel = heat >= HEAT_SEETHING ? 3 : heat >= HEAT_KINDLED ? 2 : heat >= HEAT_SMOULDERING ? 1 : 0;
+        this.heatLevel = heatLevel;
+        for (TankBlockEntity m : mem) { // only touches blocks whose heat differs (cheap; no-op without Create)
+            BlockState st = m.getBlockState(), hot = IGoByJake.orefishfarm.compat.CreateHeat.withHeat(st, heatLevel);
+            if (hot != st) this.level.setBlock(m.worldPosition, hot, 3);
+        }
 
         // Numbers for the screen.
         int status;

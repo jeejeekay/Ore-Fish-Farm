@@ -72,6 +72,9 @@ public class TankBlock extends BaseEntityBlock {
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> b) {
         b.add(ROLE, LOOK, NORTH, EAST, SOUTH, WEST, UP, DOWN);
+        // With Create installed: its Blaze Burner heat property, so Basins and boilers read the aquarium's heat.
+        net.minecraft.world.level.block.state.properties.Property<?> heat = IGoByJake.orefishfarm.compat.CreateHeat.property();
+        if (heat != null) b.add(heat);
     }
 
     @Override

@@ -37,6 +37,9 @@ import java.util.Map;
  *     "product_chance": 0.75,   chance per bite (every biteTicks of eating) in a Fish Tank
  *     "breed_chance": 0.08,     chance per bite for a pair of this fish (while the tank's breeding is on)
  *     "power": 30,              FE/tick while eating in a power tank (optional; 0 = not a power fish)
+ *     "heat": 0.6,              how much this fish warms its aquarium while it eats (optional; 0 = not a heat fish).
+ *                               The aquarium adds up its eating heat fish (each times its Heat stat factor) per block:
+ *                               0.25 = smouldering, 0.7 = kindled, 1.4 = seething (read by Create as burner heat).
  *     "habitat": "orefishfarm:water",  which tank it lives in (optional; water by default)
  *     "bucket": "somemod:fish_bucket" } optional: this mod's own bucket for the fish (else the generic Fish Bucket)
  *
@@ -87,8 +90,9 @@ public final class FishData {
     private static final Habitat DEFAULT_WATER = new Habitat(WATER, "water", 0x3F9FE4, null, net.minecraft.world.item.Items.WATER_BUCKET, net.minecraft.world.item.Items.BUCKET);
 
     /** bucket: another mod's own bucket for this fish, if it has one (else the generic Fish Bucket is used). */
-    public record Fish(Item item, ItemStack product, float productChance, float breedChance, int power, ResourceLocation habitat, @Nullable Item bucket) {
+    public record Fish(Item item, ItemStack product, float productChance, float breedChance, int power, ResourceLocation habitat, @Nullable Item bucket, float heat) {
         public boolean makesPower() { return this.power > 0; }
+        public boolean makesHeat() { return this.heat > 0; }
         public boolean makesProduct() { return !this.product.isEmpty() && this.productChance > 0; }
     }
 
@@ -169,6 +173,7 @@ public final class FishData {
             buf.writeResourceLocation(f.habitat());
             buf.writeBoolean(f.bucket() != null);
             if (f.bucket() != null) buf.writeResourceLocation(ForgeRegistries.ITEMS.getKey(f.bucket()));
+            buf.writeFloat(f.heat());
         }
         buf.writeVarInt(crosses.size());
         for (Cross c : crosses) {
@@ -229,7 +234,8 @@ public final class FishData {
             int pw = buf.readVarInt();
             ResourceLocation hab = buf.readResourceLocation();
             Item bucket = buf.readBoolean() ? ForgeRegistries.ITEMS.getValue(buf.readResourceLocation()) : null;
-            Fish fish = new Fish(item, product, pc, bc, pw, hab, bucket);
+            float heat = buf.readFloat();
+            Fish fish = new Fish(item, product, pc, bc, pw, hab, bucket, heat);
             if (item != null) f.put(item, fish);
         }
         List<Cross> x = new ArrayList<>();
@@ -293,7 +299,7 @@ public final class FishData {
         if (f != null) return f;
         // Any other mob bucket (cod, axolotl, another mod's fish): a plain water fish with no product.
         if (stack.getItem() instanceof net.minecraft.world.item.MobBucketItem) {
-            return new Fish(stack.getItem(), ItemStack.EMPTY, 0, Config.DEFAULT_BREED_CHANCE.get().floatValue(), 0, WATER, stack.getItem());
+            return new Fish(stack.getItem(), ItemStack.EMPTY, 0, Config.DEFAULT_BREED_CHANCE.get().floatValue(), 0, WATER, stack.getItem(), 0);
         }
         return null;
     }
@@ -302,7 +308,7 @@ public final class FishData {
     private static Fish byItem(Item item) {
         Fish f = fish.get(item);
         if (f != null) return f;
-        if (new ItemStack(item).is(TANK_FISH)) return new Fish(item, ItemStack.EMPTY, 0, Config.DEFAULT_BREED_CHANCE.get().floatValue(), 0, WATER, null);
+        if (new ItemStack(item).is(TANK_FISH)) return new Fish(item, ItemStack.EMPTY, 0, Config.DEFAULT_BREED_CHANCE.get().floatValue(), 0, WATER, null, 0);
         return null;
     }
 
@@ -480,7 +486,8 @@ public final class FishData {
                 ResourceLocation hab = o.has("habitat") ? new ResourceLocation(GsonHelper.getAsString(o, "habitat")) : WATER;
                 Item bucket = o.has("bucket") ? item(GsonHelper.getAsString(o, "bucket")) : null;
                 out.put(f, new Fish(f, product, GsonHelper.getAsFloat(o, "product_chance", 0.75F),
-                        GsonHelper.getAsFloat(o, "breed_chance", 0.1F), GsonHelper.getAsInt(o, "power", 0), hab, bucket));
+                        GsonHelper.getAsFloat(o, "breed_chance", 0.1F), GsonHelper.getAsInt(o, "power", 0), hab, bucket,
+                        GsonHelper.getAsFloat(o, "heat", 0F)));
             } catch (Exception ex) {
                 LOG.error("Bad fish file {}: {}", id, ex.getMessage());
             }
