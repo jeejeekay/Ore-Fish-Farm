@@ -98,10 +98,20 @@ public class OreFishJei implements IModPlugin {
     public static void lateRecipes() {
         if (runtime == null || added || !FishData.loaded()) return;
         added = true;
-        var rm = runtime.getRecipeManager();
+        IJeiRuntime rt = runtime;
+        var rm = rt.getRecipeManager();
         rm.addRecipes(PRODUCT, new ArrayList<>(TankRecipes.products()));
         rm.addRecipes(BREEDING, new ArrayList<>(TankRecipes.breeding()));
         rm.addRecipes(POWER, new ArrayList<>(TankRecipes.power()));
+        // Fish Buckets for data-pack fish (e.g. Quicreate's glass eel) that JEI didn't get from the creative tab.
+        var im = rt.getIngredientManager();
+        java.util.Set<String> have = new java.util.HashSet<>();
+        for (ItemStack s : im.getAllIngredients(mezz.jei.api.constants.VanillaTypes.ITEM_STACK))
+            if (s.is(Registry.FISH_BUCKET.get()) && s.getTag() != null) have.add(s.getTag().getString(IGoByJake.orefishfarm.FishBucketItem.KEY));
+        List<ItemStack> missing = new ArrayList<>();
+        for (ItemStack s : FishData.extraBuckets())
+            if (!have.contains(s.getOrCreateTag().getString(IGoByJake.orefishfarm.FishBucketItem.KEY))) missing.add(s);
+        if (!missing.isEmpty()) im.addIngredientsAtRuntime(mezz.jei.api.constants.VanillaTypes.ITEM_STACK, missing);
     }
 
 }

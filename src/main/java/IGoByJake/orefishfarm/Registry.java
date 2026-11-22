@@ -190,6 +190,8 @@ public final class Registry {
                     Item fish = ForgeRegistries.ITEMS.getValue(m.getId());
                     if (fish != null && fish != net.minecraft.world.item.Items.AIR) out.accept(FishBucketItem.of(fish));
                 }
+                // Data-pack fish (no mob or bucket of their own), once the fish files are loaded.
+                IGoByJake.orefishfarm.data.FishData.extraBuckets().forEach(out::accept);
             })
             .build());
 

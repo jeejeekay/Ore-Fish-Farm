@@ -148,6 +148,23 @@ public final class FishData {
         return fish.values();
     }
 
+    /**
+     * Fish Buckets for the fish that have neither their own bucket nor their own mob (data-pack fish such as
+     * Quicreate's glass eel), sorted by id, so the creative tab and JEI can list them next to the built-in ones.
+     */
+    public static List<ItemStack> extraBuckets() {
+        java.util.Set<ResourceLocation> mobs = new java.util.HashSet<>();
+        for (var m : IGoByJake.orefishfarm.Registry.FISH_MOBS) mobs.add(m.getId());
+        List<ItemStack> out = new java.util.ArrayList<>();
+        fish.values().stream()
+                .filter(f -> f.bucket() == null)
+                .map(Fish::item)
+                .filter(i -> { ResourceLocation id = ForgeRegistries.ITEMS.getKey(i); return id != null && !mobs.contains(id); })
+                .sorted(java.util.Comparator.comparing(i -> String.valueOf(ForgeRegistries.ITEMS.getKey(i))))
+                .forEach(i -> out.add(IGoByJake.orefishfarm.FishBucketItem.of(i)));
+        return out;
+    }
+
     public static List<Cross> allCrosses() {
         return crosses;
     }
