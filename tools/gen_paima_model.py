@@ -51,7 +51,7 @@ CREDIT = ("Jake's Ore Fish Farm: shared 'paima' fish model (arapaima style: long
 body = {'credit': CREDIT, 'texture_size': [32, 32], 'elements': [
   {'name': 'body', 'from': [1.5, 6, 6.8], 'to': [9.8, 8.9, 9.2], 'faces': {
       'north': f([8.5, 0, 0, 3]), 'south': f([0, 0, 8.5, 3]), 'up': f([0, 3, 8.5, 5.5]), 'down': f([0, 5.5, 8.5, 8]),
-      'west': f([8.5, 0, 11, 3])}},
+      'west': f([8.5, 0, 11, 3]), 'east': f([7.5, 0, 8.5, 3])}},  # east: the rim round the smaller head
   {'name': 'head', 'from': [9.8, 6.2, 7.1], 'to': [14.5, 7.75, 8.9], 'faces': {
       'north': f([5, 8, 0, 10]), 'south': f([0, 8, 5, 10]), 'up': f([5, 8, 10, 10]), 'down': f([10, 8, 15, 10]),
       'east': f([11, 0, 13, 2])}},

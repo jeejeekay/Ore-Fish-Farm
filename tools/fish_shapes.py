@@ -25,7 +25,7 @@ st_body = [
     dict(name='head', role='head', **{'from': [12, 6.5, 7.2], 'to': [13.8, 8.7, 8.8]}, faces=['north', 'south', 'up', 'down', 'east']),
     dict(name='snout', role='snout', **{'from': [13.8, 6.7, 7.6], 'to': [15.4, 7.7, 8.4]}, faces=['north', 'south', 'up', 'down', 'east']),
     dict(name='dorsal', role='fin', **{'from': [3.8, 8.8, 8], 'to': [5.4, 10, 8]}, faces=SIDES),
-    dict(name='pectoral', role='fin', **{'from': [10.6, 5.7, 6.6], 'to': [11.8, 6.2, 9.4]}, faces=['north', 'south', 'up', 'down']),
+    dict(name='pectoral', role='fin', **{'from': [10.6, 5.7, 6.6], 'to': [11.8, 6.2, 9.4]}, faces=ALL),
     dict(name='pelvic', role='fin', **{'from': [6, 6.0, 8], 'to': [7, 6.6, 8]}, faces=SIDES),
     dict(name='barbels', role='barbel', **{'from': [13.9, 6.1, 8], 'to': [14.5, 6.7, 8]}, faces=SIDES),
 ]
@@ -59,13 +59,13 @@ def st_paint(role, f, x, y, z):
 
 # ---------------------------------------------------------------- Dorada: a mahi-mahi in gold
 dd_body = [
-    dict(name='head', role='head', **{'from': [10.4, 5.4, 6.8], 'to': [14, 10.2, 9.2]}, faces=['north', 'south', 'up', 'down', 'east']),
-    dict(name='body_front', role='body', **{'from': [7, 5.8, 7], 'to': [10.4, 9.8, 9]}, faces=['north', 'south', 'up', 'down']),
+    dict(name='head', role='head', **{'from': [10.4, 5.4, 6.8], 'to': [14, 10.2, 9.2]}, faces=ALL),
+    dict(name='body_front', role='body', **{'from': [7, 5.8, 7], 'to': [10.4, 9.8, 9]}, faces=['north', 'south', 'up', 'down', 'west']),
     dict(name='body_mid', role='body', **{'from': [4.6, 6.4, 7.25], 'to': [7, 9.2, 8.75]}, faces=['north', 'south', 'up', 'down', 'west']),
     dict(name='body_rear', role='body', **{'from': [2.8, 7, 7.45], 'to': [4.6, 8.6, 8.55]}, faces=['north', 'south', 'up', 'down', 'west']),
     dict(name='dorsal', role='dorsal', **{'from': [3.4, 8.6, 8], 'to': [12.5, 11.2, 8]}, faces=SIDES),
     dict(name='anal', role='anal', **{'from': [3.4, 5.6, 8], 'to': [7.5, 7, 8]}, faces=SIDES),
-    dict(name='pectoral', role='fin', **{'from': [9.8, 6.2, 6.6], 'to': [11, 6.7, 9.4]}, faces=['north', 'south', 'up', 'down']),
+    dict(name='pectoral', role='fin', **{'from': [9.8, 6.2, 6.6], 'to': [11, 6.7, 9.4]}, faces=ALL),
 ]
 dd_tail = [dict(name='tail', role='tail', **{'from': [0.2, 5.4, 8], 'to': [2.9, 10.4, 8]}, faces=SIDES)]
 GOLD, GREEN, BLUE, PALE = (236, 190, 46), (60, 146, 112), (40, 108, 150), (248, 228, 126)

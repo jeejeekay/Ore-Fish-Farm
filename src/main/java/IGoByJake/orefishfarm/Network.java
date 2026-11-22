@@ -11,7 +11,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 
 /** Two packets: the server's fish and food lists (tooltips, slot checks) and its tackle data (JEI). */
 public final class Network {
-    private static final String VERSION = "4";
+    private static final String VERSION = "5";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(new ResourceLocation(OreFishFarm.MODID, "main"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
@@ -31,7 +31,7 @@ public final class Network {
     }
 
     public static void onDatapackSync(OnDatapackSyncEvent event) {
-        FishData.Synced msg = new FishData.Synced(java.util.Map.of(), java.util.List.of(), java.util.Map.of(), java.util.Map.of(), java.util.Map.of()); // contents are written from FishData directly
+        FishData.Synced msg = new FishData.Synced(java.util.Map.of(), java.util.List.of(), java.util.Map.of(), java.util.Map.of(), java.util.Map.of(), java.util.Map.of()); // contents are written from FishData directly
         ServerPlayer player = event.getPlayer();
         var tackle = new IGoByJake.orefishfarm.tackle.Tackle.Synced(java.util.Map.of()); // written from Tackle directly
         if (player != null) {

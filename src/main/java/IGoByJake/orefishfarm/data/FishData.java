@@ -14,6 +14,7 @@ import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.GsonHelper;
+import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -42,6 +43,7 @@ import java.util.Map;
  *                               0.25 = smouldering, 0.7 = kindled, 1.4 = seething (read by Create as burner heat).
  *     "habitat": "orefishfarm:water",  which tank it lives in (optional; water by default)
  *     "bucket": "somemod:fish_bucket", optional: this mod's own bucket for the fish (else the generic Fish Bucket)
+ *     "scale": 2.0,               optional: draws the fish this many times bigger (tanks, the mob, screens)
  *     "shear": { "item": "minecraft:string", "min": 1, "max": 3, "regrow": 6000 } }
  *                               optional: the living fish can be sheared like a sheep (only fish without a mob of
  *                               their own, i.e. drawn by Ore Fish Farm's data fish). Drops min..max of the item, then
@@ -95,6 +97,13 @@ public final class FishData {
     private static final Habitat DEFAULT_WATER = new Habitat(WATER, "water", 0x3F9FE4, null, net.minecraft.world.item.Items.WATER_BUCKET, net.minecraft.world.item.Items.BUCKET);
 
     /** bucket: another mod's own bucket for this fish, if it has one (else the generic Fish Bucket is used). */
+    /** How big each species is drawn (fish file "scale", default 1); synced to clients. */
+    private static Map<Item, Float> scales = Map.of();
+
+    public static float scale(Item fish) {
+        return scales.getOrDefault(fish, 1F);
+    }
+
     /** What shearing a living fish drops, and how long its coat takes to grow back (server side only). */
     public record Shear(Item drop, int min, int max, int regrow) {}
 
@@ -206,6 +215,7 @@ public final class FishData {
             buf.writeBoolean(f.bucket() != null);
             if (f.bucket() != null) buf.writeResourceLocation(ForgeRegistries.ITEMS.getKey(f.bucket()));
             buf.writeFloat(f.heat());
+            buf.writeFloat(scale(f.item()));
         }
         buf.writeVarInt(crosses.size());
         for (Cross c : crosses) {
@@ -254,10 +264,11 @@ public final class FishData {
     }
 
     public record Synced(Map<Item, Fish> fish, List<Cross> crosses, Map<Item, Food> foods, Map<ResourceLocation, Habitat> habitats,
-                         Map<ResourceLocation, Integer> geneColors) {}
+                         Map<ResourceLocation, Integer> geneColors, Map<Item, Float> scales) {}
 
     public static Synced read(net.minecraft.network.FriendlyByteBuf buf) {
         Map<Item, Fish> f = new HashMap<>();
+        Map<Item, Float> sc = new HashMap<>();
         int n = buf.readVarInt();
         for (int i = 0; i < n; i++) {
             Item item = ForgeRegistries.ITEMS.getValue(buf.readResourceLocation());
@@ -267,8 +278,12 @@ public final class FishData {
             ResourceLocation hab = buf.readResourceLocation();
             Item bucket = buf.readBoolean() ? ForgeRegistries.ITEMS.getValue(buf.readResourceLocation()) : null;
             float heat = buf.readFloat();
+            float size = buf.readFloat();
             Fish fish = new Fish(item, product, pc, bc, pw, hab, bucket, heat);
-            if (item != null) f.put(item, fish);
+            if (item != null) {
+                f.put(item, fish);
+                if (size != 1F) sc.put(item, size);
+            }
         }
         List<Cross> x = new ArrayList<>();
         n = buf.readVarInt();
@@ -302,7 +317,7 @@ public final class FishData {
         Map<ResourceLocation, Integer> gc = new HashMap<>();
         n = buf.readVarInt();
         for (int i = 0; i < n; i++) gc.put(buf.readResourceLocation(), buf.readInt());
-        return new Synced(f, x, food, hab, gc);
+        return new Synced(f, x, food, hab, gc, sc);
     }
 
     /** Client side: use the server's lists unless this game already read them from disk (singleplayer). */
@@ -314,6 +329,7 @@ public final class FishData {
         foods = s.foods();
         habitats = s.habitats();
         geneColors = s.geneColors();
+        scales = s.scales();
         loaded = true;
         // JEI may already have built its lists before this arrived (on a server): give it the tank pages now.
         if (net.minecraftforge.fml.ModList.get().isLoaded("jei")) IGoByJake.orefishfarm.compat.jei.OreFishJei.lateRecipes();
@@ -505,6 +521,7 @@ public final class FishData {
     private static void loadFish(Map<ResourceLocation, JsonElement> files) {
         Map<Item, Fish> out = new HashMap<>();
         Map<Item, Shear> shearOut = new HashMap<>();
+        Map<Item, Float> scaleOut = new HashMap<>();
         files.forEach((id, json) -> {
             try {
                 JsonObject o = json.getAsJsonObject();
@@ -521,6 +538,7 @@ public final class FishData {
                 out.put(f, new Fish(f, product, GsonHelper.getAsFloat(o, "product_chance", 0.75F),
                         GsonHelper.getAsFloat(o, "breed_chance", 0.1F), GsonHelper.getAsInt(o, "power", 0), hab, bucket,
                         GsonHelper.getAsFloat(o, "heat", 0F)));
+                if (o.has("scale")) scaleOut.put(f, Mth.clamp(GsonHelper.getAsFloat(o, "scale"), 0.25F, 4F));
                 if (o.has("shear")) {
                     JsonObject sh = GsonHelper.getAsJsonObject(o, "shear");
                     Item drop = item(GsonHelper.getAsString(sh, "item"));
@@ -534,6 +552,7 @@ public final class FishData {
         });
         fish = out;
         shears = shearOut;
+        scales = scaleOut;
         byBucket = indexBuckets(out);
         LOG.info("Ore Fish Farm: {} fish", out.size());
     }

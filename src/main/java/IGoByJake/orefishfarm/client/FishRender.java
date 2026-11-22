@@ -114,14 +114,17 @@ public final class FishRender {
         Fish fish = variant.isEmpty() ? NONE : lookup(stack, variant);
         if (fish.body == null) fish = lookup(stack);
         var items = Minecraft.getInstance().getItemRenderer();
+        float size = IGoByJake.orefishfarm.data.FishData.scale(stack.getItem());
         if (fish.body == null) {
             pose.pushPose();
+            if (size != 1F) pose.scale(size, size, size);
             items.renderStatic(stack, ItemDisplayContext.FIXED, light, OverlayTexture.NO_OVERLAY, pose, buffers, null, 0);
             pose.popPose();
             return;
         }
         VertexConsumer vc = buffers.getBuffer(RenderType.entityTranslucentCull(InventoryMenu.BLOCK_ATLAS));
         pose.pushPose();
+        if (size != 1F) pose.scale(size, size, size);
         pose.translate(-0.5F, -0.5F, -0.5F);
         items.renderModelLists(fish.body, stack, light, OverlayTexture.NO_OVERLAY, pose, vc);
         if (fish.tail != null) {
