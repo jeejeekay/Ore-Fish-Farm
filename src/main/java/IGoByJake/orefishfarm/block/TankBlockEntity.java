@@ -62,7 +62,7 @@ import java.util.Set;
  *
  * <p>Habitats: a fish in a tank of another habitat gets a grace period (the tank reaches for that habitat's food
  * at once). With the habitat food being eaten, it is fine. Without, after the grace it is hurt a few times and
- * then dies, dropping a Fish Bone. A fish that is being hurt stops eating, so it doesn't waste food.
+ * then dies, leaving a Fish Bone and an empty bucket in the output. A fish that is being hurt stops eating, so it doesn't waste food.
  */
 public class TankBlockEntity extends BlockEntity implements MenuProvider {
     public static final int FISH = 2;
@@ -433,6 +433,7 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
             f.be.fish.setStackInSlot(f.slot, ItemStack.EMPTY);
             this.level.playSound(null, f.be.worldPosition, SoundEvents.TROPICAL_FISH_DEATH, SoundSource.BLOCKS, 1F, 1F);
             f.be.drop(addOutput(new ItemStack(Registry.FISH_BONE.get())));
+            f.be.drop(addOutput(new ItemStack(net.minecraft.world.item.Items.BUCKET))); // the bucket it lived in
             fishes.remove(f);
         }
 

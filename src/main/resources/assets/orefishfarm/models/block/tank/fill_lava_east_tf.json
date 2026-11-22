@@ -22,7 +22,10 @@
           "texture": "#fill"
         }
       },
-      "shade": false
+      "shade": false,
+      "forge_data": {
+        "color": -1258291201
+      }
     }
   ]
 }
