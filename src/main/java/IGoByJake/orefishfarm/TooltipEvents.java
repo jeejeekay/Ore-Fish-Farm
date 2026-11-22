@@ -31,6 +31,13 @@ public final class TooltipEvents {
         }
     }
 
+    /** "Habitat: Water", the line a live fish's tooltip shows (the tank screen finds it by its key). */
+    public static net.minecraft.network.chat.MutableComponent habitatLine(net.minecraft.resources.ResourceLocation habitat) {
+        return Component.translatable(HABITAT_KEY, FishData.habitatName(habitat)).withStyle(ChatFormatting.AQUA);
+    }
+
+    public static final String HABITAT_KEY = "tooltip.orefishfarm.habitat";
+
     @SubscribeEvent
     public static void onTooltip(ItemTooltipEvent event) {
         FishData.Fish fish = FishData.loaded() ? FishData.fish(event.getItemStack()) : null;
@@ -41,9 +48,9 @@ public final class TooltipEvents {
             event.getToolTip().add(Component.literal("⚡ ").withStyle(ChatFormatting.YELLOW)
                     .append(Component.translatable("tooltip.orefishfarm.power_fish").withStyle(ChatFormatting.GOLD)));
         }
-        if (fish != null) {
-            net.minecraft.resources.ResourceLocation hab = fish.habitat();
-            event.getToolTip().add(Component.translatable("tooltip.orefishfarm.habitat", FishData.habitatName(hab)).withStyle(ChatFormatting.AQUA));
+        // Habitat: only on a fish in a bucket (a live fish); the tank screen adds its wrong-habitat warning to this line.
+        if (fish != null && event.getItemStack().getItem() instanceof net.minecraft.world.item.BucketItem) {
+            event.getToolTip().add(habitatLine(fish.habitat()));
         }
         net.minecraft.resources.ResourceLocation foodHab = FishData.loaded() ? FishData.foodHabitat(event.getItemStack()) : null;
         if (foodHab != null) {

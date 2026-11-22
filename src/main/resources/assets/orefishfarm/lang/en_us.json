@@ -76,6 +76,8 @@
   "gui.orefishfarm.protected": "Habitat food is keeping visiting fish alive",
   "gui.orefishfarm.kept_alive": "Out of its habitat, kept alive by habitat food",
   "gui.orefishfarm.wrong_habitat": "Out of its habitat! Needs %s, or this tank's habitat food",
+  "gui.orefishfarm.wrong_habitat_short": "⚠ Wrong tank: needs its habitat or this tank's habitat food",
+  "gui.orefishfarm.kept_alive_short": "✔ Kept alive by habitat food",
   "gui.orefishfarm.status.needs_habitat_food": "Needs habitat food! %ss",
   "gui.orefishfarm.status.dying": "A fish is dying! %ss",
   "jei.orefishfarm.info.fish_tank": "A fish eats fish food and sheds its product. Tanks of the same habitat placed together join into one aquarium, up to 8x8x8. Kits change a tank: a Heating Coil or Void Lens changes its habitat (a water bucket changes it back), a Dynamo Coil makes it a power tank. With Breeding switched on, pairs sometimes breed; a baby needs a free fish slot.",

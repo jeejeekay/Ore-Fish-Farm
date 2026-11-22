@@ -170,20 +170,32 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
                 && this.seenSent.add(seen.index()) && this.minecraft != null && this.minecraft.gameMode != null) {
             this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId, AquariumMenu.SEEN_BUTTON + seen.index());
         }
-        if (this.hoveredSlot instanceof AquariumMenu.FishSlot fs && carried.isEmpty()) {
-            if (fs.hasItem() && this.menu.controller.isForeign(fs.getItem())) {
-                if (this.menu.get(TankBlockEntity.D_PROTECTED) == 1) tips.add(Component.translatable("gui.orefishfarm.kept_alive").withStyle(ChatFormatting.GREEN));
-                else tips.add(Component.translatable("gui.orefishfarm.wrong_habitat", FishData.habitatName(FishData.habitatOf(fs.getItem()))).withStyle(ChatFormatting.RED));
-            }
-            if (!tips.isEmpty()) {
-                List<Component> all = new ArrayList<>(getTooltipFromContainerItem(fs.getItem()));
-                if (!fs.hasItem()) all.clear();
-                all.addAll(tips);
-                g.renderComponentTooltip(this.font, all, mx, my);
-                return;
+        if (!tips.isEmpty() && this.menu.getCarried().isEmpty() && this.hoveredSlot == null) g.renderComponentTooltip(this.font, tips, mx, my);
+    }
+
+    /**
+     * A fish out of its habitat: the warning goes on the end of its tooltip's habitat line ("Habitat: Water ⚠ wrong
+     * tank" in red, or "kept alive by habitat food" in green), so the normal tooltip (with its stat bars) stays the
+     * only one.
+     */
+    @Override
+    protected List<Component> getTooltipFromContainerItem(ItemStack stack) {
+        List<Component> lines = super.getTooltipFromContainerItem(stack);
+        if (!(this.hoveredSlot instanceof AquariumMenu.FishSlot fs) || !fs.hasItem() || fs.getItem() != stack
+                || !this.menu.controller.isForeign(stack)) return lines;
+        boolean kept = this.menu.get(TankBlockEntity.D_PROTECTED) == 1;
+        Component note = kept ? Component.translatable("gui.orefishfarm.kept_alive_short").withStyle(ChatFormatting.GREEN)
+                : Component.translatable("gui.orefishfarm.wrong_habitat_short").withStyle(ChatFormatting.RED);
+        List<Component> out = new ArrayList<>(lines);
+        for (int i = 0; i < out.size(); i++) {
+            if (out.get(i).getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents t
+                    && t.getKey().equals(IGoByJake.orefishfarm.TooltipEvents.HABITAT_KEY)) {
+                out.set(i, out.get(i).copy().append(" ").append(note));
+                return out;
             }
         }
-        if (!tips.isEmpty() && this.menu.getCarried().isEmpty() && this.hoveredSlot == null) g.renderComponentTooltip(this.font, tips, mx, my);
+        out.add(IGoByJake.orefishfarm.TooltipEvents.habitatLine(FishData.habitatOf(stack)).append(" ").append(note));
+        return out;
     }
 
     private static boolean in(int x, int y, int rx, int ry, int w, int h) {
