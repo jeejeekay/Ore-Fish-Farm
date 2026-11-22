@@ -1,0 +1,309 @@
+{
+ "credit": "Jake's Ore Fish Farm: shared 'paima' fish model (arapaima style: long rectangular body, small head; side view, head toward +x). A fish uses it with its own texture: {\"parent\": \"orefishfarm:fish_category/paima\", \"textures\": {\"t\": ..., \"particle\": ...}}",
+ "texture_size": [
+  32,
+  32
+ ],
+ "elements": [
+  {
+   "name": "body",
+   "from": [
+    1.5,
+    6,
+    6.8
+   ],
+   "to": [
+    9.8,
+    8.9,
+    9.2
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      8.5,
+      0,
+      0,
+      3
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      0,
+      0,
+      8.5,
+      3
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      0,
+      3,
+      8.5,
+      5.5
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      0,
+      5.5,
+      8.5,
+      8
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      8.5,
+      0,
+      11,
+      3
+     ]
+    }
+   }
+  },
+  {
+   "name": "head",
+   "from": [
+    9.8,
+    6.2,
+    7.1
+   ],
+   "to": [
+    14.5,
+    7.75,
+    8.9
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      5,
+      8,
+      0,
+      10
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      0,
+      8,
+      5,
+      10
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      5,
+      8,
+      10,
+      10
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      10,
+      8,
+      15,
+      10
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      11,
+      0,
+      13,
+      2
+     ]
+    }
+   }
+  },
+  {
+   "name": "dorsal",
+   "from": [
+    1.9,
+    8.9,
+    7.6
+   ],
+   "to": [
+    6.4,
+    9.7,
+    8.4
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      4.5,
+      10,
+      0,
+      11
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      0,
+      10,
+      4.5,
+      11
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      4.5,
+      10,
+      9,
+      11
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      4,
+      10,
+      4.5,
+      11
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      0,
+      10,
+      0.5,
+      11
+     ]
+    }
+   }
+  },
+  {
+   "name": "rear_fin",
+   "from": [
+    2.8,
+    5.55,
+    7.6
+   ],
+   "to": [
+    3.7,
+    6,
+    8.4
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      9,
+      10,
+      11,
+      11
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      9,
+      10,
+      11,
+      11
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      9,
+      10,
+      11,
+      11
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      9,
+      10,
+      10,
+      11
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      9,
+      10,
+      10,
+      11
+     ]
+    }
+   }
+  },
+  {
+   "name": "front_fin",
+   "from": [
+    8.2,
+    5.55,
+    7.5
+   ],
+   "to": [
+    9.4,
+    6.2,
+    8.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      9,
+      10,
+      11,
+      11
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      9,
+      10,
+      11,
+      11
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      9,
+      10,
+      11,
+      11
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      9,
+      10,
+      10,
+      11
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      9,
+      10,
+      10,
+      11
+     ]
+    }
+   }
+  }
+ ]
+}

@@ -1,7 +1,7 @@
 {
- "parent": "orefishfarm:fish_category/ore",
+ "parent": "orefishfarm:fish_category/paima",
  "textures": {
-  "t": "orefishfarm:item/fish/ferrofin",
-  "particle": "orefishfarm:item/fish/ferrofin"
+  "t": "orefishfarm:item/fish/ironpaima",
+  "particle": "orefishfarm:item/fish/ironpaima"
  }
 }

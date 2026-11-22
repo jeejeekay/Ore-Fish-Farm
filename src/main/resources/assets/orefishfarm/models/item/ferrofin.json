@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "orefishfarm:item/ferrofin"
+    "layer0": "orefishfarm:item/ironpaima"
   }
 }
