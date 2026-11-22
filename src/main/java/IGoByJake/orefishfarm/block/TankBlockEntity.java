@@ -559,12 +559,14 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
 
     /**
      * Pairs up the eating fish: two of a species, then any two that make a crossbreed (checking the genes the
-     * entry asks for). Each pair rolls once. No hints: pairs just sometimes breed.
+     * entry asks for). Each pair rolls once. No hints: pairs just sometimes breed. Newborns (not yet scooped out
+     * with a bucket) never breed, so a fresh baby can't pair up with its parents before the player picks the pairs.
      */
     private void breed(List<FishRef> eaters) {
         Set<FishRef> busy = new HashSet<>();
         Map<Item, List<FishRef>> bySpecies = new LinkedHashMap<>();
         for (FishRef f : eaters) {
+            if (FishGenes.isNewborn(f.stack())) continue;
             FishData.Fish d = FishData.fish(f.stack());
             if (d != null) bySpecies.computeIfAbsent(d.item(), k -> new ArrayList<>()).add(f);
         }

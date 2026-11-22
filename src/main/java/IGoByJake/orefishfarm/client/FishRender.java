@@ -46,6 +46,10 @@ public final class FishRender {
     public static void registerModels(ModelEvent.RegisterAdditional event) {
         CACHE.clear();
         ResourceManager rm = Minecraft.getInstance().getResourceManager();
+        rm.listResources("models/item/fish_bucket", p -> p.getPath().endsWith(".json")).keySet().forEach(file -> {
+            String path = file.getPath().substring("models/".length(), file.getPath().length() - ".json".length());
+            event.register(new ResourceLocation(file.getNamespace(), path));
+        });
         rm.listResources("models/fish", p -> p.getPath().endsWith(".json")).keySet().forEach(file -> {
             String path = file.getPath().substring("models/".length(), file.getPath().length() - ".json".length());
             event.register(new ResourceLocation(file.getNamespace(), path));

@@ -10,8 +10,9 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * Draws a Fish Bucket as its habitat's bucket (water, lava or void) with the fish's own sprite in front of it,
- * so one item can show any species, including fish added by datapacks.
+ * Draws a Fish Bucket. A species with its own bucket sprite ({@code <ns>:models/item/fish_bucket/<fish>.json}, like
+ * vanilla's bucket of cod: the fish lying across the top of a bucket) shows that. Any other species (fish added by
+ * datapacks or other mods without one) shows its habitat's bucket with the fish's sprite in front of it.
  */
 public class FishBucketRenderer extends BlockEntityWithoutLevelRenderer {
     private static FishBucketRenderer instance;
@@ -31,6 +32,19 @@ public class FishBucketRenderer extends BlockEntityWithoutLevelRenderer {
     @Override
     public void renderByItem(ItemStack stack, ItemDisplayContext ctx, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
         var items = Minecraft.getInstance().getItemRenderer();
+        ItemStack species = FishData.display(stack);
+        net.minecraft.resources.ResourceLocation id = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(species.getItem());
+        if (!species.isEmpty() && id != null) {
+            var models = Minecraft.getInstance().getModelManager();
+            var own = models.getModel(new net.minecraft.resources.ResourceLocation(id.getNamespace(), "item/fish_bucket/" + id.getPath()));
+            if (own != null && own != models.getMissingModel()) {
+                pose.pushPose();
+                pose.translate(0.5, 0.5, 0.5);
+                items.render(stack, ItemDisplayContext.NONE, false, pose, buffers, light, overlay, own);
+                pose.popPose();
+                return;
+            }
+        }
         pose.pushPose();
         pose.translate(0.5, 0.5, 0.5);
         items.renderStatic(FishBucketItem.look(stack), ItemDisplayContext.NONE, light, overlay, pose, buffers, null, 0);
