@@ -1,0 +1,73 @@
+{
+  "render_type": "minecraft:cutout",
+  "ambientocclusion": false,
+  "textures": {
+    "particle": "minecraft:block/soul_soil",
+    "pebble": "minecraft:block/magma",
+    "short": "minecraft:block/crimson_roots",
+    "tall": "minecraft:block/weeping_vines_plant",
+    "rock0": "minecraft:block/blackstone",
+    "rock1": "minecraft:block/basalt_side",
+    "rock2": "minecraft:block/polished_blackstone"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        3.0,
+        9
+      ],
+      "to": [
+        8,
+        5.0,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#rock1"
+        },
+        "south": {
+          "texture": "#rock1"
+        },
+        "east": {
+          "texture": "#rock1"
+        },
+        "west": {
+          "texture": "#rock1"
+        },
+        "up": {
+          "texture": "#rock1"
+        }
+      }
+    },
+    {
+      "from": [
+        10.25,
+        3.0,
+        3.25
+      ],
+      "to": [
+        11.75,
+        4.05,
+        4.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#pebble"
+        },
+        "south": {
+          "texture": "#pebble"
+        },
+        "east": {
+          "texture": "#pebble"
+        },
+        "west": {
+          "texture": "#pebble"
+        },
+        "up": {
+          "texture": "#pebble"
+        }
+      }
+    }
+  ]
+}

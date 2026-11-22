@@ -1,0 +1,186 @@
+{
+  "render_type": "minecraft:cutout",
+  "ambientocclusion": false,
+  "textures": {
+    "particle": "minecraft:block/soul_soil",
+    "pebble": "minecraft:block/magma",
+    "short": "minecraft:block/crimson_roots",
+    "tall": "minecraft:block/weeping_vines_plant",
+    "rock0": "minecraft:block/blackstone",
+    "rock1": "minecraft:block/basalt_side",
+    "rock2": "minecraft:block/polished_blackstone"
+  },
+  "elements": [
+    {
+      "from": [
+        4.25,
+        3.0,
+        4.25
+      ],
+      "to": [
+        5.75,
+        4.05,
+        5.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#pebble"
+        },
+        "south": {
+          "texture": "#pebble"
+        },
+        "east": {
+          "texture": "#pebble"
+        },
+        "west": {
+          "texture": "#pebble"
+        },
+        "up": {
+          "texture": "#pebble"
+        }
+      }
+    },
+    {
+      "from": [
+        6.0,
+        3.0,
+        5.0
+      ],
+      "to": [
+        8.0,
+        4.4,
+        7.0
+      ],
+      "faces": {
+        "north": {
+          "texture": "#pebble"
+        },
+        "south": {
+          "texture": "#pebble"
+        },
+        "east": {
+          "texture": "#pebble"
+        },
+        "west": {
+          "texture": "#pebble"
+        },
+        "up": {
+          "texture": "#pebble"
+        }
+      }
+    },
+    {
+      "from": [
+        5.25,
+        3.0,
+        7.25
+      ],
+      "to": [
+        6.75,
+        4.05,
+        8.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#pebble"
+        },
+        "south": {
+          "texture": "#pebble"
+        },
+        "east": {
+          "texture": "#pebble"
+        },
+        "west": {
+          "texture": "#pebble"
+        },
+        "up": {
+          "texture": "#pebble"
+        }
+      }
+    },
+    {
+      "from": [
+        9.5,
+        3.01,
+        11
+      ],
+      "to": [
+        12.5,
+        8.01,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#short",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#short",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          11,
+          3.01,
+          11
+        ],
+        "axis": "y",
+        "angle": 45
+      },
+      "shade": false
+    },
+    {
+      "from": [
+        9.5,
+        3.01,
+        11
+      ],
+      "to": [
+        12.5,
+        8.01,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#short",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#short",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          11,
+          3.01,
+          11
+        ],
+        "axis": "y",
+        "angle": -45
+      },
+      "shade": false
+    }
+  ]
+}

@@ -928,6 +928,1251 @@
       "apply": {
         "model": "orefishfarm:block/tank/floor_void"
       }
+    },
+    {
+      "when": {
+        "role": "fish",
+        "look": "water",
+        "down": "false",
+        "north": "false",
+        "east": "false",
+        "south": "false",
+        "west": "false"
+      },
+      "apply": [
+        {
+          "model": "orefishfarm:block/tank/decor/water_small_0",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_small_0",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_small_0",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_small_0",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_small_1",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_small_1",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_small_1",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_small_1",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_small_2",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_small_2",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_small_2",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_small_2",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_small_3",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_small_3",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_small_3",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_small_3",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_small_4",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_small_4",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_small_4",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_small_4",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/none",
+          "weight": 6
+        }
+      ]
+    },
+    {
+      "when": {
+        "OR": [
+          {
+            "role": "fish",
+            "look": "water",
+            "down": "false",
+            "north": "true",
+            "east": "false"
+          },
+          {
+            "role": "fish",
+            "look": "water",
+            "down": "false",
+            "north": "true",
+            "south": "false"
+          },
+          {
+            "role": "fish",
+            "look": "water",
+            "down": "false",
+            "north": "true",
+            "west": "false"
+          },
+          {
+            "role": "fish",
+            "look": "water",
+            "down": "false",
+            "east": "true",
+            "north": "false"
+          },
+          {
+            "role": "fish",
+            "look": "water",
+            "down": "false",
+            "east": "true",
+            "south": "false"
+          },
+          {
+            "role": "fish",
+            "look": "water",
+            "down": "false",
+            "east": "true",
+            "west": "false"
+          },
+          {
+            "role": "fish",
+            "look": "water",
+            "down": "false",
+            "south": "true",
+            "north": "false"
+          },
+          {
+            "role": "fish",
+            "look": "water",
+            "down": "false",
+            "south": "true",
+            "east": "false"
+          },
+          {
+            "role": "fish",
+            "look": "water",
+            "down": "false",
+            "south": "true",
+            "west": "false"
+          },
+          {
+            "role": "fish",
+            "look": "water",
+            "down": "false",
+            "west": "true",
+            "north": "false"
+          },
+          {
+            "role": "fish",
+            "look": "water",
+            "down": "false",
+            "west": "true",
+            "east": "false"
+          },
+          {
+            "role": "fish",
+            "look": "water",
+            "down": "false",
+            "west": "true",
+            "south": "false"
+          }
+        ]
+      },
+      "apply": [
+        {
+          "model": "orefishfarm:block/tank/decor/water_medium_0",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_medium_0",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_medium_0",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_medium_0",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_medium_1",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_medium_1",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_medium_1",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_medium_1",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_medium_2",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_medium_2",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_medium_2",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_medium_2",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_medium_3",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_medium_3",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_medium_3",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_medium_3",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_medium_4",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_medium_4",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_medium_4",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_medium_4",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/none",
+          "weight": 4
+        }
+      ]
+    },
+    {
+      "when": {
+        "role": "fish",
+        "look": "water",
+        "down": "false",
+        "north": "true",
+        "east": "true",
+        "south": "true",
+        "west": "true"
+      },
+      "apply": [
+        {
+          "model": "orefishfarm:block/tank/decor/water_large_0",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_large_0",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_large_0",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_large_0",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_large_1",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_large_1",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_large_1",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_large_1",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_large_2",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_large_2",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_large_2",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_large_2",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_large_3",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_large_3",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_large_3",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_large_3",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_large_4",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_large_4",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_large_4",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/water_large_4",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/none",
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "when": {
+        "role": "fish",
+        "look": "lava",
+        "down": "false",
+        "north": "false",
+        "east": "false",
+        "south": "false",
+        "west": "false"
+      },
+      "apply": [
+        {
+          "model": "orefishfarm:block/tank/decor/lava_small_0",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_small_0",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_small_0",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_small_0",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_small_1",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_small_1",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_small_1",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_small_1",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_small_2",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_small_2",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_small_2",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_small_2",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_small_3",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_small_3",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_small_3",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_small_3",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_small_4",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_small_4",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_small_4",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_small_4",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/none",
+          "weight": 6
+        }
+      ]
+    },
+    {
+      "when": {
+        "OR": [
+          {
+            "role": "fish",
+            "look": "lava",
+            "down": "false",
+            "north": "true",
+            "east": "false"
+          },
+          {
+            "role": "fish",
+            "look": "lava",
+            "down": "false",
+            "north": "true",
+            "south": "false"
+          },
+          {
+            "role": "fish",
+            "look": "lava",
+            "down": "false",
+            "north": "true",
+            "west": "false"
+          },
+          {
+            "role": "fish",
+            "look": "lava",
+            "down": "false",
+            "east": "true",
+            "north": "false"
+          },
+          {
+            "role": "fish",
+            "look": "lava",
+            "down": "false",
+            "east": "true",
+            "south": "false"
+          },
+          {
+            "role": "fish",
+            "look": "lava",
+            "down": "false",
+            "east": "true",
+            "west": "false"
+          },
+          {
+            "role": "fish",
+            "look": "lava",
+            "down": "false",
+            "south": "true",
+            "north": "false"
+          },
+          {
+            "role": "fish",
+            "look": "lava",
+            "down": "false",
+            "south": "true",
+            "east": "false"
+          },
+          {
+            "role": "fish",
+            "look": "lava",
+            "down": "false",
+            "south": "true",
+            "west": "false"
+          },
+          {
+            "role": "fish",
+            "look": "lava",
+            "down": "false",
+            "west": "true",
+            "north": "false"
+          },
+          {
+            "role": "fish",
+            "look": "lava",
+            "down": "false",
+            "west": "true",
+            "east": "false"
+          },
+          {
+            "role": "fish",
+            "look": "lava",
+            "down": "false",
+            "west": "true",
+            "south": "false"
+          }
+        ]
+      },
+      "apply": [
+        {
+          "model": "orefishfarm:block/tank/decor/lava_medium_0",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_medium_0",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_medium_0",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_medium_0",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_medium_1",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_medium_1",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_medium_1",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_medium_1",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_medium_2",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_medium_2",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_medium_2",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_medium_2",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_medium_3",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_medium_3",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_medium_3",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_medium_3",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_medium_4",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_medium_4",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_medium_4",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_medium_4",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/none",
+          "weight": 4
+        }
+      ]
+    },
+    {
+      "when": {
+        "role": "fish",
+        "look": "lava",
+        "down": "false",
+        "north": "true",
+        "east": "true",
+        "south": "true",
+        "west": "true"
+      },
+      "apply": [
+        {
+          "model": "orefishfarm:block/tank/decor/lava_large_0",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_large_0",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_large_0",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_large_0",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_large_1",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_large_1",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_large_1",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_large_1",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_large_2",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_large_2",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_large_2",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_large_2",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_large_3",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_large_3",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_large_3",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_large_3",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_large_4",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_large_4",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_large_4",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/lava_large_4",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/none",
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "when": {
+        "role": "fish",
+        "look": "void",
+        "down": "false",
+        "north": "false",
+        "east": "false",
+        "south": "false",
+        "west": "false"
+      },
+      "apply": [
+        {
+          "model": "orefishfarm:block/tank/decor/void_small_0",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_small_0",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_small_0",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_small_0",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_small_1",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_small_1",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_small_1",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_small_1",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_small_2",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_small_2",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_small_2",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_small_2",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_small_3",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_small_3",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_small_3",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_small_3",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_small_4",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_small_4",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_small_4",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_small_4",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/none",
+          "weight": 6
+        }
+      ]
+    },
+    {
+      "when": {
+        "OR": [
+          {
+            "role": "fish",
+            "look": "void",
+            "down": "false",
+            "north": "true",
+            "east": "false"
+          },
+          {
+            "role": "fish",
+            "look": "void",
+            "down": "false",
+            "north": "true",
+            "south": "false"
+          },
+          {
+            "role": "fish",
+            "look": "void",
+            "down": "false",
+            "north": "true",
+            "west": "false"
+          },
+          {
+            "role": "fish",
+            "look": "void",
+            "down": "false",
+            "east": "true",
+            "north": "false"
+          },
+          {
+            "role": "fish",
+            "look": "void",
+            "down": "false",
+            "east": "true",
+            "south": "false"
+          },
+          {
+            "role": "fish",
+            "look": "void",
+            "down": "false",
+            "east": "true",
+            "west": "false"
+          },
+          {
+            "role": "fish",
+            "look": "void",
+            "down": "false",
+            "south": "true",
+            "north": "false"
+          },
+          {
+            "role": "fish",
+            "look": "void",
+            "down": "false",
+            "south": "true",
+            "east": "false"
+          },
+          {
+            "role": "fish",
+            "look": "void",
+            "down": "false",
+            "south": "true",
+            "west": "false"
+          },
+          {
+            "role": "fish",
+            "look": "void",
+            "down": "false",
+            "west": "true",
+            "north": "false"
+          },
+          {
+            "role": "fish",
+            "look": "void",
+            "down": "false",
+            "west": "true",
+            "east": "false"
+          },
+          {
+            "role": "fish",
+            "look": "void",
+            "down": "false",
+            "west": "true",
+            "south": "false"
+          }
+        ]
+      },
+      "apply": [
+        {
+          "model": "orefishfarm:block/tank/decor/void_medium_0",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_medium_0",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_medium_0",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_medium_0",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_medium_1",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_medium_1",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_medium_1",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_medium_1",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_medium_2",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_medium_2",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_medium_2",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_medium_2",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_medium_3",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_medium_3",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_medium_3",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_medium_3",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_medium_4",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_medium_4",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_medium_4",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_medium_4",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/none",
+          "weight": 4
+        }
+      ]
+    },
+    {
+      "when": {
+        "role": "fish",
+        "look": "void",
+        "down": "false",
+        "north": "true",
+        "east": "true",
+        "south": "true",
+        "west": "true"
+      },
+      "apply": [
+        {
+          "model": "orefishfarm:block/tank/decor/void_large_0",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_large_0",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_large_0",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_large_0",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_large_1",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_large_1",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_large_1",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_large_1",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_large_2",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_large_2",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_large_2",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_large_2",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_large_3",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_large_3",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_large_3",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_large_3",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_large_4",
+          "weight": 2
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_large_4",
+          "weight": 2,
+          "y": 90
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_large_4",
+          "weight": 2,
+          "y": 180
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/void_large_4",
+          "weight": 2,
+          "y": 270
+        },
+        {
+          "model": "orefishfarm:block/tank/decor/none",
+          "weight": 2
+        }
+      ]
     }
   ]
 }

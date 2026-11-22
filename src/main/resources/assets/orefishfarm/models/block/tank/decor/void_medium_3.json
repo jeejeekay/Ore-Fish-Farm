@@ -1,0 +1,267 @@
+{
+  "render_type": "minecraft:cutout",
+  "ambientocclusion": false,
+  "textures": {
+    "particle": "minecraft:block/end_stone",
+    "pebble": "minecraft:block/purpur_pillar",
+    "short": "minecraft:block/chorus_flower",
+    "tall": "minecraft:block/twisting_vines_plant",
+    "rock0": "minecraft:block/end_stone_bricks",
+    "rock1": "minecraft:block/purpur_block",
+    "rock2": "minecraft:block/obsidian"
+  },
+  "elements": [
+    {
+      "from": [
+        3.0,
+        3.01,
+        5
+      ],
+      "to": [
+        7.0,
+        13.01,
+        5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#tall",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#tall",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          5,
+          3.01,
+          5
+        ],
+        "axis": "y",
+        "angle": 45
+      },
+      "shade": false
+    },
+    {
+      "from": [
+        3.0,
+        3.01,
+        5
+      ],
+      "to": [
+        7.0,
+        13.01,
+        5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#tall",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#tall",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          5,
+          3.01,
+          5
+        ],
+        "axis": "y",
+        "angle": -45
+      },
+      "shade": false
+    },
+    {
+      "from": [
+        5.0,
+        3.01,
+        6.5
+      ],
+      "to": [
+        9.0,
+        10.01,
+        6.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#short",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#short",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          7,
+          3.01,
+          6.5
+        ],
+        "axis": "y",
+        "angle": 45
+      },
+      "shade": false
+    },
+    {
+      "from": [
+        5.0,
+        3.01,
+        6.5
+      ],
+      "to": [
+        9.0,
+        10.01,
+        6.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#short",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#short",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          7,
+          3.01,
+          6.5
+        ],
+        "axis": "y",
+        "angle": -45
+      },
+      "shade": false
+    },
+    {
+      "from": [
+        9.0,
+        3.01,
+        11
+      ],
+      "to": [
+        13.0,
+        12.01,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#tall",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#tall",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          11,
+          3.01,
+          11
+        ],
+        "axis": "y",
+        "angle": 45
+      },
+      "shade": false
+    },
+    {
+      "from": [
+        9.0,
+        3.01,
+        11
+      ],
+      "to": [
+        13.0,
+        12.01,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#tall",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#tall",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          11,
+          3.01,
+          11
+        ],
+        "axis": "y",
+        "angle": -45
+      },
+      "shade": false
+    }
+  ]
+}

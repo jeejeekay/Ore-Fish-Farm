@@ -1,0 +1,102 @@
+{
+  "render_type": "minecraft:cutout",
+  "ambientocclusion": false,
+  "textures": {
+    "particle": "minecraft:block/sand",
+    "pebble": "minecraft:block/gravel",
+    "short": "minecraft:block/seagrass",
+    "tall": "minecraft:block/kelp_plant",
+    "rock0": "minecraft:block/cobblestone",
+    "rock1": "minecraft:block/mossy_cobblestone",
+    "rock2": "minecraft:block/stone"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        3.0,
+        4
+      ],
+      "to": [
+        12,
+        8.0,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#rock0"
+        },
+        "south": {
+          "texture": "#rock0"
+        },
+        "east": {
+          "texture": "#rock0"
+        },
+        "west": {
+          "texture": "#rock0"
+        },
+        "up": {
+          "texture": "#rock0"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        3.0,
+        5
+      ],
+      "to": [
+        10,
+        10.0,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#rock1"
+        },
+        "south": {
+          "texture": "#rock1"
+        },
+        "east": {
+          "texture": "#rock1"
+        },
+        "west": {
+          "texture": "#rock1"
+        },
+        "up": {
+          "texture": "#rock1"
+        }
+      }
+    },
+    {
+      "from": [
+        11.5,
+        3.0,
+        11.0
+      ],
+      "to": [
+        13.5,
+        4.4,
+        13.0
+      ],
+      "faces": {
+        "north": {
+          "texture": "#pebble"
+        },
+        "south": {
+          "texture": "#pebble"
+        },
+        "east": {
+          "texture": "#pebble"
+        },
+        "west": {
+          "texture": "#pebble"
+        },
+        "up": {
+          "texture": "#pebble"
+        }
+      }
+    }
+  ]
+}

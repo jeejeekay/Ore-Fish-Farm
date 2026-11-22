@@ -3,8 +3,6 @@
   "ambientocclusion": false,
   "textures": {
     "floor": "minecraft:block/soul_soil",
-    "plant": "minecraft:block/crimson_roots",
-    "pebble": "minecraft:block/blackstone",
     "particle": "minecraft:block/soul_soil"
   },
   "elements": [
@@ -22,95 +20,6 @@
       "faces": {
         "up": {
           "texture": "#floor"
-        }
-      }
-    },
-    {
-      "from": [
-        2,
-        3.01,
-        12.5
-      ],
-      "to": [
-        6,
-        12,
-        12.5
-      ],
-      "faces": {
-        "north": {
-          "texture": "#plant"
-        },
-        "south": {
-          "texture": "#plant"
-        }
-      },
-      "rotation": {
-        "origin": [
-          4,
-          3,
-          12.5
-        ],
-        "axis": "y",
-        "angle": 45
-      },
-      "shade": false
-    },
-    {
-      "from": [
-        2,
-        3.01,
-        12.5
-      ],
-      "to": [
-        6,
-        12,
-        12.5
-      ],
-      "faces": {
-        "north": {
-          "texture": "#plant"
-        },
-        "south": {
-          "texture": "#plant"
-        }
-      },
-      "rotation": {
-        "origin": [
-          4,
-          3,
-          12.5
-        ],
-        "axis": "y",
-        "angle": -45
-      },
-      "shade": false
-    },
-    {
-      "from": [
-        11,
-        3.01,
-        3
-      ],
-      "to": [
-        13,
-        4,
-        5
-      ],
-      "faces": {
-        "north": {
-          "texture": "#pebble"
-        },
-        "south": {
-          "texture": "#pebble"
-        },
-        "east": {
-          "texture": "#pebble"
-        },
-        "west": {
-          "texture": "#pebble"
-        },
-        "up": {
-          "texture": "#pebble"
         }
       }
     }
