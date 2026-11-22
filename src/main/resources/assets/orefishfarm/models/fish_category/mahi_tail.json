@@ -1,0 +1,42 @@
+{
+ "credit": "Jake's Ore Fish Farm: shared 'mahi' fish model, a mahi-mahi (big square head, tapering body, full-length dorsal fin, forked tail); side view, head toward +x. A fish uses it with its own texture: {\"parent\": \"orefishfarm:fish_category/mahi\", \"textures\": {\"t\": ..., \"particle\": ...}}",
+ "texture_size": [
+  32,
+  32
+ ],
+ "elements": [
+  {
+   "name": "tail",
+   "from": [
+    0.2,
+    5.4,
+    8
+   ],
+   "to": [
+    2.9,
+    10.4,
+    8
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      0.0,
+      2.5,
+      4.5
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      2.5,
+      0.0,
+      5.0,
+      4.5
+     ]
+    }
+   }
+  }
+ ]
+}

@@ -1,7 +1,7 @@
 {
- "parent": "orefishfarm:fish_category/ray",
+ "parent": "orefishfarm:fish_category/sturgeon",
  "textures": {
-  "t": "orefishfarm:item/fish/zincray",
-  "particle": "orefishfarm:item/fish/zincray"
+  "t": "orefishfarm:item/fish/sturginc",
+  "particle": "orefishfarm:item/fish/sturginc"
  }
 }

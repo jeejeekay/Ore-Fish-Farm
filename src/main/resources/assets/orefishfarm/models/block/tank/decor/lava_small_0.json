@@ -13,70 +13,70 @@
   "elements": [
     {
       "from": [
-        10.0,
-        3.0,
-        3.0
-      ],
-      "to": [
-        12.0,
-        4.4,
-        5.0
-      ],
-      "faces": {
-        "north": {
-          "texture": "#pebble"
-        },
-        "south": {
-          "texture": "#pebble"
-        },
-        "east": {
-          "texture": "#pebble"
-        },
-        "west": {
-          "texture": "#pebble"
-        },
-        "up": {
-          "texture": "#pebble"
-        }
-      }
-    },
-    {
-      "from": [
-        7.75,
-        3.0,
-        9.75
-      ],
-      "to": [
-        9.25,
-        4.05,
-        11.25
-      ],
-      "faces": {
-        "north": {
-          "texture": "#pebble"
-        },
-        "south": {
-          "texture": "#pebble"
-        },
-        "east": {
-          "texture": "#pebble"
-        },
-        "west": {
-          "texture": "#pebble"
-        },
-        "up": {
-          "texture": "#pebble"
-        }
-      }
-    },
-    {
-      "from": [
         2.0,
+        3.0,
+        11.5
+      ],
+      "to": [
+        4.0,
+        4.4,
+        13.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#pebble"
+        },
+        "south": {
+          "texture": "#pebble"
+        },
+        "east": {
+          "texture": "#pebble"
+        },
+        "west": {
+          "texture": "#pebble"
+        },
+        "up": {
+          "texture": "#pebble"
+        }
+      }
+    },
+    {
+      "from": [
+        11.75,
+        3.0,
+        2.75
+      ],
+      "to": [
+        13.25,
+        4.05,
+        4.25
+      ],
+      "faces": {
+        "north": {
+          "texture": "#pebble"
+        },
+        "south": {
+          "texture": "#pebble"
+        },
+        "east": {
+          "texture": "#pebble"
+        },
+        "west": {
+          "texture": "#pebble"
+        },
+        "up": {
+          "texture": "#pebble"
+        }
+      }
+    },
+    {
+      "from": [
+        6.0,
         3.01,
         12
       ],
       "to": [
-        6.0,
+        10.0,
         9.01,
         12
       ],
@@ -102,7 +102,7 @@
       },
       "rotation": {
         "origin": [
-          4,
+          8,
           3.01,
           12
         ],
@@ -113,12 +113,12 @@
     },
     {
       "from": [
-        2.0,
+        6.0,
         3.01,
         12
       ],
       "to": [
-        6.0,
+        10.0,
         9.01,
         12
       ],
@@ -144,7 +144,7 @@
       },
       "rotation": {
         "origin": [
-          4,
+          8,
           3.01,
           12
         ],

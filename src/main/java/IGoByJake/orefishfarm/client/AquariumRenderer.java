@@ -39,6 +39,14 @@ import java.util.Set;
  *       turn and travel and a nose or tail pointed at the glass must not poke through (the roaming margin is about
  *       three quarters of the drawn fish's size, so even long-bodied mobs stay inside).</li>
  * </ul>
+ * Swim styles, by item tag on the fish's species (any mod or pack can add to them):
+ * <ul>
+ *   <li>normal: the wandering loop above;</li>
+ *   <li>{@code #orefishfarm:bottom_feeders}: only the aquarium's bottom layer, low and slow, along the clear lanes
+ *       through the middle of each block (the floor decor keeps its rocks in the corners), stopping now and then to
+ *       graze, and kept level;</li>
+ *   <li>{@code #orefishfarm:fast_swimmers}: quick laps round the outside of the aquarium, spiralling up and down.</li>
+ * </ul>
  * Paths and each block's glass sides are worked out once per aquarium shape and cached, so a frame only
  * evaluates a spline and one lookup per fish. Every fish has its own timing. At most 24 fish are drawn per
  * aquarium, and none past 32 blocks.
@@ -52,6 +60,20 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
     private static final int MAX_FISH = 24;
     private static final double MAX_DIST = 32;
     private static final Map<BlockPos, Paths> CACHE = new HashMap<>();
+    public static final net.minecraft.tags.TagKey<net.minecraft.world.item.Item> BOTTOM_FEEDERS =
+            net.minecraft.tags.ItemTags.create(new net.minecraft.resources.ResourceLocation("orefishfarm", "bottom_feeders"));
+    public static final net.minecraft.tags.TagKey<net.minecraft.world.item.Item> FAST_SWIMMERS =
+            net.minecraft.tags.ItemTags.create(new net.minecraft.resources.ResourceLocation("orefishfarm", "fast_swimmers"));
+    static final int NORMAL = 0, BOTTOM = 1, FAST = 2;
+
+    /** The swim style for the fish in this bucket, from its species' tags. */
+    private static int style(ItemStack bucket) {
+        IGoByJake.orefishfarm.data.FishData.Fish d = IGoByJake.orefishfarm.data.FishData.fish(bucket);
+        ItemStack species = d == null ? bucket : new ItemStack(d.item());
+        if (species.is(BOTTOM_FEEDERS)) return BOTTOM;
+        if (species.is(FAST_SWIMMERS)) return FAST;
+        return NORMAL;
+    }
 
     public AquariumRenderer(BlockEntityRendererProvider.Context ctx) {}
 
@@ -93,12 +115,13 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
             for (int s = 0; s < TankBlockEntity.FISH && drawn < MAX_FISH; s++) {
                 ItemStack bucket = t.fishStack(s);
                 if (bucket.isEmpty()) continue;
-                Path path = paths.get(m * TankBlockEntity.FISH + s, m);
+                int style = style(bucket);
+                Path path = paths.get(m * TankBlockEntity.FISH + s, m, style);
                 Vec3 p = paths.clamp(path.at(time), path.blockAt(time));
-                Vec3 ahead = paths.clamp(path.at(time + 0.15F), path.blockAt(time + 0.15F));
-                double dx = ahead.x - p.x, dy = ahead.y - p.y, dz = ahead.z - p.z;
+                Vec3 dir = path.heading(time, paths);
+                double dx = dir.x, dy = dir.y, dz = dir.z;
                 float yaw = (float) Math.atan2(-dz, dx);
-                float pitch = (float) Mth.clamp(Math.atan2(dy, Math.sqrt(dx * dx + dz * dz)), -0.4, 0.4);
+                float pitch = style == BOTTOM ? 0F : (float) Mth.clamp(Math.atan2(dy, Math.sqrt(dx * dx + dz * dz)), -0.4, 0.4);
                 int lit = LevelRenderer.getLightColor(level, BlockPos.containing(p));
                 float phase = phase(members.get(m), s);
                 pose.pushPose();
@@ -151,8 +174,14 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
             }
         }
 
-        Path get(int fish, int home) {
-            return this.byFish.computeIfAbsent(fish, k -> new Path(this, k, home));
+        Path get(int fish, int home, int style) {
+            return this.byFish.computeIfAbsent(fish * 4 + style, k -> new Path(this, fish, home, style));
+        }
+
+        /** Tank blocks with glass underneath: the aquarium's bottom layer. */
+        boolean isFloor(BlockPos b) {
+            Integer m = this.glass.get(b);
+            return m != null && (m & (1 << Direction.DOWN.ordinal())) != 0;
         }
 
         boolean isGlass(BlockPos b, Direction d) {
@@ -171,7 +200,7 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
                 mask = this.glass.get(b);
             }
             double x = axis(p.x, b.getX(), mask, Direction.WEST, Direction.EAST, this.margin);
-            double y = axis(p.y, b.getY(), mask, Direction.DOWN, Direction.UP, this.margin);
+            double y = axis(p.y, b.getY(), mask, Direction.DOWN, Direction.UP, Math.min(this.margin, BOTTOM_Y - 0.02));
             double z = axis(p.z, b.getZ(), mask, Direction.NORTH, Direction.SOUTH, this.margin);
             return x == p.x && y == p.y && z == p.z ? p : new Vec3(x, y, z);
         }
@@ -188,47 +217,135 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
      * The loop wanders between tank blocks that share a face, and crossing from one block to the next always
      * goes through a point on the shared face.
      */
+    /** Bottom feeders' height above the block's bottom (the floor surface is at 3/16). */
+    static final double BOTTOM_Y = 0.30;
+
     private static final class Path {
         private static final int STOPS = 10;
-        private static final double SPEED = 0.35; // blocks per second
+        private static final double SPEED = 0.35, BOTTOM_SPEED = 0.2, FAST_SPEED = 1.1; // blocks per second
         final Vec3[] pts;
         final BlockPos[] blocks;
         final float[] start;
+        /** Seconds the fish rests at each waypoint before moving on (bottom feeders grazing). */
+        final float[] dwell;
 
-        Path(Paths p, int seed, int home) {
-            Random r = new Random(seed * 341873128712L + p.hash);
+        Path(Paths p, int seed, int home, int style) {
+            Random r = new Random(seed * 341873128712L + p.hash + style * 7919L);
             List<Vec3> pts = new ArrayList<>();
             List<BlockPos> blocks = new ArrayList<>();
-            BlockPos first = p.members.get(home), cur = first;
-            for (int i = 0; i <= STOPS; i++) {
-                // Next block: stay, or step through a face into a touching tank block; the last step heads home.
-                BlockPos next = cur;
-                if (i == STOPS) {
-                    next = first;
-                } else if (i > 0) {
-                    List<BlockPos> near = new ArrayList<>();
-                    near.add(cur);
-                    for (Direction d : Paths.DIRS) if (!p.isGlass(cur, d)) near.add(cur.relative(d));
-                    next = near.get(r.nextInt(near.size()));
+            double speed = SPEED;
+            if (style == FAST) {
+                lapPoints(p, r, pts, blocks);
+                speed = FAST_SPEED;
+            } else {
+                boolean bottom = style == BOTTOM;
+                BlockPos first = p.members.get(home);
+                if (bottom && !p.isFloor(first)) { // start on the bottom layer, under the home block if possible
+                    BlockPos f = first;
+                    while (p.glass.containsKey(f.below()) && !p.isFloor(f)) f = f.below();
+                    first = p.isFloor(f) ? f : p.members.stream().filter(p::isFloor).findFirst().orElse(first);
                 }
-                if (!next.equals(cur)) walk(p, r, cur, next, pts, blocks);
-                cur = next;
-                if (i == STOPS) break;
-                pts.add(inside(p, r, cur));
-                blocks.add(cur);
+                BlockPos cur = first;
+                for (int i = 0; i <= STOPS; i++) {
+                    // Next block: stay, or step through a face into a touching tank block; the last step heads home.
+                    BlockPos next = cur;
+                    if (i == STOPS) {
+                        next = first;
+                    } else if (i > 0) {
+                        List<BlockPos> near = new ArrayList<>();
+                        near.add(cur);
+                        for (Direction d : Paths.DIRS) {
+                            if (p.isGlass(cur, d)) continue;
+                            BlockPos n = cur.relative(d);
+                            if (!bottom || (d.getAxis() != Direction.Axis.Y && p.isFloor(n))) near.add(n);
+                        }
+                        next = near.get(r.nextInt(near.size()));
+                    }
+                    if (!next.equals(cur) && !walk(p, r, cur, next, pts, blocks, bottom)) next = cur;
+                    cur = next;
+                    if (i == STOPS) break;
+                    pts.add(bottom ? lane(p, r, cur) : inside(p, r, cur));
+                    blocks.add(cur);
+                }
+                if (bottom) speed = BOTTOM_SPEED;
             }
             int n = pts.size();
             this.pts = pts.toArray(new Vec3[0]);
             this.blocks = blocks.toArray(new BlockPos[0]);
             this.start = new float[n + 1];
+            this.dwell = new float[n];
             for (int i = 0; i < n; i++) {
+                if (style == BOTTOM && r.nextFloat() < 0.6F) this.dwell[i] = 1.5F + r.nextFloat() * 3F;
                 double d = this.pts[i].distanceTo(this.pts[(i + 1) % n]);
-                this.start[i + 1] = this.start[i] + (float) Math.max(1.0, d / SPEED);
+                this.start[i + 1] = this.start[i] + this.dwell[i] + (float) Math.max(style == FAST ? 0.05 : 1.0, d / speed);
             }
         }
 
-        /** Face points from {@code a} to {@code b} along a shortest route through touching tank blocks. */
-        private static void walk(Paths p, Random r, BlockPos a, BlockPos b, List<Vec3> pts, List<BlockPos> blocks) {
+        /**
+         * Fast swimmers: laps round the outside of the aquarium's footprint (a rounded rectangle kept off the
+         * glass), two laps rising from near the floor to near the top, two coming back down. Points outside the
+         * aquarium's blocks (odd shapes) are pulled into the nearest one by the frame clamp.
+         */
+        private static void lapPoints(Paths p, Random r, List<Vec3> pts, List<BlockPos> blocks) {
+            int x0 = Integer.MAX_VALUE, z0 = Integer.MAX_VALUE, y0 = Integer.MAX_VALUE, x1 = Integer.MIN_VALUE, z1 = Integer.MIN_VALUE, y1 = Integer.MIN_VALUE;
+            for (BlockPos b : p.members) {
+                x0 = Math.min(x0, b.getX()); x1 = Math.max(x1, b.getX());
+                y0 = Math.min(y0, b.getY()); y1 = Math.max(y1, b.getY());
+                z0 = Math.min(z0, b.getZ()); z1 = Math.max(z1, b.getZ());
+            }
+            double in = Math.max(p.inset, 0.3);
+            double ax = x0 + in, bx = x1 + 1 - in, az = z0 + in, bz = z1 + 1 - in;
+            double lo = y0 + 0.35, hi = Math.max(lo, y1 + 1 - 0.3);
+            double rad = Math.min(0.3, Math.min(bx - ax, bz - az) / 2);
+            // the loop: corners rounded with three points each, walked clockwise or anticlockwise
+            List<double[]> ring = new ArrayList<>();
+            double[][] corners = {{bx, bz, 0}, {ax, bz, 1}, {ax, az, 2}, {bx, az, 3}};
+            for (double[] c : corners) {
+                double cx = c[0] + (c[0] == bx ? -rad : rad), cz = c[1] + (c[1] == bz ? -rad : rad);
+                double startA = c[2] * Math.PI / 2;
+                for (int k = 0; k < 3; k++) {
+                    double a = startA + k * Math.PI / 4;
+                    ring.add(new double[]{cx + Math.cos(a) * rad, cz + Math.sin(a) * rad});
+                }
+            }
+            if (r.nextBoolean()) java.util.Collections.reverse(ring);
+            int shift = r.nextInt(ring.size());
+            int laps = 4, n = ring.size() * laps;
+            for (int i = 0; i < n; i++) {
+                double[] q = ring.get((i + shift) % ring.size());
+                double y = lo + (hi - lo) * (0.5 - 0.5 * Math.cos(2 * Math.PI * i / n));
+                Vec3 v = new Vec3(q[0], y, q[1]);
+                pts.add(v);
+                blocks.add(nearest(p, v));
+            }
+        }
+
+        private static BlockPos nearest(Paths p, Vec3 v) {
+            BlockPos at = BlockPos.containing(v);
+            if (p.glass.containsKey(at)) return at;
+            BlockPos best = p.members.get(0);
+            double bd = Double.MAX_VALUE;
+            for (BlockPos b : p.members) {
+                double d = v.distanceToSqr(b.getX() + 0.5, b.getY() + 0.5, b.getZ() + 0.5);
+                if (d < bd) { bd = d; best = b; }
+            }
+            return best;
+        }
+
+        /** A bottom feeder's stop: low over the floor, on the clear lanes through the middle of the block. */
+        private static Vec3 lane(Paths p, Random r, BlockPos b) {
+            double j = 0.1;
+            boolean alongX = r.nextBoolean();
+            double x = b.getX() + 0.5 + (alongX ? (r.nextDouble() * 2 - 1) * 0.2 : (r.nextDouble() * 2 - 1) * j * 0.3);
+            double z = b.getZ() + 0.5 + (alongX ? (r.nextDouble() * 2 - 1) * j * 0.3 : (r.nextDouble() * 2 - 1) * 0.2);
+            return new Vec3(x, b.getY() + BOTTOM_Y + r.nextDouble() * 0.03, z);
+        }
+
+        /**
+         * Face points from {@code a} to {@code b} along a shortest route through touching tank blocks (for bottom
+         * feeders, only sideways through the bottom layer). False if there is no such route.
+         */
+        private static boolean walk(Paths p, Random r, BlockPos a, BlockPos b, List<Vec3> pts, List<BlockPos> blocks, boolean bottom) {
             Map<BlockPos, BlockPos> prev = new HashMap<>();
             java.util.ArrayDeque<BlockPos> queue = new java.util.ArrayDeque<>();
             prev.put(a, a);
@@ -238,17 +355,24 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
                 for (Direction d : Paths.DIRS) {
                     if (p.isGlass(c, d)) continue;
                     BlockPos n = c.relative(d);
+                    if (bottom && (d.getAxis() == Direction.Axis.Y || !p.isFloor(n))) continue;
                     if (prev.putIfAbsent(n, c) == null) queue.add(n);
                 }
             }
+            if (!prev.containsKey(b)) return false;
             List<BlockPos> route = new ArrayList<>();
             for (BlockPos c = b; !c.equals(a); c = prev.get(c)) route.add(0, c);
             BlockPos from = a;
             for (BlockPos to : route) {
-                pts.add(face(r, from, to, p.inset));
+                if (bottom) { // the middle of the shared face, low down: the lanes line up from block to block
+                    pts.add(new Vec3((from.getX() + to.getX()) / 2.0 + 0.5, from.getY() + BOTTOM_Y, (from.getZ() + to.getZ()) / 2.0 + 0.5));
+                } else {
+                    pts.add(face(r, from, to, p.inset));
+                }
                 blocks.add(to); // the stretch after a face point runs through the block it enters
                 from = to;
             }
+            return true;
         }
 
         /** A point on the face shared by two touching blocks, away from its edges. */
@@ -285,13 +409,30 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
             return this.blocks[index(t)];
         }
 
+        /** Which way the fish faces at time {@code t}: along its path, or toward its next stop while resting. */
+        Vec3 heading(float t, Paths paths) {
+            int n = this.pts.length;
+            float total = this.start[n];
+            float u = t % total;
+            if (u < 0) u += total;
+            int i = index(t);
+            if (u - this.start[i] < this.dwell[i]) {
+                Vec3 d = this.pts[(i + 1) % n].subtract(this.pts[i]);
+                return d.lengthSqr() < 1.0E-6 ? new Vec3(1, 0, 0) : d;
+            }
+            Vec3 a = paths.clamp(at(t), blockAt(t)), b = paths.clamp(at(t + 0.15F), blockAt(t + 0.15F));
+            Vec3 d = b.subtract(a);
+            return d.lengthSqr() < 1.0E-8 ? this.pts[(i + 1) % n].subtract(this.pts[i]) : d;
+        }
+
         Vec3 at(float t) {
             int n = this.pts.length;
             float total = this.start[n];
             float u = t % total;
             if (u < 0) u += total;
             int i = index(t);
-            float f = (u - this.start[i]) / (this.start[i + 1] - this.start[i]);
+            float moving = this.start[i + 1] - this.start[i] - this.dwell[i];
+            float f = Math.max(0F, u - this.start[i] - this.dwell[i]) / moving;
             Vec3 p0 = this.pts[(i - 1 + n) % n], p1 = this.pts[i], p2 = this.pts[(i + 1) % n], p3 = this.pts[(i + 2) % n];
             return new Vec3(cr(p0.x, p1.x, p2.x, p3.x, f), cr(p0.y, p1.y, p2.y, p3.y, f), cr(p0.z, p1.z, p2.z, p3.z, f));
         }
