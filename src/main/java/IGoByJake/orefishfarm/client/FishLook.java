@@ -47,6 +47,7 @@ public final class FishLook {
         if (e == null) return null;
         CompoundTag tag = bucket.getTag();
         if (e instanceof Bucketable b && tag != null) b.loadFromBucketTag(tag.copy());
+        e.refreshDimensions(); // big species (fish file "scale") are fitted by their scaled hitbox
         e.setYRot(0);
         e.setXRot(0);
         // Count as in water, so fish renderers don't lay the mob on its side as if it were flopping on land.

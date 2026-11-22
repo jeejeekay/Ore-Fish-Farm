@@ -18,6 +18,26 @@ import net.minecraftforge.registries.ForgeRegistries;
 public class OreFish extends AbstractFish {
     public OreFish(EntityType<? extends AbstractFish> type, Level level) {
         super(type, level);
+        refreshDimensions(); // the type gives the unscaled size; use the fish file's scale from the start
+    }
+
+    /** Fish file "scale": the mob (hitbox and model) is that many times bigger. Tanks fit the mob by its hitbox, so they stay the same. */
+    public float sizeScale() {
+        ItemStack fish = fishItem();
+        return fish.isEmpty() ? 1F : IGoByJake.orefishfarm.data.FishData.scale(fish.getItem());
+    }
+
+    @Override
+    public net.minecraft.world.entity.EntityDimensions getDimensions(net.minecraft.world.entity.Pose pose) {
+        float s = sizeScale();
+        return s == 1F ? super.getDimensions(pose) : super.getDimensions(pose).scale(s);
+    }
+
+    @Override
+    public void tick() {
+        // Fish data (and so the scale) can arrive after the mob was made, or change on /reload.
+        if (this.tickCount % 40 == 1 && Math.abs(getBbWidth() - getType().getWidth() * sizeScale()) > 1.0E-3) refreshDimensions();
+        super.tick();
     }
 
     /** The fish item with this mob's id. */

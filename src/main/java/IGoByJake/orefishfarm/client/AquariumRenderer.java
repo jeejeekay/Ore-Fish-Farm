@@ -116,16 +116,8 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
                 ItemStack bucket = t.fishStack(s);
                 if (bucket.isEmpty()) continue;
                 int style = style(bucket);
-                float size = lone ? (pair ? SIZE_PAIR : SIZE_ALONE) : SIZE_ROAM;
-                // Big species (fish file "scale"): drawn bigger by FishRender; in a lone block at most 1.5x so they
-                // still fit, and kept further off the glass by the extra half-length.
-                IGoByJake.orefishfarm.data.FishData.Fish d = IGoByJake.orefishfarm.data.FishData.fish(bucket);
-                float scale = d == null ? 1F : IGoByJake.orefishfarm.data.FishData.scale(d.item());
-                float shown = lone ? Math.min(scale, 1.5F) : scale;
-                if (shown != scale) size *= shown / scale;
-                double extra = Math.max(0, shown - 1) * 0.44 * (lone ? (pair ? SIZE_PAIR : SIZE_ALONE) : SIZE_ROAM);
                 Path path = paths.get(m * TankBlockEntity.FISH + s, m, style);
-                Vec3 p = paths.clamp(path.at(time), path.blockAt(time), extra);
+                Vec3 p = paths.clamp(path.at(time), path.blockAt(time));
                 Vec3 dir = path.heading(time, paths);
                 double dx = dir.x, dy = dir.y, dz = dir.z;
                 float yaw = (float) Math.atan2(-dz, dx);
@@ -137,7 +129,7 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
                 pose.mulPose(Axis.YP.rotation(yaw));
                 pose.mulPose(Axis.ZP.rotation(pitch));
                 pose.mulPose(Axis.ZP.rotationDegrees(Mth.sin(time * 1.1F + phase) * 4F));
-                draw(bucket, size, level, phase, partial, pose, buffers, lit);
+                draw(bucket, lone ? (pair ? SIZE_PAIR : SIZE_ALONE) : SIZE_ROAM, level, phase, partial, pose, buffers, lit);
                 pose.popPose();
                 drawn++;
             }
@@ -201,21 +193,15 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
          * {@code fallback} (the block the fish is passing through), then held {@link #margin} off any glass side.
          */
         Vec3 clamp(Vec3 p, BlockPos fallback) {
-            return clamp(p, fallback, 0);
-        }
-
-        /** As {@link #clamp(Vec3, BlockPos)}, kept {@code extra} further off the side and top glass (big fish). */
-        Vec3 clamp(Vec3 p, BlockPos fallback, double extra) {
             BlockPos b = BlockPos.containing(p);
             Integer mask = this.glass.get(b);
             if (mask == null) {
                 b = fallback;
                 mask = this.glass.get(b);
             }
-            double side = Math.min(0.45, this.margin + extra);
-            double x = axis(p.x, b.getX(), mask, Direction.WEST, Direction.EAST, side);
+            double x = axis(p.x, b.getX(), mask, Direction.WEST, Direction.EAST, this.margin);
             double y = axis(p.y, b.getY(), mask, Direction.DOWN, Direction.UP, Math.min(this.margin, BOTTOM_Y - 0.02));
-            double z = axis(p.z, b.getZ(), mask, Direction.NORTH, Direction.SOUTH, side);
+            double z = axis(p.z, b.getZ(), mask, Direction.NORTH, Direction.SOUTH, this.margin);
             return x == p.x && y == p.y && z == p.z ? p : new Vec3(x, y, z);
         }
 

@@ -70,6 +70,12 @@ public class DataFish extends OreFish implements net.minecraftforge.common.IForg
         if (!this.level().isClientSide && isSheared() && --this.regrow <= 0) this.entityData.set(SHEARED, false);
     }
 
+    @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
+        super.onSyncedDataUpdated(key);
+        if (SPECIES.equals(key)) refreshDimensions();
+    }
+
     public void setSpecies(Item item) {
         ResourceLocation id = ForgeRegistries.ITEMS.getKey(item);
         this.entityData.set(SPECIES, id == null ? "" : id.toString());

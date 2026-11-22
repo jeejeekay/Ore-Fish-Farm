@@ -43,7 +43,7 @@ import java.util.Map;
  *                               0.25 = smouldering, 0.7 = kindled, 1.4 = seething (read by Create as burner heat).
  *     "habitat": "orefishfarm:water",  which tank it lives in (optional; water by default)
  *     "bucket": "somemod:fish_bucket", optional: this mod's own bucket for the fish (else the generic Fish Bucket)
- *     "scale": 2.0,               optional: draws the fish this many times bigger (tanks, the mob, screens)
+ *     "scale": 2.0,               optional: the living mob (model and hitbox) is this many times bigger; tanks and screens unchanged
  *     "shear": { "item": "minecraft:string", "min": 1, "max": 3, "regrow": 6000 } }
  *                               optional: the living fish can be sheared like a sheep (only fish without a mob of
  *                               their own, i.e. drawn by Ore Fish Farm's data fish). Drops min..max of the item, then
