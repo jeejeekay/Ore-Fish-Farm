@@ -25,17 +25,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The aquarium screen. Fish slots: two per block, shown nine to a row, two rows at a time with a scroll bar
- * (the scroll position is a menu button, so the server's slots follow). Then the shared food slots, the breeding
- * switch, the output, and the player's inventory.
+ * The aquarium screen. Fish slots: two per block, nine to a row, at most three rows on show with a scroll bar when
+ * there are more (the scroll position is a menu button, so the server's slots follow); only as many slots as the
+ * aquarium has. Then one line: the food slots on the left and the output slots on the right (one of each per block,
+ * up to four), with the breeding heart between them; then the player's inventory.
  *
  * <p>Menu buttons: below {@link #BREEDING_BUTTON} the new top row; {@link #BREEDING_BUTTON} toggles breeding;
  * {@link #SEEN_BUTTON} + fish index marks a newborn as seen (its asterisk goes).
  */
 public class AquariumMenu extends AbstractContainerMenu {
-    public static final int COLS = 9, ROWS = 2, VISIBLE = COLS * ROWS;
+    public static final int COLS = 9, MAX_ROWS = 3, VISIBLE = COLS * MAX_ROWS;
     public static final int FISH_X = 8, FISH_Y = 54;
-    public static final int FOOD_Y = 98, OUTPUT_Y = 120, INV_Y = 144;
     /** How much taller the aquarium window is for bigger aquariums: four sizes. */
     public static int extraFor(int blocks) {
         return blocks <= 1 ? 0 : blocks <= 8 ? 20 : blocks <= 64 ? 40 : 60;
@@ -43,8 +43,10 @@ public class AquariumMenu extends AbstractContainerMenu {
 
     /** This screen's window growth (all slots below the window move down by it). */
     public final int extra;
-    /** Where the breeding switch sits: right of the (at most four) food slots. */
-    public static final int BREED_X = 8 + TankBlockEntity.MAX_FOOD_SLOTS * 18 + 6, BREED_W = 88;
+    /** Fish rows on show (1 to 3), and the y of the first fish row, the food/output line and the inventory label. */
+    public final int visRows, fishY, lineY, invY;
+    /** The breeding heart's slot-sized spot: the middle column of the food/output line. */
+    public static final int BREED_COL = 4;
     public static final int BREEDING_BUTTON = 100_000, SEEN_BUTTON = 200_000;
 
     public final TankBlockEntity controller;
@@ -53,8 +55,8 @@ public class AquariumMenu extends AbstractContainerMenu {
     private final List<FishRef> refs = new ArrayList<>();
     private int row;
     public final int fishStart = 0, sharedStart = VISIBLE, playerStart;
-    /** Food slots shown: one per tank block, up to four. */
-    public final int foodCount;
+    /** Food and output slots shown: one per tank block, up to four each. */
+    public final int foodCount, outputCount;
     /** Blocks in this aquarium (breeding needs {@link TankBlockEntity#BREED_MIN_BLOCKS}). */
     public final int blocks;
 
@@ -68,14 +70,20 @@ public class AquariumMenu extends AbstractContainerMenu {
         this.blocks = members.size();
         int e = this.extra;
         for (int s = 0; s < TankBlockEntity.FISH; s++) for (TankBlockEntity t : members) this.refs.add(new FishRef(t, s));
-        for (int i = 0; i < VISIBLE; i++) addSlot(new FishSlot(this, i, FISH_X + (i % COLS) * 18, e + FISH_Y + (i / COLS) * 18));
+        this.visRows = Mth.clamp(rows(), 1, MAX_ROWS);
+        this.fishY = e + FISH_Y;
+        this.lineY = this.fishY + this.visRows * 18 + 8;
+        this.invY = this.lineY + 24;
+        for (int i = 0; i < VISIBLE; i++) addSlot(new FishSlot(this, i, FISH_X + (i % COLS) * 18, this.fishY + (i / COLS) * 18));
         ItemStackHandler shared = controller.sharedHandler();
         this.foodCount = TankBlockEntity.foodSlots(members.size());
-        for (int i = 0; i < this.foodCount; i++) addSlot(new SlotItemHandler(shared, TankBlockEntity.FOOD_START + i, 8 + i * 18, e + FOOD_Y));
-        for (int i = 0; i < TankBlockEntity.OUTPUT; i++) addSlot(new SlotItemHandler(shared, TankBlockEntity.OUTPUT_START + i, 8 + i * 18, e + OUTPUT_Y));
+        this.outputCount = TankBlockEntity.outputSlots(members.size());
+        for (int i = 0; i < this.foodCount; i++) addSlot(new SlotItemHandler(shared, TankBlockEntity.FOOD_START + i, 8 + i * 18, this.lineY));
+        for (int i = 0; i < this.outputCount; i++)
+            addSlot(new SlotItemHandler(shared, TankBlockEntity.OUTPUT_START + i, 8 + (COLS - this.outputCount + i) * 18, this.lineY));
         this.playerStart = this.slots.size();
-        for (int r = 0; r < 3; r++) for (int c = 0; c < 9; c++) addSlot(new Slot(inv, c + r * 9 + 9, 8 + c * 18, e + INV_Y + 12 + r * 18));
-        for (int c = 0; c < 9; c++) addSlot(new Slot(inv, c, 8 + c * 18, e + INV_Y + 70));
+        for (int r = 0; r < 3; r++) for (int c = 0; c < 9; c++) addSlot(new Slot(inv, c + r * 9 + 9, 8 + c * 18, this.invY + 12 + r * 18));
+        for (int c = 0; c < 9; c++) addSlot(new Slot(inv, c, 8 + c * 18, this.invY + 70));
         addDataSlots(data);
     }
 
@@ -98,7 +106,7 @@ public class AquariumMenu extends AbstractContainerMenu {
 
     public int rows() { return Mth.positiveCeilDiv(this.refs.size(), COLS); }
 
-    public int maxRow() { return Math.max(0, rows() - ROWS); }
+    public int maxRow() { return Math.max(0, rows() - this.visRows); }
 
     public int row() { return this.row; }
 
@@ -106,6 +114,7 @@ public class AquariumMenu extends AbstractContainerMenu {
 
     @Nullable
     public FishRef ref(int visible) {
+        if (visible >= this.visRows * COLS) return null; // rows past the ones on show
         int i = this.row * COLS + visible;
         return i < this.refs.size() ? this.refs.get(i) : null;
     }

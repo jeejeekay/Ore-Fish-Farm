@@ -20,37 +20,42 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The aquarium screen: a window with up to six of its fish swimming in the habitat's colour, a status line,
- * two rows of fish slots with a scroll bar, the shared food slots, the breeding switch, and the output.
- * A newborn's slot shows a yellow asterisk until it is hovered.
+ * The aquarium screen: a window with up to six of its fish swimming in the habitat's colour, a status line, the
+ * fish slots (only as many as the aquarium has, at most three rows, a scroll bar only when there are more), then one
+ * line with the food slots, the breeding heart and the output slots. The middle of the screen is drawn here, so it
+ * fits any row count; the top (title, window, food meter, energy) and the inventory come from the texture.
+ * Empty fish slots show a faded bucket of cod, empty food slots a faded fish food. A newborn's slot shows a yellow
+ * asterisk until it is hovered.
  */
 public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
     private static final ResourceLocation TEX = new ResourceLocation(OreFishFarm.MODID, "textures/gui/aquarium.png");
     private static final ResourceLocation ICONS = new ResourceLocation(OreFishFarm.MODID, "textures/gui/tank.png");
     private static final int WX = 8, WY = 16, WW = 162, WH = 34;
-    private static final int SX = 174, SY = 53, SH = 36;
+    private static final int SX = 174;
+    /** Texture rows: a plain panel row (for the drawn middle), and where the inventory part starts and ends. */
+    private static final int PLAIN_ROW = 141, TEX_INV_Y = 144, TEX_H = 238;
     private static final int MX = 174, MY = 16; // food meter
     private static final int EX = 177, EY = 33, EH = 17; // energy bar
     private boolean dragging;
-    private net.minecraft.client.gui.components.Button breedButton;
+    private BreedHeart breedButton;
     /** Newborns already reported as seen (so the server is told once). */
     private final java.util.Set<Integer> seenSent = new java.util.HashSet<>();
 
     public AquariumScreen(AquariumMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
         this.imageWidth = 194;
-        this.imageHeight = 238 + menu.extra;
-        this.inventoryLabelY = menu.extra + AquariumMenu.INV_Y + 2;
+        this.imageHeight = menu.invY + (TEX_H - TEX_INV_Y);
+        this.inventoryLabelY = menu.invY + 2;
         this.titleLabelY = 5;
     }
 
     @Override
     protected void init() {
         super.init();
-        this.breedButton = addRenderableWidget(net.minecraft.client.gui.components.Button.builder(breedLabel(), b -> {
+        this.breedButton = addRenderableWidget(new BreedHeart(this.leftPos + 8 + AquariumMenu.BREED_COL * 18 - 1, this.topPos + this.menu.lineY - 1, b -> {
             if (this.minecraft != null && this.minecraft.gameMode != null)
                 this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId, AquariumMenu.BREEDING_BUTTON);
-        }).bounds(this.leftPos + AquariumMenu.BREED_X, this.topPos + this.menu.extra + AquariumMenu.FOOD_Y - 1, AquariumMenu.BREED_W, 18).build());
+        }));
         updateBreedButton();
     }
 
@@ -59,9 +64,13 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
         return this.menu.get(TankBlockEntity.D_FISH) >= this.menu.blocks * TankBlockEntity.FISH;
     }
 
+    private boolean breedingOn() {
+        return this.menu.get(TankBlockEntity.D_BREEDING) == 1;
+    }
+
     private Component breedLabel() {
         if (breedingFull()) return Component.translatable("gui.orefishfarm.breeding_full");
-        return Component.translatable(this.menu.get(TankBlockEntity.D_BREEDING) == 1 ? "gui.orefishfarm.breeding_on" : "gui.orefishfarm.breeding_off");
+        return Component.translatable(breedingOn() ? "gui.orefishfarm.breeding_on" : "gui.orefishfarm.breeding_off");
     }
 
     /** Shown only on aquariums big enough to breed in; greyed out when there's no room for a baby. */
@@ -69,7 +78,55 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
         if (this.breedButton == null) return;
         this.breedButton.visible = this.menu.blocks >= TankBlockEntity.BREED_MIN_BLOCKS;
         this.breedButton.active = !breedingFull();
-        this.breedButton.setMessage(breedLabel());
+        this.breedButton.pink = breedingOn() && !breedingFull();
+        Component label = breedLabel();
+        if (!label.equals(this.breedButton.getMessage())) {
+            this.breedButton.setMessage(label);
+            this.breedButton.setTooltip(net.minecraft.client.gui.components.Tooltip.create(label));
+        }
+    }
+
+    /** The breeding switch: a slot-sized button with a heart, pink when on, faded grey when off or full. */
+    private static final class BreedHeart extends net.minecraft.client.gui.components.Button {
+        private static final String[] HEART = {
+                ".XX...XX.",
+                "XXXX.XXXX",
+                "XXXXXXXXX",
+                "XXXXXXXXX",
+                ".XXXXXXX.",
+                "..XXXXX..",
+                "...XXX...",
+                "....X...."};
+        boolean pink;
+
+        BreedHeart(int x, int y, OnPress press) {
+            super(x, y, 18, 18, Component.empty(), press, DEFAULT_NARRATION);
+        }
+
+        @Override
+        protected void renderWidget(GuiGraphics g, int mx, int my, float partial) {
+            int x = getX(), y = getY();
+            boolean hot = this.active && isHoveredOrFocused();
+            // A raised slot-sized button.
+            g.fill(x, y, x + 18, y + 18, 0xFF373737);
+            g.fill(x, y, x + 17, y + 17, 0xFFFFFFFF);
+            g.fill(x + 1, y + 1, x + 17, y + 17, hot ? 0xFFD8D8D8 : 0xFFC6C6C6);
+            int fill = this.pink ? (hot ? 0xFFFF8CC0 : 0xFFF06292) : 0xFFA8A8A8;
+            int edge = this.pink ? 0xFF8E1F4E : 0xFF7A7A7A;
+            int hx = x + 5, hy = y + 5;
+            for (int r = 0; r < HEART.length; r++) {
+                for (int c = 0; c < HEART[r].length(); c++) {
+                    if (HEART[r].charAt(c) != 'X') continue;
+                    boolean rim = !on(r - 1, c) || !on(r + 1, c) || !on(r, c - 1) || !on(r, c + 1);
+                    g.fill(hx + c, hy + r, hx + c + 1, hy + r + 1, rim ? edge : fill);
+                }
+            }
+            if (this.pink) g.fill(hx + 2, hy + 1, hx + 3, hy + 2, 0xFFFFD0E4); // shine
+        }
+
+        private static boolean on(int r, int c) {
+            return r >= 0 && r < HEART.length && c >= 0 && c < HEART[r].length() && HEART[r].charAt(c) == 'X';
+        }
     }
 
     @Override
@@ -81,7 +138,10 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
     /** Window height and scroll bar top for this aquarium's size. */
     private int wh() { return WH + this.menu.extra; }
 
-    private int sy() { return SY + this.menu.extra; }
+    /** Scroll bar: top (the fish rows' frame) and height. */
+    private int sy() { return this.menu.fishY - 1; }
+
+    private int sh() { return this.menu.visRows * 18; }
 
     private boolean power() {
         return this.menu.controller.role() == TankRole.POWER;
@@ -133,13 +193,21 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
     @Override
     protected void renderBg(GuiGraphics g, float partial, int mx, int my) {
         int l = this.leftPos, t = this.topPos;
-        // Background: the top down to the window's last row, that row repeated for a taller window, then the rest.
-        int e = this.menu.extra, cut = WY + WH - 1;
+        // Background: the top down to the window's last row, that row repeated for a taller window, the window's
+        // bottom edge, then a plain panel down to the inventory, which comes from the texture's bottom part.
+        int e = this.menu.extra, cut = WY + WH - 1, edgeEnd = WY + WH + 3;
         g.blit(TEX, l, t, 0, 0, this.imageWidth, cut);
         for (int k = 0; k < e; k++) g.blit(TEX, l, t + cut + k, 0, cut - 1, this.imageWidth, 1);
-        g.blit(TEX, l, t + cut + e, 0, cut, this.imageWidth, 238 - cut);
-        // The texture has six food slots and the old lattice spot; cover the ones this aquarium doesn't use.
-        g.fill(l + 8 + this.menu.foodCount * 18 - 1, t + e + AquariumMenu.FOOD_Y - 1, l + 177, t + e + AquariumMenu.FOOD_Y + 17, 0xFFC6C6C6);
+        g.blit(TEX, l, t + cut + e, 0, cut, this.imageWidth, edgeEnd - cut);
+        for (int y = edgeEnd + e; y < this.menu.invY; y++) g.blit(TEX, l, t + y, 0, PLAIN_ROW, this.imageWidth, 1);
+        g.blit(TEX, l, t + this.menu.invY, 0, TEX_INV_Y, this.imageWidth, TEX_H - TEX_INV_Y);
+        // Slot frames for the slots on show (fish, food, output).
+        for (Slot sl : this.menu.slots) {
+            if (sl.index >= this.menu.playerStart || !sl.isActive()) continue;
+            slotFrame(g, l + sl.x - 1, t + sl.y - 1, 18, 18);
+        }
+        // Scroll bar, only when there are more fish rows than fit.
+        if (this.menu.maxRow() > 0) slotFrame(g, l + SX, t + sy(), 14, sh());
         float time = (Util.getMillis() % 1_000_000L) / 1000F;
         int wh = wh();
 
@@ -184,10 +252,12 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
             if (en > 0) g.blit(TEX, l + EX, t + EY + EH - en, 232, EH - en, 8, en);
         }
 
-        // Scroll bar.
+        // Scroll knob.
         int max = this.menu.maxRow();
-        int knobY = max == 0 ? 0 : (int) ((SH - 15) * (this.menu.row() / (float) max));
-        g.blit(TEX, l + SX + 1, t + sy() + 1 + knobY, max == 0 ? 212 : 200, 0, 12, 15);
+        if (max > 0) {
+            int knobY = (int) ((sh() - 17) * (this.menu.row() / (float) max));
+            g.blit(TEX, l + SX + 1, t + sy() + 1 + knobY, 200, 0, 12, 15);
+        }
 
         // Carrying a live fish: the free slots it could go in light up.
         if (FishData.isFish(this.menu.getCarried())) {
@@ -202,9 +272,10 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
         for (Slot s : this.menu.slots) {
             int sx = l + s.x, sy = t + s.y;
             if (s instanceof AquariumMenu.FishSlot fs) {
-                if (!fs.isActive()) {
-                    g.fill(sx, sy, sx + 16, sy + 16, 0x80373737);
-                } else if (fs.hasItem() && this.menu.controller.isForeign(fs.getItem())) {
+                if (!fs.isActive()) continue;
+                if (!fs.hasItem()) {
+                    ghost(g, COD_BUCKET, sx, sy); // an empty fish slot: a faded bucket of cod
+                } else if (this.menu.controller.isForeign(fs.getItem())) {
                     boolean flash = !safe && (Util.getMillis() / 300) % 2 == 0;
                     g.fill(sx, sy, sx + 16, sy + 16, safe ? 0x5040A0FF : flash ? 0x90FF2020 : 0x60FF2020);
                 }
@@ -212,6 +283,26 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
                 g.blit(TEX, sx, sy, 200, 32, 16, 16);
             }
         }
+    }
+
+    private static final ItemStack COD_BUCKET = new ItemStack(net.minecraft.world.item.Items.COD_BUCKET);
+
+    /** An item drawn faded into a slot, as a hint of what goes there. */
+    private static void ghost(GuiGraphics g, ItemStack stack, int x, int y) {
+        g.renderFakeItem(stack, x, y);
+        g.pose().pushPose();
+        g.pose().translate(0, 0, 200);
+        g.fill(x, y, x + 16, y + 16, 0xB08B8B8B);
+        g.pose().popPose();
+    }
+
+    /** A vanilla-style slot frame: dark top-left, white bottom-right, grey inside. */
+    private static void slotFrame(GuiGraphics g, int x, int y, int w, int h) {
+        g.fill(x, y, x + w, y + h, 0xFF8B8B8B);
+        g.fill(x, y, x + w - 1, y + 1, 0xFF373737);
+        g.fill(x, y, x + 1, y + h - 1, 0xFF373737);
+        g.fill(x + 1, y + h - 1, x + w, y + h, 0xFFFFFFFF);
+        g.fill(x + w - 1, y + 1, x + w, y + h, 0xFFFFFFFF);
     }
 
     /** The mob from the bucket, side-on and about 20 pixels long, centred on (x, y); the bucket if it has no mob. */
@@ -291,7 +382,7 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
 
     @Override
     public boolean mouseClicked(double mx, double my, int button) {
-        if (button == 0 && in((int) mx - this.leftPos, (int) my - this.topPos, SX, sy(), 14, SH) && this.menu.maxRow() > 0) {
+        if (button == 0 && in((int) mx - this.leftPos, (int) my - this.topPos, SX, sy(), 14, sh()) && this.menu.maxRow() > 0) {
             this.dragging = true;
             dragTo(my);
             return true;
@@ -315,7 +406,7 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
     }
 
     private void dragTo(double my) {
-        float f = (float) ((my - this.topPos - sy() - 7.5) / (SH - 15));
+        float f = (float) ((my - this.topPos - sy() - 8.5) / (sh() - 17));
         scrollTo(Math.round(Mth.clamp(f, 0F, 1F) * this.menu.maxRow()));
     }
 }

@@ -69,6 +69,8 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
     public static final int FOOD = 6, OUTPUT = 9;
     /** Food slots in use: one per tank block, up to this many (the rest of {@link #FOOD} stays unused). */
     public static final int MAX_FOOD_SLOTS = 4;
+    /** Output slots in use: one per tank block, up to this many (storage keeps {@link #OUTPUT}). */
+    public static final int MAX_OUTPUT_SLOTS = 4;
     /** Breeding needs an aquarium of at least this many blocks. */
     public static final int BREED_MIN_BLOCKS = 3;
     /** Heat per tank block (eating heat fish × their Heat factor, summed) for each Create heat level. */
@@ -247,6 +249,17 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
         return Math.max(1, Math.min(MAX_FOOD_SLOTS, blocks));
     }
 
+    /** Output slots in use for an aquarium of this many blocks: one per block, up to {@link #MAX_OUTPUT_SLOTS}. */
+    public static int outputSlots(int blocks) {
+        return Math.max(1, Math.min(MAX_OUTPUT_SLOTS, blocks));
+    }
+
+    /** Controller: end of the output slots in use. */
+    public int outputEnd() {
+        List<TankBlockEntity> mem = memberBEs();
+        return OUTPUT_START + outputSlots(mem == null ? 1 : mem.size());
+    }
+
     /** Controller: end of the food slots in use. */
     public int foodEnd() {
         List<TankBlockEntity> mem = memberBEs();
@@ -287,7 +300,7 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
 
     /** Puts a stack into the same section of this block's shared slots, ignoring slot rules. Returns the rest. */
     ItemStack placeShared(int fromSlot, ItemStack stack) {
-        return fromSlot < OUTPUT_START ? merge(FOOD_START, foodEnd(), stack) : merge(OUTPUT_START, SHARED, stack);
+        return fromSlot < OUTPUT_START ? merge(FOOD_START, foodEnd(), stack) : merge(OUTPUT_START, outputEnd(), stack);
     }
 
     private ItemStack merge(int start, int end, ItemStack stack) {
@@ -323,7 +336,7 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
     public void acceptLegacy(List<ItemStack> fishes, ItemStack food, ItemStack output, boolean lattice, int fe) {
         for (int i = 0; i < Math.min(FISH, fishes.size()); i++) this.fish.setStackInSlot(i, FishData.wrapLegacy(fishes.get(i)));
         if (!food.isEmpty()) drop(merge(FOOD_START, foodEnd(), food));
-        if (!output.isEmpty()) drop(merge(OUTPUT_START, SHARED, output));
+        if (!output.isEmpty()) drop(merge(OUTPUT_START, outputEnd(), output));
         this.energy = fe;
         setChanged();
     }
@@ -362,6 +375,7 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
 
     private void tickController() {
         List<TankBlockEntity> mem = memberBEs();
+        if (mem == null || this.level == null) return; // part of the aquarium isn't loaded: wait
         // Food in slots the aquarium no longer uses (it got smaller): into the used ones, or dropped.
         int foodEnd = foodEnd();
         for (int i = foodEnd; i < OUTPUT_START; i++) {
@@ -370,7 +384,14 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
             this.shared.setStackInSlot(i, ItemStack.EMPTY);
             drop(merge(FOOD_START, foodEnd, extra));
         }
-        if (mem == null || this.level == null) return; // part of the aquarium isn't loaded: wait
+        // The same for output.
+        int outputEnd = outputEnd();
+        for (int i = outputEnd; i < SHARED; i++) {
+            ItemStack extra = this.shared.getStackInSlot(i);
+            if (extra.isEmpty()) continue;
+            this.shared.setStackInSlot(i, ItemStack.EMPTY);
+            drop(merge(OUTPUT_START, outputEnd, extra));
+        }
         boolean power = role() == TankRole.POWER;
 
         List<FishRef> fishes = new ArrayList<>();
@@ -590,12 +611,11 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
 
     /** Into the shared output; returns what didn't fit. */
     ItemStack addOutput(ItemStack stack) {
-        ItemStack rest = merge(OUTPUT_START, SHARED, stack);
-        return rest;
+        return merge(OUTPUT_START, outputEnd(), stack);
     }
 
     private boolean outputFull() {
-        for (int i = OUTPUT_START; i < SHARED; i++) {
+        for (int i = OUTPUT_START, end = outputEnd(); i < end; i++) {
             ItemStack s = this.shared.getStackInSlot(i);
             if (s.isEmpty() || s.getCount() < s.getMaxStackSize()) return false;
         }
