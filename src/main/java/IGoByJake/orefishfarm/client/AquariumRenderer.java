@@ -83,8 +83,7 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
         return ((h >>> 8) & 0xFFFF) / 65536F * Mth.TWO_PI * 4;
     }
 
-    private static void draw(ItemStack bucket, float size, Level level, float phase, float partial, PoseStack pose, MultiBufferSource buffers, int lit) {
-        Entity mob = FishLook.mob(bucket);
+    private static void draw(ItemStack bucket, @org.jetbrains.annotations.Nullable Entity mob, float size, Level level, float phase, float partial, PoseStack pose, MultiBufferSource buffers, int lit) {
         if (mob != null) {
             FishLook.render(mob, size, level.getGameTime() + (long) (phase * 40), partial, pose, buffers, lit);
         } else {
@@ -116,8 +115,12 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
                 ItemStack bucket = t.fishStack(s);
                 if (bucket.isEmpty()) continue;
                 int style = style(bucket);
+                float base = lone ? (pair ? SIZE_PAIR : SIZE_ALONE) : SIZE_ROAM;
+                Entity mob = FishLook.mob(bucket);
+                float size = mob == null ? base : FishLook.tankSize(mob, base, lone);
                 Path path = paths.get(m * TankBlockEntity.FISH + s, m, style);
-                Vec3 p = paths.clamp(path.at(time), path.blockAt(time));
+                // Fish bigger than the normal size keep the extra half-length further off the glass.
+                Vec3 p = paths.clamp(path.at(time), path.blockAt(time), Math.max(0, size - base) * 0.5);
                 Vec3 dir = path.heading(time, paths);
                 double dx = dir.x, dy = dir.y, dz = dir.z;
                 float yaw = (float) Math.atan2(-dz, dx);
@@ -129,7 +132,7 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
                 pose.mulPose(Axis.YP.rotation(yaw));
                 pose.mulPose(Axis.ZP.rotation(pitch));
                 pose.mulPose(Axis.ZP.rotationDegrees(Mth.sin(time * 1.1F + phase) * 4F));
-                draw(bucket, lone ? (pair ? SIZE_PAIR : SIZE_ALONE) : SIZE_ROAM, level, phase, partial, pose, buffers, lit);
+                draw(bucket, mob, size, level, phase, partial, pose, buffers, lit);
                 pose.popPose();
                 drawn++;
             }
@@ -193,15 +196,21 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
          * {@code fallback} (the block the fish is passing through), then held {@link #margin} off any glass side.
          */
         Vec3 clamp(Vec3 p, BlockPos fallback) {
+            return clamp(p, fallback, 0);
+        }
+
+        /** As {@link #clamp(Vec3, BlockPos)}, kept {@code extra} further off the side and top glass (big fish). */
+        Vec3 clamp(Vec3 p, BlockPos fallback, double extra) {
             BlockPos b = BlockPos.containing(p);
             Integer mask = this.glass.get(b);
             if (mask == null) {
                 b = fallback;
                 mask = this.glass.get(b);
             }
-            double x = axis(p.x, b.getX(), mask, Direction.WEST, Direction.EAST, this.margin);
+            double side = Math.min(0.45, this.margin + extra);
+            double x = axis(p.x, b.getX(), mask, Direction.WEST, Direction.EAST, side);
             double y = axis(p.y, b.getY(), mask, Direction.DOWN, Direction.UP, Math.min(this.margin, BOTTOM_Y - 0.02));
-            double z = axis(p.z, b.getZ(), mask, Direction.NORTH, Direction.SOUTH, this.margin);
+            double z = axis(p.z, b.getZ(), mask, Direction.NORTH, Direction.SOUTH, side);
             return x == p.x && y == p.y && z == p.z ? p : new Vec3(x, y, z);
         }
 

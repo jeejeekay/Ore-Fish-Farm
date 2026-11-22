@@ -26,6 +26,12 @@ public final class Config {
     public static final ForgeConfigSpec.IntValue BREED_EXTRA_ROLLS;
     public static final ForgeConfigSpec.DoubleValue BREED_ROLL_CHANCE;
     public static final ForgeConfigSpec.DoubleValue BREED_ROLL_CHANCE_PER_LEVEL;
+    public static final ForgeConfigSpec.DoubleValue TANK_SIZE_POWER;
+    public static final ForgeConfigSpec.DoubleValue TANK_REFERENCE_SIZE;
+    public static final ForgeConfigSpec.DoubleValue TANK_MAX_JOINED;
+    public static final ForgeConfigSpec.DoubleValue TANK_MAX_LONE;
+    public static final ForgeConfigSpec.DoubleValue TANK_MIN;
+    public static final ForgeConfigSpec.ConfigValue<java.util.List<? extends String>> TANK_SIZE_OVERRIDES;
 
     static final java.util.List<Double> DEFAULT_MULTIPLIERS = java.util.List.of(0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 3.0);
     static final java.util.List<Double> DEFAULT_WEIGHTS = java.util.List.of(81.0, 243.0, 729.0, 2187.0, 729.0, 243.0, 81.0, 27.0, 9.0, 3.0, 1.0);
@@ -71,11 +77,46 @@ public final class Config {
                 .defineInRange("breedExtraRolls", 3, 0, 40);
         BREED_ROLL_CHANCE = b.defineInRange("breedRollChance", 0.10, 0.0, 1.0);
         BREED_ROLL_CHANCE_PER_LEVEL = b.defineInRange("breedRollChancePerLevel", 0.02, -1.0, 1.0);
+        b.pop().push("tank_display");
+        TANK_SIZE_POWER = b.comment("How big each mob is drawn in a tank. A mob as long as referenceSize (a cod, 0.5) is drawn at the tank's",
+                "normal size (0.45 blocks in a joined aquarium); others at normal x (their size / referenceSize) ^ sizePower.",
+                "Size = the adult hitbox's longest side (fish-file \"scale\" included). 0 = every mob the same, 0.5 = square root,",
+                "1 = true to size. Babies are drawn at their own baby scale of that (half for vanilla babies).")
+                .defineInRange("sizePower", 0.5, 0.0, 1.0);
+        TANK_REFERENCE_SIZE = b.defineInRange("referenceSize", 0.5, 0.05, 8.0);
+        TANK_MAX_JOINED = b.comment("Largest drawn length, in blocks, in an aquarium of 2+ tank blocks and in a lone tank block.")
+                .defineInRange("maxSizeJoined", 0.8, 0.1, 2.0);
+        TANK_MAX_LONE = b.defineInRange("maxSizeLone", 0.6, 0.1, 1.0);
+        TANK_MIN = b.comment("Smallest drawn length, in blocks (babies can go below it).").defineInRange("minSize", 0.2, 0.02, 1.0);
+        TANK_SIZE_OVERRIDES = b.comment("Extra size multipliers for mobs whose model doesn't match their hitbox: \"<entity id>=<multiplier>\",",
+                "e.g. \"alexscaves:gossamer_worm=0.5\". Applied after the maximum.")
+                .defineList("sizeOverrides", java.util.List.of(), o -> o instanceof String str && str.contains("="));
         b.pop();
         SPEC = b.build();
     }
 
     private Config() {}
+
+    private static java.util.Map<String, Float> overrides;
+    private static java.util.List<? extends String> overridesFrom;
+
+    /** The sizeOverrides multiplier for this entity id (1 if none). */
+    public static float tankSizeOverride(String entityId) {
+        java.util.List<? extends String> list = TANK_SIZE_OVERRIDES.get();
+        if (list != overridesFrom) {
+            java.util.Map<String, Float> m = new java.util.HashMap<>();
+            for (String line : list) {
+                int i = line.indexOf('=');
+                try {
+                    m.put(line.substring(0, i).trim(), Float.parseFloat(line.substring(i + 1).trim()));
+                } catch (Exception ignored) {
+                }
+            }
+            overrides = m;
+            overridesFrom = list;
+        }
+        return overrides.getOrDefault(entityId, 1F);
+    }
 
     /** The multiplier for a stat level (from statMultipliers; the default list if that isn't 11 numbers). */
     public static double statMultiplier(int level) {

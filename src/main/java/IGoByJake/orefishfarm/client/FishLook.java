@@ -91,8 +91,24 @@ public final class FishLook {
     }
 
     /**
-     * Draws the mob centred on the current pose origin, side-on (its length along x), fitted into a box of the
-     * given size.
+     * How long this mob is drawn in a tank whose normal fish size is {@code base} (blocks): relative to a cod by
+     * (adult size / referenceSize) ^ sizePower, between minSize and the tank's maximum, then times any sizeOverrides
+     * entry and the mob's baby scale (so babies stay smaller). See the tank_display config section.
+     */
+    public static float tankSize(Entity e, float base, boolean lone) {
+        float scale = e instanceof LivingEntity l ? l.getScale() : 1F;
+        float adult = Math.max(e.getBbWidth(), e.getBbHeight()) / Math.max(0.05F, scale);
+        double rel = Math.pow(Math.max(0.01, adult) / IGoByJake.orefishfarm.Config.TANK_REFERENCE_SIZE.get(), IGoByJake.orefishfarm.Config.TANK_SIZE_POWER.get());
+        double max = lone ? IGoByJake.orefishfarm.Config.TANK_MAX_LONE.get() : IGoByJake.orefishfarm.Config.TANK_MAX_JOINED.get();
+        double d = net.minecraft.util.Mth.clamp(base * rel, Math.min(IGoByJake.orefishfarm.Config.TANK_MIN.get(), max), max);
+        var id = ForgeRegistries.ENTITY_TYPES.getKey(e.getType());
+        if (id != null) d *= IGoByJake.orefishfarm.Config.tankSizeOverride(id.toString());
+        return (float) (d * scale);
+    }
+
+    /**
+     * Draws the mob centred on the current pose origin, side-on (its length along x), its hitbox's longest side
+     * fitted to {@code size} (from {@link #tankSize}).
      */
     public static void render(Entity e, float size, long age, float partial, PoseStack pose, MultiBufferSource buffers, int light) {
         e.tickCount = (int) age;
