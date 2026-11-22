@@ -72,7 +72,7 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
     /** Output slots in use: one per tank block, up to this many (storage keeps {@link #OUTPUT}). */
     public static final int MAX_OUTPUT_SLOTS = 4;
     /** Breeding needs an aquarium of at least this many blocks. */
-    public static final int BREED_MIN_BLOCKS = 3;
+    public static final int BREED_MIN_BLOCKS = 2;
     /** Heat per tank block (eating heat fish × their Heat factor, summed) for each Create heat level. */
     public static final float HEAT_SMOULDERING = 0.25F, HEAT_KINDLED = 0.7F, HEAT_SEETHING = 1.4F;
     /** The aquarium's heat level now (0 none, 1 smouldering, 2 kindled, 3 seething); not saved, worked out each tick. */

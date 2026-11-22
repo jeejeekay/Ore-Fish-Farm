@@ -34,8 +34,10 @@ import java.util.Set;
  * centre never leaves the tank blocks:
  * <ul>
  *   <li>its loop only steps between blocks that share a face, passing through a point on that face;</li>
- *   <li>its waypoints keep clear of the glass, and each frame its position is clamped to stay at least
- *       {@link #MARGIN} inside any glass side (a nose or tail may still poke out a little).</li>
+ *   <li>its waypoints keep clear of the glass, and each frame its position is clamped to stay a margin inside any
+ *       glass side: {@link #MARGIN_ALONE} in a lone tank block, {@link #MARGIN_ROAM} in a joined aquarium, where fish
+ *       turn and travel and a nose or tail pointed at the glass must not poke through (the roaming margin is about
+ *       three quarters of the drawn fish's size, so even long-bodied mobs stay inside).</li>
  * </ul>
  * Paths and each block's glass sides are worked out once per aquarium shape and cached, so a frame only
  * evaluates a spline and one lookup per fish. Every fish has its own timing. At most 24 fish are drawn per
@@ -43,8 +45,10 @@ import java.util.Set;
  */
 public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
     private static final float SIZE_ALONE = 0.5F, SIZE_PAIR = 0.38F, SIZE_ROAM = 0.45F;
-    /** How far a fish's centre stays from the glass, in blocks. */
-    private static final double MARGIN = 0.15;
+    /** How far a fish's centre stays from the glass, in blocks: in a lone tank block, and in a joined aquarium. */
+    private static final double MARGIN_ALONE = 0.15, MARGIN_ROAM = SIZE_ROAM * 0.75;
+    /** How far waypoints stay from the glass (a little more than the margin, so the clamp rarely bites). */
+    private static final double INSET_ALONE = 0.22, INSET_ROAM = MARGIN_ROAM + 0.04;
     private static final int MAX_FISH = 24;
     private static final double MAX_DIST = 32;
     private static final Map<BlockPos, Paths> CACHE = new HashMap<>();
@@ -130,9 +134,14 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
         /** Per tank block: bit d set when the side facing {@code DIRS[d]} is glass (no tank block beyond it). */
         final Map<BlockPos, Integer> glass = new HashMap<>();
         final Map<Integer, Path> byFish = new HashMap<>();
+        /** This aquarium's glass margin and waypoint inset (see the class notes). */
+        final double margin, inset;
 
         Paths(List<BlockPos> members) {
             this.hash = members.hashCode();
+            boolean lone = members.size() <= 1;
+            this.margin = lone ? MARGIN_ALONE : MARGIN_ROAM;
+            this.inset = lone ? INSET_ALONE : INSET_ROAM;
             this.members = new ArrayList<>(members);
             Set<BlockPos> set = new HashSet<>(members);
             for (BlockPos b : members) {
@@ -152,7 +161,7 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
 
         /**
          * Keeps a point inside the tanks: if it has strayed out of every tank block it is pulled back into
-         * {@code fallback} (the block the fish is passing through), then held {@link #MARGIN} off any glass side.
+         * {@code fallback} (the block the fish is passing through), then held {@link #margin} off any glass side.
          */
         Vec3 clamp(Vec3 p, BlockPos fallback) {
             BlockPos b = BlockPos.containing(p);
@@ -161,15 +170,15 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
                 b = fallback;
                 mask = this.glass.get(b);
             }
-            double x = axis(p.x, b.getX(), mask, Direction.WEST, Direction.EAST);
-            double y = axis(p.y, b.getY(), mask, Direction.DOWN, Direction.UP);
-            double z = axis(p.z, b.getZ(), mask, Direction.NORTH, Direction.SOUTH);
+            double x = axis(p.x, b.getX(), mask, Direction.WEST, Direction.EAST, this.margin);
+            double y = axis(p.y, b.getY(), mask, Direction.DOWN, Direction.UP, this.margin);
+            double z = axis(p.z, b.getZ(), mask, Direction.NORTH, Direction.SOUTH, this.margin);
             return x == p.x && y == p.y && z == p.z ? p : new Vec3(x, y, z);
         }
 
-        private static double axis(double v, int base, int mask, Direction low, Direction high) {
-            double lo = base + ((mask & (1 << low.ordinal())) != 0 ? MARGIN : 0);
-            double hi = base + 1 - ((mask & (1 << high.ordinal())) != 0 ? MARGIN : 1.0E-4);
+        private static double axis(double v, int base, int mask, Direction low, Direction high, double margin) {
+            double lo = base + ((mask & (1 << low.ordinal())) != 0 ? margin : 0);
+            double hi = base + 1 - ((mask & (1 << high.ordinal())) != 0 ? margin : 1.0E-4);
             return Mth.clamp(v, lo, hi);
         }
     }
@@ -182,7 +191,6 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
     private static final class Path {
         private static final int STOPS = 10;
         private static final double SPEED = 0.35; // blocks per second
-        private static final double INSET = 0.22; // waypoints keep this far from the glass
         final Vec3[] pts;
         final BlockPos[] blocks;
         final float[] start;
@@ -237,18 +245,18 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
             for (BlockPos c = b; !c.equals(a); c = prev.get(c)) route.add(0, c);
             BlockPos from = a;
             for (BlockPos to : route) {
-                pts.add(face(r, from, to));
+                pts.add(face(r, from, to, p.inset));
                 blocks.add(to); // the stretch after a face point runs through the block it enters
                 from = to;
             }
         }
 
         /** A point on the face shared by two touching blocks, away from its edges. */
-        private static Vec3 face(Random r, BlockPos a, BlockPos b) {
+        private static Vec3 face(Random r, BlockPos a, BlockPos b, double inset) {
             double x = a.getX() + 0.5 + (b.getX() - a.getX()) * 0.5;
             double y = a.getY() + 0.5 + (b.getY() - a.getY()) * 0.5;
             double z = a.getZ() + 0.5 + (b.getZ() - a.getZ()) * 0.5;
-            double j = 0.5 - INSET;
+            double j = Math.max(0, 0.5 - inset);
             if (a.getX() == b.getX()) x += (r.nextDouble() * 2 - 1) * j;
             if (a.getY() == b.getY()) y += (r.nextDouble() * 2 - 1) * j * 0.5;
             if (a.getZ() == b.getZ()) z += (r.nextDouble() * 2 - 1) * j;
@@ -258,8 +266,9 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
         /** A random point in a tank block, clear of its glass sides; a little above the floor and below the top. */
         private static Vec3 inside(Paths p, Random r, BlockPos b) {
             boolean floor = p.isGlass(b, Direction.DOWN), ceiling = p.isGlass(b, Direction.UP);
-            double y0 = floor ? 0.3 : 0.05, y1 = ceiling ? 0.72 : 0.95;
-            return new Vec3(b.getX() + INSET + r.nextDouble() * (1 - 2 * INSET), b.getY() + y0 + r.nextDouble() * (y1 - y0), b.getZ() + INSET + r.nextDouble() * (1 - 2 * INSET));
+            double in = p.inset;
+            double y0 = floor ? Math.max(0.3, p.margin) : 0.05, y1 = ceiling ? Math.min(0.72, 1 - p.margin) : 0.95;
+            return new Vec3(b.getX() + in + r.nextDouble() * (1 - 2 * in), b.getY() + y0 + r.nextDouble() * (y1 - y0), b.getZ() + in + r.nextDouble() * (1 - 2 * in));
         }
 
         private int index(float t) {
