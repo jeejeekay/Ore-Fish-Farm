@@ -24,8 +24,8 @@ import java.util.List;
  * fish slots (only as many as the aquarium has, at most three rows, a scroll bar only when there are more), then one
  * line with the food slots, the breeding heart and the output slots. The middle of the screen is drawn here, so it
  * fits any row count; the top (title, window, food meter, energy) and the inventory come from the texture.
- * Empty fish slots show a faded bucket of cod, empty food slots a faded fish food. A newborn shows as the bare fish
- * under a faded bucket body (it has no bucket yet), with a yellow asterisk until it is hovered.
+ * Empty fish slots show a faded bucket of cod, empty food slots a faded fish food. A newborn's bucket body is drawn
+ * faded (it has no bucket yet), with a yellow asterisk until it is hovered.
  */
 public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
     private static final ResourceLocation TEX = new ResourceLocation(OreFishFarm.MODID, "textures/gui/aquarium.png");
@@ -301,25 +301,18 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
     private static final ResourceLocation NEWBORN_BUCKET = new ResourceLocation(OreFishFarm.MODID, "textures/gui/newborn_bucket.png");
 
     /**
-     * Newborns (drawn after the slots' items): the slot is covered, then the bare fish, then the lower half of a bucket
-     * faded over it (no rim), for the bucket it still needs. All under tooltips (z 400).
+     * Newborns (drawn after the slots' items): the normal fish-in-a-bucket, with the bucket's lower body faded into
+     * the slot grey (the rim and the fish stay clear), for the bucket it doesn't have yet. Below tooltips (z 400).
      */
     private void drawNewborns(GuiGraphics g) {
         for (Slot slot : this.menu.slots) {
             if (!(slot instanceof AquariumMenu.FishSlot fs) || !fs.isActive() || !IGoByJake.orefishfarm.data.FishGenes.isNewborn(slot.getItem())) continue;
-            var species = IGoByJake.orefishfarm.FishBucketItem.species(slot.getItem());
-            if (species == null) continue;
             g.pose().pushPose();
-            g.pose().translate(0, 0, 190);
-            g.fill(slot.x, slot.y, slot.x + 16, slot.y + 16, 0xFF8B8B8B);
-            g.pose().translate(0, 0, -140); // renderItem adds 150: the fish sits at 200
-            g.renderItem(new ItemStack(species), slot.x, slot.y);
-            g.pose().translate(0, 0, 180);
+            g.pose().translate(0, 0, 380);
             com.mojang.blaze3d.systems.RenderSystem.enableBlend();
             com.mojang.blaze3d.systems.RenderSystem.defaultBlendFunc();
             g.blit(NEWBORN_BUCKET, slot.x, slot.y, 0, 0, 16, 16, 16, 16);
             com.mojang.blaze3d.systems.RenderSystem.disableBlend();
-            if (slot == this.hoveredSlot) g.fill(slot.x, slot.y, slot.x + 16, slot.y + 16, 0x80FFFFFF);
             g.pose().popPose();
         }
     }
