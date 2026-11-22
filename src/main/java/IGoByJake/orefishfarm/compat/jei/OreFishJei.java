@@ -26,6 +26,8 @@ public class OreFishJei implements IModPlugin {
     public static final RecipeType<TankRecipes.Product> PRODUCT = RecipeType.create(OreFishFarm.MODID, "fish_tank", TankRecipes.Product.class);
     public static final RecipeType<TankRecipes.Breeding> BREEDING = RecipeType.create(OreFishFarm.MODID, "breeding_tank", TankRecipes.Breeding.class);
     public static final RecipeType<TankRecipes.Power> POWER = RecipeType.create(OreFishFarm.MODID, "power_tank", TankRecipes.Power.class);
+    public static final RecipeType<TackleCategory.Page> TACKLE = RecipeType.create(OreFishFarm.MODID, "tackle", TackleCategory.Page.class);
+    private static boolean tackleAdded;
 
     private static IJeiRuntime runtime;
     private static boolean added;
@@ -38,7 +40,7 @@ public class OreFishJei implements IModPlugin {
     @Override
     public void registerCategories(IRecipeCategoryRegistration reg) {
         var gui = reg.getJeiHelpers().getGuiHelper();
-        reg.addRecipeCategories(new TankCategories.ProductCategory(gui), new TankCategories.BreedingCategory(gui), new TankCategories.PowerCategory(gui));
+        reg.addRecipeCategories(new TankCategories.ProductCategory(gui), new TankCategories.BreedingCategory(gui), new TankCategories.PowerCategory(gui), new TackleCategory(gui));
     }
 
     @Override
@@ -57,6 +59,10 @@ public class OreFishJei implements IModPlugin {
         reg.addRecipes(PRODUCT, TankRecipes.products());
         reg.addRecipes(BREEDING, TankRecipes.breeding());
         reg.addRecipes(POWER, TankRecipes.power());
+        if (IGoByJake.orefishfarm.tackle.Tackle.loaded()) {
+            tackleAdded = true;
+            reg.addRecipes(TACKLE, TackleCategory.pages());
+        }
     }
 
     /** Each species' Fish Bucket is its own entry in JEI. */
@@ -80,18 +86,43 @@ public class OreFishJei implements IModPlugin {
         reg.addRecipeCatalyst(new ItemStack(Registry.FISH_TANK.get()), BREEDING);
         reg.addRecipeCatalyst(new ItemStack(Registry.DYNAMO_COIL.get()), POWER);
         reg.addRecipeCatalyst(new ItemStack(Registry.FISH_TANK.get()), POWER);
+        reg.addRecipeCatalyst(new ItemStack(net.minecraft.world.item.Items.FISHING_ROD), TACKLE);
     }
 
     @Override
     public void onRuntimeAvailable(IJeiRuntime rt) {
         runtime = rt;
         lateRecipes();
+        lateTackle();
     }
+
+    /** Adds the tackle pages once the server's tackle data has arrived (if JEI started before it did). */
+    public static void lateTackle() {
+        if (runtime == null || tackleAdded || !IGoByJake.orefishfarm.tackle.Tackle.loaded()) return;
+        tackleAdded = true;
+        var pages = TackleCategory.pages();
+        runtime.getRecipeManager().addRecipes(TACKLE, pages);
+        // An info page on each fish that needs tackle: "Needs the Squid Spinner on the rod: Water · 6%".
+        java.util.Map<net.minecraft.world.item.Item, List<net.minecraft.network.chat.FormattedText>> lines = new java.util.LinkedHashMap<>();
+        for (TackleCategory.Page p : pages)
+            lines.computeIfAbsent(p.bonus().fish(), k -> new ArrayList<>(List.of(net.minecraft.network.chat.Component.translatable("jei.orefishfarm.info.fishing"))))
+                    .add(net.minecraft.network.chat.Component.translatable("jei.orefishfarm.info.needs_tackle", p.tackle().getHoverName(), TackleCategory.where(p.bonus())));
+        List<mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe> infos = new ArrayList<>();
+        var im = runtime.getIngredientManager();
+        lines.forEach((fish, text) -> im.createTypedIngredient(mezz.jei.api.constants.VanillaTypes.ITEM_STACK, new ItemStack(fish))
+                .ifPresent(t -> infos.add(new TackleInfo(List.of(t), List.copyOf(text)))));
+        if (!infos.isEmpty()) runtime.getRecipeManager().addRecipes(mezz.jei.api.constants.RecipeTypes.INFORMATION, infos);
+    }
+
+    private record TackleInfo(List<mezz.jei.api.ingredients.ITypedIngredient<?>> getIngredients,
+                              List<net.minecraft.network.chat.FormattedText> getDescription)
+            implements mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe {}
 
     @Override
     public void onRuntimeUnavailable() {
         runtime = null;
         added = false;
+        tackleAdded = false;
     }
 
     /** Adds the pages if JEI is running and they weren't there when it started. */

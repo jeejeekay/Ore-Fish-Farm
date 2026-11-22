@@ -89,6 +89,59 @@ public final class Tackle {
         return isRod(off) ? off : ItemStack.EMPTY;
     }
 
+    /** Every tackle piece and its bonuses (for JEI). */
+    public static Map<Item, List<Bonus>> all() {
+        return bonuses;
+    }
+
+    /** Whether this side has the tackle data (sent from the server on login and reload). */
+    public static boolean loaded() {
+        return loaded;
+    }
+
+    private static boolean loaded;
+
+    /** The server's tackle data, sent to clients so JEI can show it. */
+    public record Synced(Map<Item, List<Bonus>> data) {}
+
+    public static void write(net.minecraft.network.FriendlyByteBuf buf) {
+        buf.writeVarInt(bonuses.size());
+        bonuses.forEach((item, list) -> {
+            buf.writeResourceLocation(BuiltInRegistries.ITEM.getKey(item));
+            buf.writeVarInt(list.size());
+            for (Bonus b : list) {
+                buf.writeResourceLocation(BuiltInRegistries.ITEM.getKey(b.fish()));
+                buf.writeFloat(b.chance());
+                buf.writeUtf(b.liquid() == null ? "" : b.liquid());
+                buf.writeUtf(b.dimension() == null ? "" : b.dimension().toString());
+            }
+        });
+    }
+
+    public static Synced read(net.minecraft.network.FriendlyByteBuf buf) {
+        Map<Item, List<Bonus>> out = new HashMap<>();
+        int n = buf.readVarInt();
+        for (int i = 0; i < n; i++) {
+            Item item = BuiltInRegistries.ITEM.get(buf.readResourceLocation());
+            int m = buf.readVarInt();
+            List<Bonus> list = new ArrayList<>();
+            for (int j = 0; j < m; j++) {
+                Item fish = BuiltInRegistries.ITEM.get(buf.readResourceLocation());
+                float chance = buf.readFloat();
+                String liquid = buf.readUtf(), dim = buf.readUtf();
+                list.add(new Bonus(fish, chance, liquid.isEmpty() ? null : liquid, dim.isEmpty() ? null : new ResourceLocation(dim)));
+            }
+            out.put(item, List.copyOf(list));
+        }
+        return new Synced(Map.copyOf(out));
+    }
+
+    public static void applySynced(Synced s) {
+        bonuses = s.data();
+        loaded = true;
+        if (net.minecraftforge.fml.ModList.get().isLoaded("jei")) IGoByJake.orefishfarm.compat.jei.OreFishJei.lateTackle();
+    }
+
     public static List<Bonus> bonusesOf(ItemStack tackle) {
         return tackle.isEmpty() ? List.of() : bonuses.getOrDefault(tackle.getItem(), List.of());
     }
@@ -124,6 +177,7 @@ public final class Tackle {
                 }
             });
             bonuses = Map.copyOf(out);
+            loaded = true;
         }
     }
 }
