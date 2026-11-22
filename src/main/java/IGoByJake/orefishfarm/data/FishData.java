@@ -41,7 +41,12 @@ import java.util.Map;
  *                               The aquarium adds up its eating heat fish (each times its Heat stat factor) per block:
  *                               0.25 = smouldering, 0.7 = kindled, 1.4 = seething (read by Create as burner heat).
  *     "habitat": "orefishfarm:water",  which tank it lives in (optional; water by default)
- *     "bucket": "somemod:fish_bucket" } optional: this mod's own bucket for the fish (else the generic Fish Bucket)
+ *     "bucket": "somemod:fish_bucket", optional: this mod's own bucket for the fish (else the generic Fish Bucket)
+ *     "shear": { "item": "minecraft:string", "min": 1, "max": 3, "regrow": 6000 } }
+ *                               optional: the living fish can be sheared like a sheep (only fish without a mob of
+ *                               their own, i.e. drawn by Ore Fish Farm's data fish). Drops min..max of the item, then
+ *                               shows {@code models/fish/<fish>_sheared.json} (and {@code _sheared_tail}, if there is one)
+ *                               until the coat grows back after "regrow" ticks.
  *
  * data/&lt;ns&gt;/orefishfarm_breeding/&lt;name&gt;.json
  *   { "parents": ["orefishfarm:cuprum_eel",
@@ -90,6 +95,16 @@ public final class FishData {
     private static final Habitat DEFAULT_WATER = new Habitat(WATER, "water", 0x3F9FE4, null, net.minecraft.world.item.Items.WATER_BUCKET, net.minecraft.world.item.Items.BUCKET);
 
     /** bucket: another mod's own bucket for this fish, if it has one (else the generic Fish Bucket is used). */
+    /** What shearing a living fish drops, and how long its coat takes to grow back (server side only). */
+    public record Shear(Item drop, int min, int max, int regrow) {}
+
+    private static Map<Item, Shear> shears = Map.of();
+
+    @Nullable
+    public static Shear shear(ItemStack fish) {
+        return fish.isEmpty() ? null : shears.get(fish.getItem());
+    }
+
     public record Fish(Item item, ItemStack product, float productChance, float breedChance, int power, ResourceLocation habitat, @Nullable Item bucket, float heat) {
         public boolean makesPower() { return this.power > 0; }
         public boolean makesHeat() { return this.heat > 0; }
@@ -489,6 +504,7 @@ public final class FishData {
 
     private static void loadFish(Map<ResourceLocation, JsonElement> files) {
         Map<Item, Fish> out = new HashMap<>();
+        Map<Item, Shear> shearOut = new HashMap<>();
         files.forEach((id, json) -> {
             try {
                 JsonObject o = json.getAsJsonObject();
@@ -505,11 +521,19 @@ public final class FishData {
                 out.put(f, new Fish(f, product, GsonHelper.getAsFloat(o, "product_chance", 0.75F),
                         GsonHelper.getAsFloat(o, "breed_chance", 0.1F), GsonHelper.getAsInt(o, "power", 0), hab, bucket,
                         GsonHelper.getAsFloat(o, "heat", 0F)));
+                if (o.has("shear")) {
+                    JsonObject sh = GsonHelper.getAsJsonObject(o, "shear");
+                    Item drop = item(GsonHelper.getAsString(sh, "item"));
+                    int min = Math.max(0, GsonHelper.getAsInt(sh, "min", 1));
+                    if (drop != null) shearOut.put(f, new Shear(drop, min, Math.max(min, GsonHelper.getAsInt(sh, "max", min)),
+                            Math.max(20, GsonHelper.getAsInt(sh, "regrow", 6000))));
+                }
             } catch (Exception ex) {
                 LOG.error("Bad fish file {}: {}", id, ex.getMessage());
             }
         });
         fish = out;
+        shears = shearOut;
         byBucket = indexBuckets(out);
         LOG.info("Ore Fish Farm: {} fish", out.size());
     }

@@ -57,14 +57,22 @@ public final class FishRender {
     }
 
     private static Fish lookup(ItemStack stack) {
-        ResourceLocation id = ForgeRegistries.ITEMS.getKey(stack.getItem());
-        if (id == null) return NONE;
+        return lookup(stack, "");
+    }
+
+    /** The model {@code fish/<item path><suffix>} (and its {@code _tail}); NONE if there isn't one. */
+    private static Fish lookup(ItemStack stack, String suffix) {
+        ResourceLocation item = ForgeRegistries.ITEMS.getKey(stack.getItem());
+        if (item == null) return NONE;
+        ResourceLocation id = new ResourceLocation(item.getNamespace(), item.getPath() + suffix);
         return CACHE.computeIfAbsent(id, k -> {
             var models = Minecraft.getInstance().getModelManager();
             BakedModel missing = models.getMissingModel();
             BakedModel body = models.getModel(new ResourceLocation(k.getNamespace(), "fish/" + k.getPath()));
             if (body == null || body == missing) return NONE;
             BakedModel tail = models.getModel(new ResourceLocation(k.getNamespace(), "fish/" + k.getPath() + "_tail"));
+            if (tail == missing && !suffix.isEmpty()) // a variant without its own tail uses the plain one
+                tail = models.getModel(new ResourceLocation(item.getNamespace(), "fish/" + item.getPath() + "_tail"));
             if (tail == missing) tail = null;
             return new Fish(body, tail, tail == null ? 0.5F : maxX(tail));
         });
@@ -93,8 +101,14 @@ public final class FishRender {
      * tailDeg: tail wag angle. Falls back to the item sprite (facing +z) when the fish has no model.
      */
     public static void render(ItemStack stack, PoseStack pose, MultiBufferSource buffers, int light, float tailDeg) {
+        render(stack, "", pose, buffers, light, tailDeg);
+    }
+
+    /** As {@link #render(ItemStack, PoseStack, MultiBufferSource, int, float)}, with a model variant (e.g. "_sheared") if it exists. */
+    public static void render(ItemStack stack, String variant, PoseStack pose, MultiBufferSource buffers, int light, float tailDeg) {
         if (stack.isEmpty()) return;
-        Fish fish = lookup(stack);
+        Fish fish = variant.isEmpty() ? NONE : lookup(stack, variant);
+        if (fish.body == null) fish = lookup(stack);
         var items = Minecraft.getInstance().getItemRenderer();
         if (fish.body == null) {
             pose.pushPose();

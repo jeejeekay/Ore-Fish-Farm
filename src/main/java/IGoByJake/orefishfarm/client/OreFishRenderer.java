@@ -33,7 +33,8 @@ public class OreFishRenderer extends EntityRenderer<OreFish> {
         }
         pose.scale(SCALE, SCALE, SCALE);
         float wag = Mth.sin(age * (wet ? 0.6F : 1.4F)) * (wet ? 18F : 28F);
-        FishRender.render(fish.fishItem(), pose, buffers, light, wag);
+        String variant = fish instanceof IGoByJake.orefishfarm.entity.DataFish df && df.isSheared() ? "_sheared" : "";
+        FishRender.render(fish.fishItem(), variant, pose, buffers, light, wag);
         pose.popPose();
         super.render(fish, yaw, partial, pose, buffers, light);
     }
