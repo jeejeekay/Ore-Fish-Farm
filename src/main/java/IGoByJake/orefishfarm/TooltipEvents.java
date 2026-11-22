@@ -13,6 +13,24 @@ import net.minecraftforge.fml.common.Mod;
 public final class TooltipEvents {
     private TooltipEvents() {}
 
+    /** Swaps a fish's plain stat line (FishGenes.tooltip) for the drawn stat bars. */
+    @SubscribeEvent
+    public static void onGather(net.minecraftforge.client.event.RenderTooltipEvent.GatherComponents event) {
+        net.minecraft.world.item.ItemStack stack = event.getItemStack();
+        if (!FishData.loaded() || !IGoByJake.orefishfarm.data.FishGenes.has(stack)) return;
+        FishData.Fish fish = FishData.fish(stack);
+        if (fish == null) return;
+        var stats = IGoByJake.orefishfarm.data.FishGenes.shownStats(fish.makesPower(), fish.makesHeat());
+        Component marker = IGoByJake.orefishfarm.data.StatBars.marker(stack, stats);
+        var list = event.getTooltipElements();
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).left().map(marker::equals).orElse(false)) {
+                list.set(i, com.mojang.datafixers.util.Either.right(IGoByJake.orefishfarm.data.StatBars.of(stack, stats)));
+                return;
+            }
+        }
+    }
+
     @SubscribeEvent
     public static void onTooltip(ItemTooltipEvent event) {
         FishData.Fish fish = FishData.loaded() ? FishData.fish(event.getItemStack()) : null;

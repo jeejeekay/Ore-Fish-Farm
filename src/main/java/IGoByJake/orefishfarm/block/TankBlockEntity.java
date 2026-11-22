@@ -500,15 +500,15 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
         return -1;
     }
 
-    /** Starts the next piece of food; it lasts its ticks divided by the eaters' combined hunger. */
+    /** Starts the next piece of food; it lasts its ticks divided by the eaters' combined appetite (1 / Satiety factor each). */
     private void startFood(int slot, List<FishRef> eaters) {
         ItemStack food = this.shared.getStackInSlot(slot);
         int ticks = FishData.foodTicks(food);
         if (ticks <= 0) return;
-        double hunger = 0;
-        for (FishRef f : eaters) hunger += FishGenes.factor(f.stack(), FishGenes.HUNGER);
+        double appetite = 0;
+        for (FishRef f : eaters) appetite += 1.0 / Math.max(0.05, FishGenes.factor(f.stack(), FishGenes.SATIETY));
         this.burnItem = food.copyWithCount(1);
-        this.burnTotal = Math.max(1, (int) Math.round(ticks * Config.FOOD_TIME.get() / Math.max(0.5, hunger)));
+        this.burnTotal = Math.max(1, (int) Math.round(ticks * Config.FOOD_TIME.get() / Math.max(0.05, appetite)));
         this.burn = this.burnTotal;
         this.shared.extractItem(slot, 1, false);
         setChanged();
@@ -520,12 +520,17 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
         List<TankBlockEntity> mem = memberBEs();
         if (this.breeding && mem != null && mem.size() >= BREED_MIN_BLOCKS) breed(eaters);
         if (power) return;
+        // Yield above 1x makes more: the product chance x the Yield factor is how many products on average
+        // (2.25 = two, plus a 25% chance of a third).
+        bite:
         for (FishRef f : eaters) {
             FishData.Fish d = FishData.fish(f.stack());
-            float chance = d == null ? 0 : Math.min(1F, FishData.productChance(d) * FishGenes.factor(f.stack(), FishGenes.YIELD));
-            if (d != null && d.makesProduct() && this.level.random.nextFloat() < chance) {
+            if (d == null || !d.makesProduct()) continue;
+            double expected = FishData.productChance(d) * FishGenes.factor(f.stack(), FishGenes.YIELD);
+            int count = (int) Math.floor(expected) + (this.level.random.nextDouble() < expected - Math.floor(expected) ? 1 : 0);
+            for (int k = 0; k < count; k++) {
                 ItemStack rest = addOutput(d.product().copy());
-                if (!rest.isEmpty()) break; // output full: the rest of this bite is wasted
+                if (!rest.isEmpty()) break bite; // output full: the rest of this bite is wasted
             }
         }
     }

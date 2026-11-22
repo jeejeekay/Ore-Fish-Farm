@@ -99,7 +99,7 @@
   "gui.orefishfarm.breeding_full": "Breeding: Full",
   "entity.orefishfarm.data_fish": "Fish",
   "stat.orefishfarm.yield": "Yield",
-  "stat.orefishfarm.hunger": "Hunger",
+  "stat.orefishfarm.satiety": "Satiety",
   "stat.orefishfarm.charge": "Charge",
   "stat.orefishfarm.heat": "Heat",
   "tooltip.orefishfarm.genes": "Genes:",

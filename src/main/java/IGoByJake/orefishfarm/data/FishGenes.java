@@ -15,6 +15,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import IGoByJake.orefishfarm.Config;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -23,17 +24,26 @@ import java.util.List;
 /**
  * What one live fish carries, stored on its bucket under {@value #KEY}:
  * <ul>
- *   <li><b>Stats</b>: Yield, Hunger and Charge, each 0 to 1 (0.5 = the species' normal). They change how the fish
- *   works: Yield scales its product chance, Hunger how fast it eats its share of the food, Charge its FE (power
- *   fish only). Each factor is 0.5 + stat, so 0.5x to 1.5x. New stats are code.</li>
+ *   <li><b>Stats</b>: Yield, Satiety, Charge and Heat. Each has a <b>level</b> and a <b>potential</b>, both whole
+ *   numbers 0 to 10, all shown in the tooltip (nothing hidden). Only the level changes how the fish works: Yield
+ *   scales its product, Satiety how long food lasts for it, Charge its FE (power fish), Heat its heat (heat fish).
+ *   The multiplier for each level is {@code statMultipliers} in the config (level 3 = 1x by default, +25% a level,
+ *   10 = 3x). Potential is the highest level a baby can reach in that stat.</li>
+ *   <li><b>Wild fish</b> (caught, scooped, or put in a tank without stats) roll each level from
+ *   {@code wildLevelWeights} (each level a third as likely as the next one towards 3), and each potential as
+ *   round(base - perLevel x level +- spread): low fish tend to have high potential.</li>
+ *   <li><b>Babies</b>, for each stat: potential = {@link #roll} of the parents' two potentials added, then
+ *   level = {@link #roll} of the parents' two levels added, at most that potential. A roll of a total t makes
+ *   t + breedExtraRolls tries, each won at breedRollChance + breedRollChancePerLevel x t; the result is the
+ *   number of wins, at most 10.</li>
  *   <li><b>Genes</b>: up to {@value #MAX_GENES} names, plain data with no effect. Breeding entries and recipes can
  *   ask for them. A gene is any item tag in a {@code genes/} folder ({@code data/<ns>/tags/items/genes/<gene>.json}),
  *   listing the species born with it; the gene's id is {@code <ns>:<gene>}. Colour: an optional
  *   {@code orefishfarm_gene/<gene>.json} ({"color": "#C040C0"}), else one picked from the name. Name: lang key
  *   {@code gene.<ns>.<gene>}.</li>
  * </ul>
- * A fish gets its stats and genes when it is bucketed (caught alive, scooped, or put in a tank without them);
- * a fish bred in a tank gets them at birth from its parents.
+ * Fish from before 2.8.0 carry 0-1 "Stats"; they read as the nearest level and are rewritten (with a wild
+ * potential) the next time they are bucketed or put in a tank.
  *
  * <p>Newborns: a fish bred in a tank is flagged {@code Newborn} until someone scoops it out with its habitat's
  * bucket, and {@code Unseen} (the screen shows an asterisk) until a player hovers it.
@@ -41,9 +51,11 @@ import java.util.List;
 public final class FishGenes {
     public static final String KEY = "OreFishGenes";
     public static final int MAX_GENES = 3;
-    public static final String YIELD = "yield", HUNGER = "hunger", CHARGE = "charge", HEAT = "heat";
-    public static final List<String> STATS = List.of(YIELD, HUNGER, CHARGE, HEAT);
+    public static final int MAX_LEVEL = 10;
+    public static final String YIELD = "yield", SATIETY = "satiety", CHARGE = "charge", HEAT = "heat";
+    public static final List<String> STATS = List.of(YIELD, SATIETY, CHARGE, HEAT);
     private static final String GENE_FOLDER = "genes/";
+    private static final String LEVELS = "Levels", POTENTIAL = "Potential", OLD_STATS = "Stats";
 
     private FishGenes() {}
 
@@ -60,16 +72,36 @@ public final class FishGenes {
         return data(stack) != null;
     }
 
-    /** A stat, 0 to 1 (0.5 when not set). */
-    public static float stat(ItemStack stack, String stat) {
+    /** A stat's level, 0 to 10 (3 when not set). */
+    public static int level(ItemStack stack, String stat) {
         CompoundTag d = data(stack);
-        if (d == null || !d.getCompound("Stats").contains(stat)) return 0.5F;
-        return Mth.clamp(d.getCompound("Stats").getFloat(stat), 0F, 1F);
+        if (d == null) return 3;
+        if (d.getCompound(LEVELS).contains(stat)) return Mth.clamp(d.getCompound(LEVELS).getInt(stat), 0, MAX_LEVEL);
+        return oldLevel(d, stat);
     }
 
-    /** A stat as a multiplier: 0.5x at 0, 1x at 0.5, 1.5x at 1. */
+    /** A stat's potential, 0 to 10: the highest level its babies can have in it. */
+    public static int potential(ItemStack stack, String stat) {
+        CompoundTag d = data(stack);
+        if (d != null && d.getCompound(POTENTIAL).contains(stat)) return Mth.clamp(d.getCompound(POTENTIAL).getInt(stat), 0, MAX_LEVEL);
+        return wildPotential(level(stack, stat), 0);
+    }
+
+    /** A stat as a multiplier: the config's statMultipliers entry for its level. */
     public static float factor(ItemStack stack, String stat) {
-        return 0.5F + stat(stack, stat);
+        return (float) Config.statMultiplier(level(stack, stat));
+    }
+
+    /** A pre-2.8.0 0-1 stat as the level whose multiplier is closest to its old 0.5x-1.5x factor. */
+    private static int oldLevel(CompoundTag d, String stat) {
+        CompoundTag old = d.getCompound(OLD_STATS);
+        String key = stat.equals(SATIETY) ? "hunger" : stat;
+        if (!old.contains(key)) return 3;
+        double f = 0.5 + Mth.clamp(old.getFloat(key), 0F, 1F);
+        if (stat.equals(SATIETY)) f = 1 / f; // old Hunger: more ate more; Satiety: more eats less
+        int best = 3;
+        for (int l = 0; l <= MAX_LEVEL; l++) if (Math.abs(Config.statMultiplier(l) - f) < Math.abs(Config.statMultiplier(best) - f)) best = l;
+        return best;
     }
 
     /** The fish's genes, oldest first. */
@@ -113,14 +145,22 @@ public final class FishGenes {
         return t.getCompound(KEY);
     }
 
-    private static void set(ItemStack stack, float[] stats, List<ResourceLocation> genes) {
+    private static void setStats(ItemStack stack, int[] levels, int[] potential) {
         CompoundTag d = write(stack);
-        CompoundTag s = new CompoundTag();
-        for (int i = 0; i < STATS.size(); i++) s.putFloat(STATS.get(i), Mth.clamp(stats[i], 0F, 1F));
-        d.put("Stats", s);
+        CompoundTag l = new CompoundTag(), p = new CompoundTag();
+        for (int i = 0; i < STATS.size(); i++) {
+            l.putInt(STATS.get(i), Mth.clamp(levels[i], 0, MAX_LEVEL));
+            p.putInt(STATS.get(i), Mth.clamp(potential[i], 0, MAX_LEVEL));
+        }
+        d.put(LEVELS, l);
+        d.put(POTENTIAL, p);
+        d.remove(OLD_STATS);
+    }
+
+    private static void setGenes(ItemStack stack, List<ResourceLocation> genes) {
         ListTag l = new ListTag();
         for (ResourceLocation g : genes) l.add(StringTag.valueOf(g.toString()));
-        d.put("Genes", l);
+        write(stack).put("Genes", l);
     }
 
     /** Scooped out of a tank: no longer a newborn. */
@@ -136,28 +176,84 @@ public final class FishGenes {
         if (d != null) d.remove("Unseen");
     }
 
-    /** Gives a fish its stats (rolled around 0.5) and its species' genes, if it has none yet. */
+    /**
+     * Gives a fish wild stats and its species' genes if it has none yet; a fish with pre-2.8.0 stats gets them
+     * turned into levels (and a wild potential).
+     */
     public static void ensure(ItemStack stack, RandomSource random) {
-        if (stack.isEmpty() || has(stack)) return;
+        if (stack.isEmpty()) return;
+        CompoundTag d = data(stack);
+        if (d != null) {
+            if (!d.contains(LEVELS) && d.contains(OLD_STATS)) {
+                int[] l = new int[STATS.size()], p = new int[STATS.size()];
+                for (int i = 0; i < l.length; i++) {
+                    l[i] = oldLevel(d, STATS.get(i));
+                    p[i] = wildPotential(l[i], random);
+                }
+                setStats(stack, l, p);
+            }
+            return;
+        }
         Item species = species(stack);
         if (species == null) return;
-        float[] stats = new float[STATS.size()];
-        for (int i = 0; i < stats.length; i++) stats[i] = 0.5F + (random.nextFloat() - 0.5F) * 0.3F;
-        set(stack, stats, speciesGenes(species));
+        int[] l = new int[STATS.size()], p = new int[STATS.size()];
+        for (int i = 0; i < l.length; i++) {
+            l[i] = wildLevel(random);
+            p[i] = wildPotential(l[i], random);
+        }
+        setStats(stack, l, p);
+        setGenes(stack, speciesGenes(species));
+    }
+
+    /** A wild level: picked by the config's wildLevelWeights. */
+    public static int wildLevel(RandomSource random) {
+        List<Double> w = Config.wildLevelWeights();
+        double total = 0;
+        for (double v : w) total += Math.max(0, v);
+        if (total <= 0) return 3;
+        double r = random.nextDouble() * total;
+        for (int l = 0; l < w.size(); l++) {
+            r -= Math.max(0, w.get(l));
+            if (r < 0) return l;
+        }
+        return w.size() - 1;
+    }
+
+    private static int wildPotential(int level, RandomSource random) {
+        double spread = Config.WILD_POTENTIAL_SPREAD.get();
+        return wildPotential(level, (random.nextDouble() * 2 - 1) * spread);
+    }
+
+    /** round(base - perLevel x level + noise), 0 to 10. */
+    private static int wildPotential(int level, double noise) {
+        double v = Config.WILD_POTENTIAL_BASE.get() - Config.WILD_POTENTIAL_PER_LEVEL.get() * level + noise;
+        return Mth.clamp((int) Math.floor(v + 0.5), 0, MAX_LEVEL);
     }
 
     /**
-     * A baby's stats and genes, written onto its bucket. Stats: each from one parent at random, nudged a little.
+     * The breeding roll for a total (two parents' levels, or two potentials, added): total + breedExtraRolls
+     * tries, each won at breedRollChance + breedRollChancePerLevel x total; the number of wins, at most 10.
+     */
+    public static int roll(int total, RandomSource random) {
+        int tries = Math.max(0, total + Config.BREED_EXTRA_ROLLS.get());
+        double p = Mth.clamp(Config.BREED_ROLL_CHANCE.get() + Config.BREED_ROLL_CHANCE_PER_LEVEL.get() * total, 0, 1);
+        int wins = 0;
+        for (int i = 0; i < tries && wins < MAX_LEVEL; i++) if (random.nextDouble() < p) wins++;
+        return wins;
+    }
+
+    /**
+     * A baby's stats and genes, written onto its bucket. Each stat: potential from the parents' potentials, then
+     * level from the parents' levels, capped at that potential (see {@link #roll}).
      * Genes: its species' own, then the parents' in turn (A's first, B's first, A's second, ...), each at 50%,
      * skipping ones it has, stopping once it has {@value #MAX_GENES}.
      */
     public static void inherit(ItemStack baby, ItemStack a, ItemStack b, RandomSource random) {
-        float[] stats = new float[STATS.size()];
-        for (int i = 0; i < stats.length; i++) {
-            float v = stat(random.nextBoolean() ? a : b, STATS.get(i));
-            float r = random.nextFloat();
-            float shift = r < 0.7F ? 0 : r < 0.95F ? 0.05F : 0.1F;
-            stats[i] = v + (random.nextBoolean() ? shift : -shift);
+        int[] l = new int[STATS.size()], p = new int[STATS.size()];
+        for (int i = 0; i < l.length; i++) {
+            String stat = STATS.get(i);
+            p[i] = roll(potential(a, stat) + potential(b, stat), random);
+            l[i] = Math.min(p[i], roll(level(a, stat) + level(b, stat), random));
         }
         Item species = species(baby);
         List<ResourceLocation> genes = new ArrayList<>(species == null ? List.of() : speciesGenes(species));
@@ -170,7 +266,8 @@ public final class FishGenes {
             }
         }
         while (genes.size() > MAX_GENES) genes.remove(0);
-        set(baby, stats, genes);
+        setStats(baby, l, p);
+        setGenes(baby, genes);
         CompoundTag d = write(baby);
         d.putBoolean("Newborn", true);
         d.putBoolean("Unseen", true);
@@ -224,34 +321,29 @@ public final class FishGenes {
     public static int statColor(String stat) {
         return switch (stat) {
             case YIELD -> 0xE8B830;
-            case HUNGER -> 0x6BBF4A;
+            case SATIETY -> 0x6BBF4A;
             case HEAT -> 0xF0702A;
             default -> 0x3FD0E0;
         };
     }
 
-    /** "Yield ▮▮▮▮▮▯▯▯▯▯": a 10-step bar. */
-    public static Component statLine(ItemStack stack, String stat) {
-        int filled = Math.round(stat(stack, stat) * 10);
-        MutableComponent line = Component.translatable("stat.orefishfarm." + stat).withStyle(ChatFormatting.GRAY).append(" ");
-        line.append(Component.literal("▮".repeat(filled)).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(statColor(stat)))));
-        line.append(Component.literal("▮".repeat(10 - filled)).withStyle(ChatFormatting.DARK_GRAY));
-        return line;
+    /** The stats a fish shows: Yield and Satiety always, Charge for power fish, Heat for heat fish. */
+    public static List<String> shownStats(boolean power, boolean heat) {
+        List<String> out = new ArrayList<>(List.of(YIELD, SATIETY));
+        if (power) out.add(CHARGE);
+        if (heat) out.add(HEAT);
+        return out;
     }
 
-    /** Tooltip lines for a live fish (nothing for one that hasn't been bucketed yet). */
-    public static void tooltip(ItemStack stack, List<Component> lines, boolean power) {
-        tooltip(stack, lines, power, false);
-    }
-
-    /** As above; heat fish also show their Heat stat. */
+    /**
+     * Tooltip lines for a live fish (nothing for one that hasn't been bucketed yet). The stats go in as one
+     * {@link StatBars#marker} line that the client swaps for the drawn bars (see TooltipEvents); anything that
+     * shows plain text sees "Yield 3/7 · Satiety 4/6 ..." instead.
+     */
     public static void tooltip(ItemStack stack, List<Component> lines, boolean power, boolean heat) {
         if (!has(stack)) return;
         if (isNewborn(stack)) lines.add(Component.translatable("tooltip.orefishfarm.newborn").withStyle(ChatFormatting.YELLOW));
-        lines.add(statLine(stack, YIELD));
-        lines.add(statLine(stack, HUNGER));
-        if (power) lines.add(statLine(stack, CHARGE));
-        if (heat) lines.add(statLine(stack, HEAT));
+        lines.add(StatBars.marker(stack, shownStats(power, heat)));
         List<ResourceLocation> genes = genes(stack);
         if (!genes.isEmpty()) {
             MutableComponent g = Component.translatable("tooltip.orefishfarm.genes").withStyle(ChatFormatting.GRAY).append(" ");

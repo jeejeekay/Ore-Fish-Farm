@@ -18,6 +18,17 @@ public final class Config {
     public static final ForgeConfigSpec.IntValue MAX_AQUARIUM_SIZE;
     public static final ForgeConfigSpec.IntValue HABITAT_GRACE;
     public static final ForgeConfigSpec.IntValue HABITAT_HURT;
+    public static final ForgeConfigSpec.ConfigValue<java.util.List<? extends Double>> STAT_MULTIPLIERS;
+    public static final ForgeConfigSpec.ConfigValue<java.util.List<? extends Double>> WILD_LEVEL_WEIGHTS;
+    public static final ForgeConfigSpec.DoubleValue WILD_POTENTIAL_BASE;
+    public static final ForgeConfigSpec.DoubleValue WILD_POTENTIAL_PER_LEVEL;
+    public static final ForgeConfigSpec.DoubleValue WILD_POTENTIAL_SPREAD;
+    public static final ForgeConfigSpec.IntValue BREED_EXTRA_ROLLS;
+    public static final ForgeConfigSpec.DoubleValue BREED_ROLL_CHANCE;
+    public static final ForgeConfigSpec.DoubleValue BREED_ROLL_CHANCE_PER_LEVEL;
+
+    static final java.util.List<Double> DEFAULT_MULTIPLIERS = java.util.List.of(0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 3.0);
+    static final java.util.List<Double> DEFAULT_WEIGHTS = java.util.List.of(81.0, 243.0, 729.0, 2187.0, 729.0, 243.0, 81.0, 27.0, 9.0, 3.0, 1.0);
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
@@ -41,9 +52,51 @@ public final class Config {
         b.pop().push("habitat");
         HABITAT_GRACE = b.comment("Ticks a fish in the wrong habitat waits for its habitat food before it starts getting hurt.").defineInRange("graceTicks", 200, 0, 72000);
         HABITAT_HURT = b.comment("Ticks a fish is hurt (with a hurt sound each second) before it dies. Pull it out in time to save it.").defineInRange("hurtTicks", 60, 1, 72000);
+        b.pop().push("stats");
+        STAT_MULTIPLIERS = b.comment("What each stat level (0 to 10) does: 11 multipliers, level 0 first. Yield multiplies the product",
+                "(above 1x it makes extra), Satiety how long food lasts for that fish, Charge its FE, Heat its heat.",
+                "Default: level 3 = 1x, +25% a level, 10 = 3x.")
+                .defineList("statMultipliers", DEFAULT_MULTIPLIERS, o -> o instanceof Number);
+        WILD_LEVEL_WEIGHTS = b.comment("How likely each level (0 to 10) is on a wild fish: 11 weights, level 0 first.",
+                "Default: each level a third as likely as the next one towards 3 (3 is half of all wild fish, 10 is 1 in 4,333).")
+                .defineList("wildLevelWeights", DEFAULT_WEIGHTS, o -> o instanceof Number);
+        WILD_POTENTIAL_BASE = b.comment("A wild fish's potential in a stat is round(base - perLevel x its level +- spread), 0 to 10,",
+                "so low fish tend to have high potential. Potential is the highest level its babies can reach.")
+                .defineInRange("wildPotentialBase", 9.0, -10.0, 20.0);
+        WILD_POTENTIAL_PER_LEVEL = b.defineInRange("wildPotentialPerLevel", 0.5, -5.0, 5.0);
+        WILD_POTENTIAL_SPREAD = b.defineInRange("wildPotentialSpread", 1.5, 0.0, 10.0);
+        BREED_EXTRA_ROLLS = b.comment("Breeding, for each stat: the baby's potential rolls the parents' two potentials added, then its level",
+                "rolls their two levels added (at most that potential). A roll of a total makes total + breedExtraRolls tries,",
+                "each won at breedRollChance + breedRollChancePerLevel x total; the baby gets the number of wins (at most 10).")
+                .defineInRange("breedExtraRolls", 3, 0, 40);
+        BREED_ROLL_CHANCE = b.defineInRange("breedRollChance", 0.10, 0.0, 1.0);
+        BREED_ROLL_CHANCE_PER_LEVEL = b.defineInRange("breedRollChancePerLevel", 0.02, -1.0, 1.0);
         b.pop();
         SPEC = b.build();
     }
 
     private Config() {}
+
+    /** The multiplier for a stat level (from statMultipliers; the default list if that isn't 11 numbers). */
+    public static double statMultiplier(int level) {
+        java.util.List<? extends Double> l = listOr(STAT_MULTIPLIERS, DEFAULT_MULTIPLIERS);
+        return l.get(Math.max(0, Math.min(10, level))).doubleValue();
+    }
+
+    @SuppressWarnings("unchecked")
+    public static java.util.List<Double> wildLevelWeights() {
+        return (java.util.List<Double>) listOr(WILD_LEVEL_WEIGHTS, DEFAULT_WEIGHTS);
+    }
+
+    private static java.util.List<? extends Double> listOr(ForgeConfigSpec.ConfigValue<java.util.List<? extends Double>> v, java.util.List<Double> fallback) {
+        try {
+            java.util.List<? extends Number> raw = v.get();
+            if (raw == null || raw.size() != 11) return fallback;
+            java.util.List<Double> out = new java.util.ArrayList<>(11);
+            for (Number n : raw) out.add(n.doubleValue());
+            return out;
+        } catch (IllegalStateException | ClassCastException e) {
+            return fallback; // config not loaded yet (e.g. a tooltip on the title screen), or a bad entry
+        }
+    }
 }

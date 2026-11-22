@@ -37,6 +37,11 @@ public final class ClientSetup {
     }
 
     @SubscribeEvent
+    public static void onTooltipFactories(net.minecraftforge.client.event.RegisterClientTooltipComponentFactoriesEvent event) {
+        event.register(IGoByJake.orefishfarm.data.StatBars.class, StatBarsTooltip::new);
+    }
+
+    @SubscribeEvent
     public static void onRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(Registry.FISH_TANK_BE.get(), AquariumRenderer::new);
         event.registerEntityRenderer(Registry.ORE_FISHING_HOOK.get(), TackleBobberRenderer::new);
