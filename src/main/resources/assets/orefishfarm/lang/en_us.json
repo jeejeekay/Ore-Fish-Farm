@@ -123,8 +123,13 @@
   "item.orefishfarm.puffloater.desc": "Tackle. A grumpy float eels can't resist",
   "item.orefishfarm.skim_pickle": "Skim Pickle",
   "item.orefishfarm.skim_pickle.desc": "Tackle. Its glow draws up gilded carp",
-  "item.orefishfarm.tackle.how": "Click onto a rod to clip on; right-click the rod to take off",
-  "tooltip.orefishfarm.tackle_on": "Tackle: %s (%s/%s)",
+  "item.orefishfarm.tackle.how": "Carry it near a rod in your inventory to clip it on, or hold it with a rod in your other hand and right-click",
+  "message.orefishfarm.tackle_clipped": "Clipped on: %s",
+  "gui.orefishfarm.tackle.none": "No tackle",
+  "gui.orefishfarm.tackle.uses": "%s/%s uses left",
+  "gui.orefishfarm.tackle.click_on": "Click to clip on",
+  "gui.orefishfarm.tackle.click_swap": "Click to swap",
+  "gui.orefishfarm.tackle.click_off": "Click to take off",
   "message.orefishfarm.tackle_broke": "Your %s broke",
   "message.orefishfarm.tackle_replaced": "Your %s broke; clipped on a spare"
 }

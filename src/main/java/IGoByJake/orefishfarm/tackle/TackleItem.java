@@ -16,6 +16,20 @@ public class TackleItem extends Item {
         super(new Item.Properties().durability(durability));
     }
 
+    /** A piece in the main hand and a rod with no tackle in the off hand: right-click clips it on. */
+    @Override
+    public net.minecraft.world.InteractionResultHolder<ItemStack> use(Level level, net.minecraft.world.entity.player.Player player, net.minecraft.world.InteractionHand hand) {
+        ItemStack piece = player.getItemInHand(hand);
+        if (hand == net.minecraft.world.InteractionHand.MAIN_HAND) {
+            ItemStack rod = player.getOffhandItem();
+            if (Tackle.isRod(rod) && rod.getCount() == 1 && Tackle.get(rod).isEmpty()) {
+                TackleEvents.clipInHand(player, rod, piece);
+                return net.minecraft.world.InteractionResultHolder.sidedSuccess(piece, level.isClientSide);
+            }
+        }
+        return super.use(level, player, hand);
+    }
+
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tips, TooltipFlag flag) {
         tips.add(Component.translatable(getDescriptionId() + ".desc").withStyle(ChatFormatting.GRAY));

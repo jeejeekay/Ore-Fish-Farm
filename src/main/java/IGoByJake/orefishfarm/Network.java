@@ -9,9 +9,9 @@ import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 
-/** Two packets: the server's fish and food lists (tooltips, slot checks) and its tackle data (JEI). */
+/** The server's fish and food lists (tooltips, slot checks), its tackle data (JEI, tackle popup), and the tackle popup's clicks. */
 public final class Network {
-    private static final String VERSION = "5";
+    private static final String VERSION = "6";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(new ResourceLocation(OreFishFarm.MODID, "main"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
@@ -27,6 +27,11 @@ public final class Network {
                 .encoder((msg, buf) -> IGoByJake.orefishfarm.tackle.Tackle.write(buf))
                 .decoder(IGoByJake.orefishfarm.tackle.Tackle::read)
                 .consumerMainThread((msg, ctx) -> IGoByJake.orefishfarm.tackle.Tackle.applySynced(msg))
+                .add();
+        CHANNEL.messageBuilder(IGoByJake.orefishfarm.tackle.TackleEvents.Action.class, 2, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(IGoByJake.orefishfarm.tackle.TackleEvents.Action::write)
+                .decoder(IGoByJake.orefishfarm.tackle.TackleEvents.Action::read)
+                .consumerMainThread((msg, ctx) -> msg.handle(ctx.get().getSender()))
                 .add();
     }
 
