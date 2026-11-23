@@ -20,7 +20,7 @@ import java.util.function.Supplier;
 
 /**
  * Live catches: when any fishing (water, lava, void, any mod's) pulls up a tank fish and the angler carries that
- * fish's habitat bucket (a water bucket for water fish, a lava bucket for heated fish, an empty bucket for void
+ * fish's habitat bucket (a water bucket for water fish, a lava bucket for heated fish, a Void Bucket for void
  * fish), the fish comes up alive in it and that bucket is used up; it gets its stats and genes then. Without
  * one it is a plain fish.
  * Runs on every loot table; it only does anything when a fishing bobber is the one looting.

@@ -102,7 +102,7 @@
   "item.orefishfarm.fish_bucket.of": "Bucket of %s",
   "message.orefishfarm.tank_full": "No free fish slot in this aquarium",
   "message.orefishfarm.needs_live_fish": "Only live fish go in a tank: a fish in a bucket",
-  "jei.orefishfarm.info.fish_bucket": "A live fish. Fish Tanks hold buckets of fish: use one on a tank, or put it in a fish slot. Catch fish alive by fishing with their habitat's bucket in your inventory (a water bucket for water fish, an empty bucket for void fish), or scoop a wild one with a water bucket. Any mob bucket works in a tank, from vanilla or other mods. A newborn stays in its tank (marked * until you look at it) until you scoop it out: click it holding its habitat's bucket (water bucket, lava bucket, or an empty bucket for void fish). A fish's stats and genes show once it is in a bucket.",
+  "jei.orefishfarm.info.fish_bucket": "A live fish. Fish Tanks hold buckets of fish: use one on a tank, or put it in a fish slot. Catch fish alive by fishing with their habitat's bucket in your inventory (a water bucket for water fish, a Void Bucket for void fish), or scoop a wild one with a water bucket. Any mob bucket works in a tank, from vanilla or other mods. A newborn stays in its tank (marked * until you look at it) until you scoop it out: click it holding its habitat's bucket (water bucket, lava bucket or Void Bucket). A fish's stats and genes show once it is in a bucket.",
   "gui.orefishfarm.breeding_on": "Breeding: On",
   "gui.orefishfarm.breeding_off": "Breeding: Off",
   "gui.orefishfarm.breeding_full": "Breeding: Full",
@@ -131,5 +131,8 @@
   "gui.orefishfarm.tackle.click_swap": "Click to swap",
   "gui.orefishfarm.tackle.click_off": "Click to take off",
   "message.orefishfarm.tackle_broke": "Your %s broke",
-  "message.orefishfarm.tackle_replaced": "Your %s broke; clipped on a spare"
+  "message.orefishfarm.tackle_replaced": "Your %s broke; clipped on a spare",
+  "block.orefishfarm.void_liquid": "Void Liquid",
+  "item.orefishfarm.void_bucket": "Void Bucket",
+  "jei.orefishfarm.info.void_bucket": "The void, in a bucket. Aim an empty bucket steeply down into the void, with nothing below you all the way to the bottom of the world, and it fills. Placed, void liquid spreads 2 blocks and hurts like the void itself; scoop it back up with an empty bucket. Void fish are caught alive and scooped out of tanks with a Void Bucket, and it turns a tank into a void tank."
 }

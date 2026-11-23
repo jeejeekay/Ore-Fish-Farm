@@ -150,7 +150,7 @@ public class AquariumMenu extends AbstractContainerMenu {
 
     /**
      * A newborn only comes out when scooped: click its slot holding its habitat's bucket (a water bucket, a lava
-     * bucket, or an empty bucket for void fish). The bucket becomes the fish in a bucket.
+     * bucket, or a Void Bucket for void fish). The bucket becomes the fish in a bucket.
      */
     @Override
     public void clicked(int slotId, int button, net.minecraft.world.inventory.ClickType type, Player player) {

@@ -423,7 +423,7 @@ public final class FishData {
         return stack;
     }
 
-    /** The container that scoops this fish out of a tank: its habitat's bucket (water, lava, or an empty bucket). */
+    /** The container that scoops this fish out of a tank: its habitat's bucket (water, lava or void bucket). */
     public static Item scoop(ItemStack fish) {
         return habitat(habitatOf(fish)).bucket();
     }

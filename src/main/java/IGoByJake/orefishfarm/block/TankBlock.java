@@ -193,7 +193,7 @@ public class TankBlock extends BaseEntityBlock {
             }
             FishData.Habitat old = FishData.habitat(c.habitat());
             Aquarium.convert(level, c, h.id(), null);
-            // The habitat's bucket is poured in (a lava bucket comes back empty); an empty bucket (void) is kept.
+            // The habitat's bucket is poured in (a lava or void bucket comes back empty); an empty bucket is kept.
             if (!held.is(net.minecraft.world.item.Items.BUCKET)) useUp(player, hand, held);
             if (old.kit() != null && old.kit() != net.minecraft.world.item.Items.BUCKET
                     && !new ItemStack(old.kit()).hasCraftingRemainingItem()) give(player, new ItemStack(old.kit()));

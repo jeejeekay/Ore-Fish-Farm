@@ -20,6 +20,7 @@ public class OreFishFarm {
 
     public OreFishFarm() {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
+        IGoByJake.orefishfarm.voidliquid.VoidLiquid.register(modBus);
         Registry.register(modBus);
         // The orefishfarm:fish recipe ingredient (a live fish, by species and genes).
         modBus.addListener((net.minecraftforge.registries.RegisterEvent e) -> {
@@ -36,6 +37,8 @@ public class OreFishFarm {
         MinecraftForge.EVENT_BUS.addListener(IGoByJake.orefishfarm.tackle.Tackle::onAddReloadListeners);
         MinecraftForge.EVENT_BUS.addListener(IGoByJake.orefishfarm.tackle.TackleEvents::onRightClickItem);
         MinecraftForge.EVENT_BUS.addListener(IGoByJake.orefishfarm.tackle.TackleEvents::onFished);
+        MinecraftForge.EVENT_BUS.addListener(IGoByJake.orefishfarm.voidliquid.VoidLiquid::onLivingTick);
+        MinecraftForge.EVENT_BUS.addListener(IGoByJake.orefishfarm.voidliquid.VoidLiquid::onRightClickItem);
         Network.register();
     }
 }

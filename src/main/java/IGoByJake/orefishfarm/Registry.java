@@ -185,6 +185,7 @@ public final class Registry {
             .icon(() -> new ItemStack(FERROFIN.get()))
             .displayItems((params, out) -> {
                 TAB_ORDER.forEach(r -> out.accept(r.get()));
+                out.accept(IGoByJake.orefishfarm.voidliquid.VoidLiquid.BUCKET.get());
                 // Each of our fish alive in a bucket, ready for a tank.
                 for (var m : FISH_MOBS) {
                     Item fish = ForgeRegistries.ITEMS.getValue(m.getId());

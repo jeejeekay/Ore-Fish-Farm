@@ -1,7 +1,7 @@
 {
   "look": "void",
   "color": "#2A1046",
-  "kit": "minecraft:bucket",
-  "bucket": "minecraft:bucket",
+  "kit": "orefishfarm:void_bucket",
+  "bucket": "orefishfarm:void_bucket",
   "empty": "minecraft:bucket"
 }
