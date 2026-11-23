@@ -37,7 +37,10 @@ import java.util.Set;
  *   <li>its waypoints keep clear of the glass, and each frame its position is clamped to stay a margin inside any
  *       glass side: {@link #MARGIN_ALONE} in a lone tank block, {@link #MARGIN_ROAM} in a joined aquarium, where fish
  *       turn and travel and a nose or tail pointed at the glass must not poke through (the roaming margin is about
- *       three quarters of the drawn fish's size, so even long-bodied mobs stay inside).</li>
+ *       three quarters of the drawn fish's size, so even long-bodied mobs stay inside). That full margin only applies
+ *       toward the glass a fish faces: toward glass it swims alongside it only keeps {@link #PERP_ALONE} /
+ *       {@link #PERP_ROAM} (its half-width), eased as it turns. Some stops are runs along a glass wall, so fish
+ *       (bottom feeders too, between the corner rocks) cruise close alongside it; fast swimmers' laps hug the glass.</li>
  * </ul>
  * Swim styles, by item tag on the fish's species (any mod or pack can add to them):
  * <ul>
@@ -57,6 +60,8 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
     private static final double MARGIN_ALONE = 0.15, MARGIN_ROAM = SIZE_ROAM * 0.75;
     /** How far waypoints stay from the glass (a little more than the margin, so the clamp rarely bites). */
     private static final double INSET_ALONE = 0.22, INSET_ROAM = MARGIN_ROAM + 0.04;
+    /** How close a fish's centre may come to glass it swims alongside (only its nose and tail need the full margin). */
+    private static final double PERP_ALONE = 0.1, PERP_ROAM = 0.12;
     private static final int MAX_FISH = 24;
     private static final double MAX_DIST = 32;
     private static final Map<BlockPos, Paths> CACHE = new HashMap<>();
@@ -119,9 +124,15 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
                 Entity mob = FishLook.mob(bucket);
                 float size = mob == null ? base : FishLook.tankSize(mob, base, lone);
                 Path path = paths.get(m * TankBlockEntity.FISH + s, m, style);
-                // Fish bigger than the normal size keep the extra half-length further off the glass.
-                Vec3 p = paths.clamp(path.at(time), path.blockAt(time), Math.max(0, size - base) * 0.5);
                 Vec3 dir = path.heading(time, paths);
+                // Glass margins by heading: the full margin (plus the extra half-length of big fish) toward the walls
+                // the fish faces, only its half-width toward the walls it swims alongside; eased as it turns.
+                double extra = Math.max(0, size - base) * 0.5;
+                double full = Math.min(0.45, paths.margin + extra), perp = Math.min(full, paths.perp + extra * 0.25);
+                double hl = Math.sqrt(dir.x * dir.x + dir.z * dir.z);
+                double hx = hl < 1.0E-6 ? 1 : Math.abs(dir.x) / hl, hz = hl < 1.0E-6 ? 1 : Math.abs(dir.z) / hl;
+                path.ease(time, perp + (full - perp) * hx, perp + (full - perp) * hz);
+                Vec3 p = paths.clamp(path.at(time), path.blockAt(time), path.marginX, path.marginZ);
                 double dx = dir.x, dy = dir.y, dz = dir.z;
                 float yaw = (float) Math.atan2(-dz, dx);
                 float pitch = style == BOTTOM ? 0F : (float) Mth.clamp(Math.atan2(dy, Math.sqrt(dx * dx + dz * dz)), -0.4, 0.4);
@@ -160,14 +171,15 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
         /** Per tank block: bit d set when the side facing {@code DIRS[d]} is glass (no tank block beyond it). */
         final Map<BlockPos, Integer> glass = new HashMap<>();
         final Map<Integer, Path> byFish = new HashMap<>();
-        /** This aquarium's glass margin and waypoint inset (see the class notes). */
-        final double margin, inset;
+        /** This aquarium's glass margin and waypoint inset (see the class notes), and the side-on margin. */
+        final double margin, inset, perp;
 
         Paths(List<BlockPos> members) {
             this.hash = members.hashCode();
             boolean lone = members.size() <= 1;
             this.margin = lone ? MARGIN_ALONE : MARGIN_ROAM;
             this.inset = lone ? INSET_ALONE : INSET_ROAM;
+            this.perp = lone ? PERP_ALONE : PERP_ROAM;
             this.members = new ArrayList<>(members);
             Set<BlockPos> set = new HashSet<>(members);
             for (BlockPos b : members) {
@@ -196,21 +208,20 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
          * {@code fallback} (the block the fish is passing through), then held {@link #margin} off any glass side.
          */
         Vec3 clamp(Vec3 p, BlockPos fallback) {
-            return clamp(p, fallback, 0);
+            return clamp(p, fallback, this.margin, this.margin);
         }
 
-        /** As {@link #clamp(Vec3, BlockPos)}, kept {@code extra} further off the side and top glass (big fish). */
-        Vec3 clamp(Vec3 p, BlockPos fallback, double extra) {
+        /** As {@link #clamp(Vec3, BlockPos)}, with its own margins for the west/east and north/south glass. */
+        Vec3 clamp(Vec3 p, BlockPos fallback, double marginX, double marginZ) {
             BlockPos b = BlockPos.containing(p);
             Integer mask = this.glass.get(b);
             if (mask == null) {
                 b = fallback;
                 mask = this.glass.get(b);
             }
-            double side = Math.min(0.45, this.margin + extra);
-            double x = axis(p.x, b.getX(), mask, Direction.WEST, Direction.EAST, side);
+            double x = axis(p.x, b.getX(), mask, Direction.WEST, Direction.EAST, marginX);
             double y = axis(p.y, b.getY(), mask, Direction.DOWN, Direction.UP, Math.min(this.margin, BOTTOM_Y - 0.02));
-            double z = axis(p.z, b.getZ(), mask, Direction.NORTH, Direction.SOUTH, side);
+            double z = axis(p.z, b.getZ(), mask, Direction.NORTH, Direction.SOUTH, marginZ);
             return x == p.x && y == p.y && z == p.z ? p : new Vec3(x, y, z);
         }
 
@@ -237,6 +248,22 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
         final float[] start;
         /** Seconds the fish rests at each waypoint before moving on (bottom feeders grazing). */
         final float[] dwell;
+        /** The fish's current glass margins (west/east, north/south), eased toward the ones its heading wants. */
+        double marginX = -1, marginZ = -1;
+        private float easedAt;
+
+        void ease(float time, double wantX, double wantZ) {
+            float dt = time - this.easedAt;
+            this.easedAt = time;
+            if (this.marginX < 0 || dt < 0 || dt > 1) {
+                this.marginX = wantX;
+                this.marginZ = wantZ;
+                return;
+            }
+            double k = 1 - Math.exp(-dt / 0.35);
+            this.marginX += (wantX - this.marginX) * k;
+            this.marginZ += (wantZ - this.marginZ) * k;
+        }
 
         Path(Paths p, int seed, int home, int style) {
             Random r = new Random(seed * 341873128712L + p.hash + style * 7919L);
@@ -273,8 +300,7 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
                     if (!next.equals(cur) && !walk(p, r, cur, next, pts, blocks, bottom)) next = cur;
                     cur = next;
                     if (i == STOPS) break;
-                    pts.add(bottom ? lane(p, r, cur) : inside(p, r, cur));
-                    blocks.add(cur);
+                    stop(p, r, cur, bottom, pts, blocks);
                 }
                 if (bottom) speed = BOTTOM_SPEED;
             }
@@ -302,7 +328,7 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
                 y0 = Math.min(y0, b.getY()); y1 = Math.max(y1, b.getY());
                 z0 = Math.min(z0, b.getZ()); z1 = Math.max(z1, b.getZ());
             }
-            double in = Math.max(p.inset, 0.3);
+            double in = p.perp + 0.1; // laps run alongside the glass, so they can hug it
             double ax = x0 + in, bx = x1 + 1 - in, az = z0 + in, bz = z1 + 1 - in;
             double lo = y0 + 0.35, hi = Math.max(lo, y1 + 1 - 0.3);
             double rad = Math.min(0.3, Math.min(bx - ax, bz - az) / 2);
@@ -339,6 +365,32 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
                 if (d < bd) { bd = d; best = b; }
             }
             return best;
+        }
+
+        /**
+         * The next stop in block {@code b}: usually one point (see {@link #lane} and {@link #inside}); sometimes a run
+         * along one of the block's glass walls, two points close to it, so the fish cruises alongside the glass.
+         * Bottom feeders' runs stay between the corner rocks.
+         */
+        private static void stop(Paths p, Random r, BlockPos b, boolean bottom, List<Vec3> pts, List<BlockPos> blocks) {
+            List<Direction> walls = new ArrayList<>();
+            for (Direction d : Direction.Plane.HORIZONTAL) if (p.isGlass(b, d)) walls.add(d);
+            if (walls.isEmpty() || r.nextFloat() >= (bottom ? 0.45F : 0.35F)) {
+                pts.add(bottom ? lane(p, r, b) : inside(p, r, b));
+                blocks.add(b);
+                return;
+            }
+            Direction d = walls.get(r.nextInt(walls.size()));
+            double off = p.perp + 0.04;
+            double a0 = bottom ? 0.36 : 0.25, a1 = 1 - a0;
+            double s0 = a0 + r.nextDouble() * (a1 - a0), s1 = a0 + r.nextDouble() * (a1 - a0);
+            if (Math.abs(s1 - s0) < 0.2) s1 = s0 < 0.5 ? a1 : a0;
+            double y = bottom ? b.getY() + BOTTOM_Y + r.nextDouble() * 0.03 : inside(p, r, b).y;
+            for (double along : new double[]{s0, s1}) {
+                double across = d.getAxisDirection() == Direction.AxisDirection.POSITIVE ? 1 - off : off;
+                pts.add(d.getAxis() == Direction.Axis.X ? new Vec3(b.getX() + across, y, b.getZ() + along) : new Vec3(b.getX() + along, y, b.getZ() + across));
+                blocks.add(b);
+            }
         }
 
         /** A bottom feeder's stop: low over the floor, on the clear lanes through the middle of the block. */
