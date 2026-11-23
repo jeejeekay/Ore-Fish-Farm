@@ -57,11 +57,22 @@ def _build(shape, body, tail, paint, credit, out_models, out_tex):
     for part, els in (('body', body), ('tail', tail)):
         model = {'credit': credit, 'texture_size': [32, 32], 'elements': []}
         for e in els:
-            model['elements'].append({'name': e['name'], 'from': e['from'], 'to': e['to'],
-                                      'faces': {f: {'texture': '#t', 'uv': e['_uv'][f]} for f in e['faces']}})
+            el = {'name': e['name'], 'from': e['from'], 'to': e['to']}
+            if 'rotation' in e: el['rotation'] = e['rotation']  # Minecraft: one axis, -45..45 in 22.5 steps
+            el['faces'] = {f: {'texture': '#t', 'uv': e['_uv'][f]} for f in e['faces']}
+            model['elements'].append(el)
         name = shape if part == 'body' else shape + '_tail'
         json.dump(model, open(f'{out_models}/{name}.json', 'w'), indent=1)
     return tex
+
+def unrotate(e, wx, wy):
+    """For a box turned about z (the axis toward the viewer), the point in the box's own unturned frame that lands
+    on (wx, wy) in the side view. Boxes turned about other axes are drawn unturned (fine for small parts)."""
+    r = e.get('rotation')
+    if not r or r['axis'] != 'z': return wx, wy
+    a = -math.radians(r['angle']); ox, oy = r['origin'][0], r['origin'][1]
+    dx, dy = wx - ox, wy - oy
+    return ox + dx * math.cos(a) - dy * math.sin(a), oy + dx * math.sin(a) + dy * math.cos(a)
 
 def side_view(body, tail, paint, scale=24):
     """What the fish looks like from +z (its south side), drawn from the paint function."""
@@ -70,9 +81,10 @@ def side_view(body, tail, paint, scale=24):
     for e in els:
         f = 'south' if 'south' in e['faces'] else 'north'
         (x1, y1, z1), (x2, y2, z2) = e['from'], e['to']
-        for Y in range(int(y1 * scale), int(math.ceil(y2 * scale))):
-            for X in range(int(x1 * scale), int(math.ceil(x2 * scale))):
-                wx, wy = (X + 0.5) / scale, (Y + 0.5) / scale
+        pad = 0.5 * max(x2 - x1, y2 - y1) if e.get('rotation') else 0
+        for Y in range(int((y1 - pad) * scale), int(math.ceil((y2 + pad) * scale))):
+            for X in range(int((x1 - pad) * scale), int(math.ceil((x2 + pad) * scale))):
+                wx, wy = unrotate(e, (X + 0.5) / scale, (Y + 0.5) / scale)
                 if not (x1 <= wx <= x2 and y1 <= wy <= y2): continue
                 c = paint(e.get('role', 'body'), f, wx, wy, z2)
                 if c: px[X, 16 * scale - 1 - Y] = tuple(c) + ((255,) if len(c) == 3 else ())

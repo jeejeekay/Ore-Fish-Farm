@@ -1,0 +1,42 @@
+{
+ "credit": "Jake's Ore Fish Farm: shared 'stonefish' fish model, a squat stonefish (flat head, upturned mouth, eyes on top, fan pectorals, diamond dorsal spines turned 45 degrees about z, cobblestone lumps); side view, head toward +x. A fish uses it with its own texture: {\"parent\": \"orefishfarm:fish_category/stonefish\", \"textures\": {\"t\": ..., \"particle\": ...}}",
+ "texture_size": [
+  32,
+  32
+ ],
+ "elements": [
+  {
+   "name": "tail",
+   "from": [
+    0.4,
+    4.6,
+    8
+   ],
+   "to": [
+    3.0,
+    8.4,
+    8
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      2.5,
+      3.5,
+      4.5,
+      6.5
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      4.5,
+      3.5,
+      6.5,
+      6.5
+     ]
+    }
+   }
+  }
+ ]
+}

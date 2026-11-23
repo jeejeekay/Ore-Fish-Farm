@@ -31,13 +31,20 @@ def side(model_paths, resolve, scale=8):
             if tid not in texs: texs[tid] = Image.open(resolve('texture', tid)).convert('RGBA')
             els.append((e, f, texs[tid]))
     els.sort(key=lambda t: t[0]['to'][2])
+    import math
     for e, f, tex in els:
         (x1, y1, z1), (x2, y2, z2) = e['from'], e['to']
         u0, v0, u1, v1 = e['faces'][f].get('uv', [x1, 16 - y2, x2, 16 - y1])
         W, H = tex.size
-        for Y in range(int(y1 * scale), int(-(-y2 * scale // 1))):
-            for X in range(int(x1 * scale), int(-(-x2 * scale // 1))):
+        r = e.get('rotation') if (e.get('rotation') or {}).get('axis') == 'z' else None
+        pad = 0.5 * max(x2 - x1, y2 - y1) if r else 0
+        for Y in range(int((y1 - pad) * scale), int(-(-(y2 + pad) * scale // 1))):
+            for X in range(int((x1 - pad) * scale), int(-(-(x2 + pad) * scale // 1))):
                 wx, wy = (X + 0.5) / scale, (Y + 0.5) / scale
+                if r:  # a box turned about z: look the point up in the box's unturned frame
+                    a = -math.radians(r['angle']); ox, oy = r['origin'][0], r['origin'][1]
+                    dx, dy = wx - ox, wy - oy
+                    wx, wy = ox + dx * math.cos(a) - dy * math.sin(a), oy + dx * math.sin(a) + dy * math.cos(a)
                 if not (x1 <= wx <= x2 and y1 <= wy <= y2) or x2 == x1 or y2 == y1: continue
                 fu = (wx - x1) / (x2 - x1) if f == 'south' else (x2 - wx) / (x2 - x1)
                 fv = (y2 - wy) / (y2 - y1)
