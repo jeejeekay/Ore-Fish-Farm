@@ -48,7 +48,7 @@ public final class Registry {
     private static final List<RegistryObject<? extends Item>> TAB_ORDER = new ArrayList<>();
 
     private static RegistryObject<Item> fish(String name) {
-        RegistryObject<Item> r = ITEMS.register(name, () -> new FishItem(new Item.Properties().stacksTo(16)));
+        RegistryObject<Item> r = ITEMS.register(name, () -> new FishItem(new Item.Properties()));
         TAB_ORDER.add(r);
         return r;
     }
