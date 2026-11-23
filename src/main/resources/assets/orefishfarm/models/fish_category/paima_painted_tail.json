@@ -1,0 +1,42 @@
+{
+ "credit": "Jake's Ore Fish Farm: shared 'paima_painted' fish model (the paima shape with the shape tool's UV layout), an arapaima (long rectangular body, low dorsal ridge on the rear back, small head, two belly fins, rounded tail; shape from Jake's drawing); side view, head toward +x. A fish uses it with its own texture: {\"parent\": \"orefishfarm:fish_category/paima\", \"textures\": {\"t\": ..., \"particle\": ...}}",
+ "texture_size": [
+  32,
+  32
+ ],
+ "elements": [
+  {
+   "name": "tail",
+   "from": [
+    0,
+    6.1,
+    8
+   ],
+   "to": [
+    1.6,
+    8.8,
+    8
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      8.5,
+      8.5,
+      10.0,
+      11.0
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      10.0,
+      8.5,
+      11.5,
+      11.0
+     ]
+    }
+   }
+  }
+ ]
+}

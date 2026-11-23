@@ -1,4 +1,5 @@
-"""The Ironpaima painted in the same style as the Sturginc and Dorada (shading from a dark back to a pale belly,
+"""ALTERNATIVE look, not in use (Jake kept the first texture and only had its head restyled): the Ironpaima painted
+in the same style as the Sturginc and Dorada (shading from a dark back to a pale belly,
 sheen, a white-ringed eye), on the 'paima' shape (boxes unchanged from tools/gen_paima_model.py). Iron greys, with
 the arapaima's red creeping in toward the tail as rust, and red-edged scales on the rear half.
 Run: python tools/gen_ironpaima.py <assets/orefishfarm> <preview dir>"""
@@ -25,8 +26,11 @@ body = [
     dict(name='body', role='body', **{'from': [1.5, 6, 6.8], 'to': [9.8, 8.9, 9.2]}, faces=ALL),
     dict(name='head', role='head', **{'from': [9.8, 6.2, 7.1], 'to': [14.5, 7.75, 8.9]}, faces=['north', 'south', 'up', 'down', 'east']),
     dict(name='dorsal', role='dorsal', **{'from': [1.9, 8.9, 7.6], 'to': [6.4, 9.7, 8.4]}, faces=['north', 'south', 'up', 'east', 'west']),
-    dict(name='rear_fin', role='fin', **{'from': [2.8, 5.55, 7.6], 'to': [3.7, 6, 8.4]}, faces=['north', 'south', 'down', 'east', 'west']),
-    dict(name='front_fin', role='fin', **{'from': [8.2, 5.55, 7.5], 'to': [9.4, 6.2, 8.5]}, faces=['north', 'south', 'down', 'east', 'west']),
+    # lower fins in pairs, one each side of the belly
+    dict(name='rear_fin_n', role='fin', **{'from': [2.8, 5.6, 6.5], 'to': [3.7, 6.2, 7.1]}, faces=ALL),
+    dict(name='rear_fin_s', role='fin', **{'from': [2.8, 5.6, 8.9], 'to': [3.7, 6.2, 9.5]}, faces=ALL),
+    dict(name='front_fin_n', role='fin', **{'from': [8.2, 5.5, 6.4], 'to': [9.4, 6.25, 7.0]}, faces=ALL),
+    dict(name='front_fin_s', role='fin', **{'from': [8.2, 5.5, 9.0], 'to': [9.4, 6.25, 9.6]}, faces=ALL),
 ]
 tail = [dict(name='tail', role='tail', **{'from': [0, 6.1, 8], 'to': [1.6, 8.8, 8]}, faces=SIDES)]
 TAIL = [(1.6, 8.2), (0.9, 8.8), (0.2, 8.4), (0.0, 7.45), (0.2, 6.5), (0.9, 6.1), (1.6, 6.7)]  # rounded paddle
@@ -71,13 +75,13 @@ def paint(role, f, x, y, z):
     elif f in SIDES and 0.3 < t < 0.85 and (ix + 2 * iy) % 5 == 0: c = mix(c, (236, 238, 242), 0.5 * (1 - r))
     return c
 
-cred = ("Jake's Ore Fish Farm: shared 'paima' fish model, an arapaima (long rectangular body, low dorsal ridge on the rear back, "
+cred = ("Jake's Ore Fish Farm: shared 'paima_painted' fish model (the paima shape with the shape tool's UV layout), an arapaima (long rectangular body, low dorsal ridge on the rear back, "
         "small head, two belly fins, rounded tail; shape from Jake's drawing); side view, head toward +x. A fish uses it with its "
         "own texture: {\"parent\": \"orefishfarm:fish_category/paima\", \"textures\": {\"t\": ..., \"particle\": ...}}")
-tex = build('paima', body, tail, paint, cred, f'{A}/models/fish_category', f'{A}/textures/item/fish/ironpaima.png', 'orefishfarm:item/fish/ironpaima')
+tex = build('paima_painted', body, tail, paint, cred, f'{A}/models/fish_category', f'{A}/textures/item/fish/ironpaima_painted.png', 'orefishfarm:item/fish/ironpaima_painted')
 side = side_view(body, tail, paint)
 side.save(f'{PREV}/ironpaima_side.png')
-sp = sprite(side); sp.save(f'{A}/textures/item/ironpaima.png')
+sp = sprite(side)  # preview only: the item sprite in use is the first one
 sp.resize((256, 256), Image.NEAREST).save(f'{PREV}/ironpaima_sprite.png')
 tex.resize((256, 256), Image.NEAREST).save(f'{PREV}/ironpaima_tex.png')
 print('ironpaima ok')
