@@ -94,22 +94,46 @@ public final class TackleBubble {
 
     // ---------------------------------------------------------------- layout and drawing
 
+    /** The piece on the rod (not the one being carried): the bubble shows what the rod has. */
     private static Component title(ItemStack carried, ItemStack on) {
-        if (Tackle.isTackle(carried)) return carried.getHoverName();
         return on.isEmpty() ? Component.translatable("gui.orefishfarm.tackle.none") : on.getHoverName();
     }
 
+    /** What the rod's own piece catches; nothing until a piece is on. */
     private static List<Tackle.Bonus> catches(ItemStack carried, ItemStack on) {
-        ItemStack shown = Tackle.isTackle(carried) ? carried : on;
-        return shown.isEmpty() ? List.of() : Tackle.bonusesOf(shown);
+        return on.isEmpty() ? List.of() : Tackle.bonusesOf(on);
     }
+
+    // the bubble's size eases toward its target, so it grows when a piece goes on and shrinks when one comes off
+    private static float curW, curH;
+    private static long lastFrame;
+    private static boolean snapSize = true;
+
+    /** Whether the bubble has finished resizing (its fish row is only drawn then). */
+    private static boolean settled;
 
     private static void layout(AbstractContainerScreen<?> s, Slot slot, ItemStack carried) {
         Font font = Minecraft.getInstance().font;
         ItemStack on = Tackle.get(slot.getItem());
         int icons = catches(carried, on).size();
-        bw = Math.max(Math.max(font.width(title(carried, on)) + 2 * PAD, icons * 18 + 2 * PAD), 44);
-        bh = PAD + 10 + 18 + (icons > 0 ? 4 + 18 : 0) + PAD;
+        int tw = Math.max(Math.max(font.width(title(carried, on)) + 2 * PAD, icons * 18 + 2 * PAD), 44);
+        int th = PAD + 10 + 18 + (icons > 0 ? 4 + 18 : 0) + PAD;
+        long now = net.minecraft.Util.getMillis();
+        if (snapSize) {
+            curW = tw;
+            curH = th;
+            snapSize = false;
+        } else {
+            float k = 1F - (float) Math.exp(-Math.max(0, now - lastFrame) / 45.0);
+            curW += (tw - curW) * k;
+            curH += (th - curH) * k;
+            if (Math.abs(tw - curW) < 0.5F) curW = tw;
+            if (Math.abs(th - curH) < 0.5F) curH = th;
+        }
+        lastFrame = now;
+        settled = curW == tw && curH == th;
+        bw = Math.round(curW);
+        bh = Math.round(curH);
         int rx = s.getGuiLeft() + slot.x + 8, ry = s.getGuiTop() + slot.y;
         bx = Math.max(2, Math.min(s.width - bw - 2, rx - bw / 2));
         below = ry - bh - 6 < 2;
@@ -174,7 +198,10 @@ public final class TackleBubble {
         Slot want = pick(s, carried, mx, my);
         long now = net.minecraft.Util.getMillis();
         if (want != null) {
-            if (target == null || screen != s) showStart = now;
+            if (target == null || screen != s || want != target) {
+                if (target == null || screen != s) showStart = now;
+                snapSize = true; // a new rod: its bubble opens at its own size
+            }
             else if (fadeStart >= 0) {
                 // coming back while fading out: carry on from how visible it still is
                 float left = Math.max(0F, 1F - (now - fadeStart) / (float) OUT_MS);
@@ -232,7 +259,7 @@ public final class TackleBubble {
             if (hoverSlot) g.fill(sx + 1, sy + 1, sx + 17, sy + 17, 0x80FFFFFF);
             int ix = bx + bw / 2 - fish.size() * 9, iy = sy + 18 + 4;
             Tackle.Bonus hovered = null;
-            for (int i = 0; i < fish.size(); i++) {
+            for (int i = 0; settled && i < fish.size(); i++) {
                 g.renderItem(new ItemStack(fish.get(i).fish()), ix + i * 18 + 1, iy + 1);
                 if (fadeStart < 0 && over(mx, my, ix + i * 18, iy, 18, 18)) hovered = fish.get(i);
             }
