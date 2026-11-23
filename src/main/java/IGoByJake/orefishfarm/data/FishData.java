@@ -345,6 +345,11 @@ public final class FishData {
         if (b != null) return b;
         Fish f = byItem(stack.getItem());
         if (f != null) return f;
+        Item own = speciesOfBucket(stack.getItem());
+        if (own != null) {
+            Fish o = byItem(own);
+            if (o != null) return o.bucket() != null ? o : new Fish(o.item(), o.product(), o.productChance(), o.breedChance(), o.power(), o.habitat(), stack.getItem(), o.heat());
+        }
         // Any other mob bucket (cod, axolotl, another mod's fish): a plain water fish with no product.
         if (stack.getItem() instanceof net.minecraft.world.item.MobBucketItem) {
             return new Fish(stack.getItem(), ItemStack.EMPTY, 0, Config.DEFAULT_BREED_CHANCE.get().floatValue(), 0, WATER, stack.getItem(), 0);
@@ -356,8 +361,29 @@ public final class FishData {
     private static Fish byItem(Item item) {
         Fish f = fish.get(item);
         if (f != null) return f;
-        if (new ItemStack(item).is(TANK_FISH)) return new Fish(item, ItemStack.EMPTY, 0, Config.DEFAULT_BREED_CHANCE.get().floatValue(), 0, WATER, null, 0);
+        if (new ItemStack(item).is(TANK_FISH)) return new Fish(item, ItemStack.EMPTY, 0, Config.DEFAULT_BREED_CHANCE.get().floatValue(), 0, WATER, vanillaBucket(item), 0);
         return null;
+    }
+
+    /**
+     * The species' own vanilla-style mob bucket, {@code <ns>:<fish>_bucket} (minecraft:cod gives minecraft:cod_bucket),
+     * or null. Fish without a bucket of their own in their fish file are caught, bred and drawn in it.
+     */
+    @Nullable
+    public static Item vanillaBucket(Item species) {
+        ResourceLocation id = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(species);
+        if (id == null) return null;
+        Item b = net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new ResourceLocation(id.getNamespace(), id.getPath() + "_bucket"));
+        return b instanceof net.minecraft.world.item.MobBucketItem && !(b instanceof IGoByJake.orefishfarm.FishBucketItem) ? b : null;
+    }
+
+    /** The species whose own bucket this is (minecraft:cod_bucket gives minecraft:cod), or null. */
+    @Nullable
+    private static Item speciesOfBucket(Item bucket) {
+        ResourceLocation id = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(bucket);
+        if (id == null || !id.getPath().endsWith("_bucket")) return null;
+        Item sp = net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new ResourceLocation(id.getNamespace(), id.getPath().substring(0, id.getPath().length() - 7)));
+        return sp != null && sp != net.minecraft.world.item.Items.AIR && vanillaBucket(sp) == bucket ? sp : null;
     }
 
     /** A live fish in a bucket: what tanks hold. */
@@ -378,12 +404,16 @@ public final class FishData {
         Item species = IGoByJake.orefishfarm.FishBucketItem.species(stack);
         if (species != null) return new ItemStack(species);
         Fish b = byBucket.get(stack.getItem());
-        return b != null ? new ItemStack(b.item()) : stack;
+        if (b != null) return new ItemStack(b.item());
+        Item own = speciesOfBucket(stack.getItem());
+        return own != null ? new ItemStack(own) : stack;
     }
 
     /** A live fish of this kind in its bucket: the fish's own mod bucket if it has one, else a Fish Bucket. */
     public static ItemStack bucketOf(Fish f) {
-        return f.bucket() != null ? new ItemStack(f.bucket()) : IGoByJake.orefishfarm.FishBucketItem.of(f.item());
+        if (f.bucket() != null) return new ItemStack(f.bucket());
+        Item own = vanillaBucket(f.item());
+        return own != null ? new ItemStack(own) : IGoByJake.orefishfarm.FishBucketItem.of(f.item());
     }
 
     /** A plain fish item from before buckets (1.x and 2.0 tanks) becomes a bucketed fish. */

@@ -7,6 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 /**
@@ -34,6 +35,15 @@ public class FishBucketRenderer extends BlockEntityWithoutLevelRenderer {
         var items = Minecraft.getInstance().getItemRenderer();
         ItemStack species = FishData.display(stack);
         net.minecraft.resources.ResourceLocation id = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(species.getItem());
+        Item vanilla = species.isEmpty() ? null : FishData.vanillaBucket(species.getItem());
+        if (vanilla != null) {
+            // An older Fish Bucket of a fish that has its own bucket (cod, salmon): draw that bucket.
+            pose.pushPose();
+            pose.translate(0.5, 0.5, 0.5);
+            items.renderStatic(new ItemStack(vanilla), ItemDisplayContext.NONE, light, overlay, pose, buffers, null, 0);
+            pose.popPose();
+            return;
+        }
         if (!species.isEmpty() && id != null) {
             var models = Minecraft.getInstance().getModelManager();
             var own = models.getModel(new net.minecraft.resources.ResourceLocation(id.getNamespace(), "item/fish_bucket/" + id.getPath()));
