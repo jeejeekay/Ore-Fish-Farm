@@ -155,6 +155,10 @@ public final class Aquarium {
             if (!(state.getBlock() instanceof TankBlock)) continue;
             BlockState ns = state;
             for (Direction d : Direction.values()) ns = ns.setValue(TankBlock.side(d), set.contains(p.relative(d)));
+            ns = ns.setValue(TankBlock.INNER_NE, inner(set, p, Direction.NORTH, Direction.EAST))
+                    .setValue(TankBlock.INNER_NW, inner(set, p, Direction.NORTH, Direction.WEST))
+                    .setValue(TankBlock.INNER_SE, inner(set, p, Direction.SOUTH, Direction.EAST))
+                    .setValue(TankBlock.INNER_SW, inner(set, p, Direction.SOUTH, Direction.WEST));
             if (ns != state) level.setBlock(p, ns, Block.UPDATE_CLIENTS);
             TankBlockEntity t = tank(level, p);
             if (t != null) {
@@ -186,5 +190,10 @@ public final class Aquarium {
         // Energy only makes sense in a power tank.
         if (role == TankRole.FISH) controller.energy = 0;
         rebuild(level, touched);
+    }
+
+    /** An inside corner: joined on both sides, but the block diagonally between them isn't in the aquarium. */
+    private static boolean inner(java.util.Set<BlockPos> set, BlockPos p, Direction a, Direction b) {
+        return set.contains(p.relative(a)) && set.contains(p.relative(b)) && !set.contains(p.relative(a).relative(b));
     }
 }
