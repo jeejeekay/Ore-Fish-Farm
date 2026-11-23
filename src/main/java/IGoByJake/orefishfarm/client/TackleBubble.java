@@ -32,16 +32,16 @@ import java.util.List;
  *   <li>Empty cursor over a rod: the bubble shows the piece on it, its uses left and what it catches. Click the
  *       piece to take it off.</li>
  * </ul>
- * The bubble stays while the mouse is over the rod, the bubble or the gap between, and dissolves in a speckled
- * fade otherwise. The server does the swap ({@link TackleEvents#clipOn}); in the creative inventory, which keeps
+ * The bubble pops in (fades in while rising a few pixels), stays while the mouse is over the rod, the bubble or the
+ * gap between, and otherwise fades out quickly while sinking back. The server does the swap ({@link TackleEvents#clipOn}); in the creative inventory, which keeps
  * its cursor on the client, it is done here and sent as creative slot changes.
  */
 @Mod.EventBusSubscriber(modid = OreFishFarm.MODID, value = Dist.CLIENT)
 public final class TackleBubble {
-    private static final int REACH = 26, FADE_MS = 320, PAD = 5;
+    private static final int REACH = 26, IN_MS = 110, OUT_MS = 140, PAD = 5, RISE = 4;
     @Nullable private static Slot target;
     @Nullable private static AbstractContainerScreen<?> screen;
-    private static long fadeStart = -1;
+    private static long fadeStart = -1, showStart;
     // bubble rect and its tackle slot, in screen coordinates
     private static int bx, by, bw, bh, sx, sy;
     private static boolean below;
@@ -118,49 +118,49 @@ public final class TackleBubble {
         sy = by + PAD + 10;
     }
 
-    /** 0..1: how far a 2x2 speckle cell is into the fade (cells vanish in a scattered order). */
-    private static float speckle(int x, int y) {
-        int h = x * 73856093 ^ y * 19349663;
-        h ^= h >>> 13;
-        h *= 0x5bd1e995;
-        h ^= h >>> 15;
-        return (h & 1023) / 1023F;
+    /** {@code rgb} with the bubble's current opacity. */
+    private static int fade(int argb, float alpha) {
+        return ((int) ((argb >>> 24) * alpha) << 24) | (argb & 0xFFFFFF);
     }
 
     private static void panel(GuiGraphics g, float alpha) {
         int x1 = bx, y1 = by, x2 = bx + bw, y2 = by + bh;
         int px = Math.max(x1 + 4, Math.min(x2 - 10, sx + 6)); // pointer toward the rod
-        if (alpha >= 1F) {
-            g.fill(x1, y1, x2, y2, 0xFF000000);
-            g.fill(x1 + 1, y1 + 1, x2 - 1, y2 - 1, 0xFFC6C6C6);
-            g.fill(x1 + 1, y1 + 1, x2 - 2, y1 + 2, 0xFFFFFFFF);
-            g.fill(x1 + 1, y1 + 1, x1 + 2, y2 - 2, 0xFFFFFFFF);
-            g.fill(x1 + 2, y2 - 2, x2 - 1, y2 - 1, 0xFF555555);
-            g.fill(x2 - 2, y1 + 2, x2 - 1, y2 - 1, 0xFF555555);
-            for (int i = 0; i < 4; i++) {
-                int yy = below ? y1 - 1 - i : y2 + i;
-                g.fill(px + i, yy, px + 7 - i, yy + 1, i == 3 ? 0xFF000000 : 0xFFC6C6C6);
-                g.fill(px + i - 1, yy, px + i, yy + 1, 0xFF000000);
-                g.fill(px + 7 - i, yy, px + 8 - i, yy + 1, 0xFF000000);
-            }
-            return;
-        }
-        // fading: the panel breaks up into 2x2 speckles that drop out in a scattered order
-        for (int y = y1; y < y2; y += 2) {
-            for (int x = x1; x < x2; x += 2) {
-                if (speckle(x, y) > alpha) continue;
-                boolean edge = x <= x1 || y <= y1 || x >= x2 - 2 || y >= y2 - 2;
-                g.fill(x, y, Math.min(x + 2, x2), Math.min(y + 2, y2), edge ? 0xFF000000 : 0xFFC6C6C6);
-            }
+        int black = fade(0xFF000000, alpha), bg = fade(0xFFC6C6C6, alpha), hi = fade(0xFFFFFFFF, alpha), lo = fade(0xFF555555, alpha);
+        // non-overlapping pieces, so a part-faded bubble has no darker seams
+        g.fill(x1, y1, x2, y1 + 1, black);
+        g.fill(x1, y2 - 1, x2, y2, black);
+        g.fill(x1, y1 + 1, x1 + 1, y2 - 1, black);
+        g.fill(x2 - 1, y1 + 1, x2, y2 - 1, black);
+        g.fill(x1 + 1, y1 + 1, x2 - 2, y1 + 2, hi);
+        g.fill(x1 + 1, y1 + 2, x1 + 2, y2 - 2, hi);
+        g.fill(x1 + 2, y2 - 2, x2 - 1, y2 - 1, lo);
+        g.fill(x2 - 2, y1 + 1, x2 - 1, y2 - 2, lo);
+        g.fill(x1 + 2, y1 + 2, x2 - 2, y2 - 2, bg);
+        for (int i = 0; i < 4; i++) {
+            int yy = below ? y1 - 1 - i : y2 + i;
+            g.fill(px + i, yy, px + 7 - i, yy + 1, i == 3 ? black : bg);
+            g.fill(px + i - 1, yy, px + i, yy + 1, black);
+            g.fill(px + 7 - i, yy, px + 8 - i, yy + 1, black);
         }
     }
 
-    private static void frame(GuiGraphics g, int x, int y) {
-        g.fill(x, y, x + 18, y + 18, 0xFF8B8B8B);
-        g.fill(x, y, x + 17, y + 1, 0xFF373737);
-        g.fill(x, y, x + 1, y + 17, 0xFF373737);
-        g.fill(x + 1, y + 17, x + 18, y + 18, 0xFFFFFFFF);
-        g.fill(x + 17, y + 1, x + 18, y + 18, 0xFFFFFFFF);
+    private static void frame(GuiGraphics g, int x, int y, float alpha) {
+        g.fill(x, y, x + 17, y + 1, fade(0xFF373737, alpha));
+        g.fill(x, y + 1, x + 1, y + 17, fade(0xFF373737, alpha));
+        g.fill(x + 1, y + 17, x + 18, y + 18, fade(0xFFFFFFFF, alpha));
+        g.fill(x + 17, y, x + 18, y + 17, fade(0xFFFFFFFF, alpha));
+        g.fill(x + 1, y + 1, x + 17, y + 17, fade(0xFF8B8B8B, alpha));
+    }
+
+    /** The item on the cursor, drawn again over the bubble (the screen drew it before the bubble). */
+    private static void drawCarried(GuiGraphics g, ItemStack carried, double mx, double my) {
+        if (carried.isEmpty()) return;
+        g.pose().pushPose();
+        g.pose().translate(0, 0, 400);
+        g.renderItem(carried, (int) mx - 8, (int) my - 8);
+        g.renderItemDecorations(Minecraft.getInstance().font, carried, (int) mx - 8, (int) my - 8);
+        g.pose().popPose();
     }
 
     @SubscribeEvent
@@ -172,31 +172,49 @@ public final class TackleBubble {
         double mx = event.getMouseX(), my = event.getMouseY();
         ItemStack carried = s.getMenu().getCarried();
         Slot want = pick(s, carried, mx, my);
+        long now = net.minecraft.Util.getMillis();
         if (want != null) {
+            if (target == null || screen != s) showStart = now;
+            else if (fadeStart >= 0) {
+                // coming back while fading out: carry on from how visible it still is
+                float left = Math.max(0F, 1F - (now - fadeStart) / (float) OUT_MS);
+                showStart = now - (long) (left * IN_MS);
+            }
             target = want;
             screen = s;
             fadeStart = -1;
             layout(s, want, carried);
         } else if (target != null && fadeStart < 0) {
-            fadeStart = net.minecraft.Util.getMillis();
+            // start fading from wherever the pop-in had got to
+            float shown = Math.min(1F, (now - showStart) / (float) IN_MS);
+            fadeStart = now - (long) ((1F - shown) * OUT_MS);
         }
         if (target == null || screen != s) return;
-        float alpha = fadeStart < 0 ? 1F : 1F - (net.minecraft.Util.getMillis() - fadeStart) / (float) FADE_MS;
+        float alpha = fadeStart >= 0 ? 1F - (now - fadeStart) / (float) OUT_MS : Math.min(1F, (now - showStart) / (float) IN_MS);
         if (alpha <= 0F) {
             target = null;
             return;
         }
+        float ease = alpha * alpha * (3 - 2 * alpha);
         GuiGraphics g = event.getGuiGraphics();
+        // draw what the screen has batched (item counts) now, so the bubble covers it rather than the other way round
+        g.flush();
+        com.mojang.blaze3d.systems.RenderSystem.enableDepthTest();
+        com.mojang.blaze3d.systems.RenderSystem.enableBlend();
+        com.mojang.blaze3d.systems.RenderSystem.defaultBlendFunc();
         Font font = Minecraft.getInstance().font;
         ItemStack on = Tackle.get(target.getItem());
         List<Tackle.Bonus> fish = catches(carried, on);
         g.pose().pushPose();
-        g.pose().translate(0, 0, 300);
-        panel(g, alpha);
-        if (alpha > 0.6F) {
+        // pops in rising RISE px into place, sinks RISE px as it fades out
+        g.pose().translate(0, (1F - ease) * RISE * (below ? -1 : 1), 300);
+        panel(g, ease);
+        if (ease > 0.08F) {
             Component t = title(carried, on);
-            g.drawString(font, t, bx + bw / 2 - font.width(t) / 2, by + PAD, 0xFF404040, false);
-            frame(g, sx, sy);
+            g.drawString(font, t, bx + bw / 2 - font.width(t) / 2, by + PAD, fade(0xFF404040, ease), false);
+        }
+        frame(g, sx, sy, ease);
+        if (ease > 0.55F) {
             boolean carrying = Tackle.isTackle(carried);
             boolean hoverSlot = fadeStart < 0 && over(mx, my, sx, sy, 18, 18);
             if (!on.isEmpty()) {
@@ -219,6 +237,7 @@ public final class TackleBubble {
                 if (fadeStart < 0 && over(mx, my, ix + i * 18, iy, 18, 18)) hovered = fish.get(i);
             }
             g.pose().popPose();
+            drawCarried(g, carried, mx, my);
             // tooltips over the bubble (ours only; vanilla's for slots under the bubble are held back)
             if (fadeStart < 0) {
                 List<Component> tip = new ArrayList<>();
@@ -237,7 +256,7 @@ public final class TackleBubble {
                 if (!tip.isEmpty()) {
                     ownTooltip = true;
                     g.pose().pushPose();
-                    g.pose().translate(0, 0, 200);
+                    g.pose().translate(0, 0, 300);
                     g.renderComponentTooltip(font, tip, (int) mx, (int) my);
                     g.pose().popPose();
                     ownTooltip = false;
@@ -246,6 +265,7 @@ public final class TackleBubble {
             return;
         }
         g.pose().popPose();
+        drawCarried(g, carried, mx, my);
     }
 
     /** "Overworld · Lava · 6%". */
