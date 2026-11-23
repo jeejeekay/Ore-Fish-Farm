@@ -91,42 +91,6 @@
     },
     {
       "when": {
-        "role": "fish",
-        "inner_ne": "true"
-      },
-      "apply": {
-        "model": "orefishfarm:block/tank/fish_post_ne"
-      }
-    },
-    {
-      "when": {
-        "role": "fish",
-        "inner_nw": "true"
-      },
-      "apply": {
-        "model": "orefishfarm:block/tank/fish_post_nw"
-      }
-    },
-    {
-      "when": {
-        "role": "fish",
-        "inner_se": "true"
-      },
-      "apply": {
-        "model": "orefishfarm:block/tank/fish_post_se"
-      }
-    },
-    {
-      "when": {
-        "role": "fish",
-        "inner_sw": "true"
-      },
-      "apply": {
-        "model": "orefishfarm:block/tank/fish_post_sw"
-      }
-    },
-    {
-      "when": {
         "role": "power",
         "down": "false"
       },
@@ -212,42 +176,6 @@
       },
       "apply": {
         "model": "orefishfarm:block/tank/power_post_se"
-      }
-    },
-    {
-      "when": {
-        "role": "power",
-        "inner_ne": "true"
-      },
-      "apply": {
-        "model": "orefishfarm:block/tank/power_post_ne"
-      }
-    },
-    {
-      "when": {
-        "role": "power",
-        "inner_nw": "true"
-      },
-      "apply": {
-        "model": "orefishfarm:block/tank/power_post_nw"
-      }
-    },
-    {
-      "when": {
-        "role": "power",
-        "inner_se": "true"
-      },
-      "apply": {
-        "model": "orefishfarm:block/tank/power_post_se"
-      }
-    },
-    {
-      "when": {
-        "role": "power",
-        "inner_sw": "true"
-      },
-      "apply": {
-        "model": "orefishfarm:block/tank/power_post_sw"
       }
     },
     {

@@ -155,13 +155,10 @@ public final class Aquarium {
             if (!(state.getBlock() instanceof TankBlock)) continue;
             BlockState ns = state;
             for (Direction d : Direction.values()) ns = ns.setValue(TankBlock.side(d), set.contains(p.relative(d)));
-            ns = ns.setValue(TankBlock.INNER_NE, inner(set, p, Direction.NORTH, Direction.EAST))
-                    .setValue(TankBlock.INNER_NW, inner(set, p, Direction.NORTH, Direction.WEST))
-                    .setValue(TankBlock.INNER_SE, inner(set, p, Direction.SOUTH, Direction.EAST))
-                    .setValue(TankBlock.INNER_SW, inner(set, p, Direction.SOUTH, Direction.WEST));
             if (ns != state) level.setBlock(p, ns, Block.UPDATE_CLIENTS);
             TankBlockEntity t = tank(level, p);
             if (t != null) {
+                t.extras = extras(set, p);
                 t.setChanged();
                 level.sendBlockUpdated(p, ns, ns, Block.UPDATE_CLIENTS);
             }
@@ -190,6 +187,34 @@ public final class Aquarium {
         // Energy only makes sense in a power tank.
         if (role == TankRole.FISH) controller.energy = 0;
         rebuild(level, touched);
+    }
+
+    /**
+     * The extra pieces a tank block needs where the aquarium turns inward ({@link TankBlockEntity#extras} bits):
+     * <ul>
+     *   <li>0-3 (NE, NW, SE, SW): a corner post where it turns inward sideways (L shapes);</li>
+     *   <li>4-7 (N, E, S, W): glass and water on that side above the water line, where this block has the
+     *       aquarium above it and beside it but not diagonally up that way (a step: the neighbour's top is open);</li>
+     *   <li>8-11 (N, E, S, W): the top rim on that side, where this block's top is open but the block beside it has
+     *       the aquarium above it (the other half of a step).</li>
+     * </ul>
+     */
+    static int extras(java.util.Set<BlockPos> set, BlockPos p) {
+        int bits = 0;
+        if (inner(set, p, Direction.NORTH, Direction.EAST)) bits |= 1;
+        if (inner(set, p, Direction.NORTH, Direction.WEST)) bits |= 2;
+        if (inner(set, p, Direction.SOUTH, Direction.EAST)) bits |= 4;
+        if (inner(set, p, Direction.SOUTH, Direction.WEST)) bits |= 8;
+        boolean up = set.contains(p.above());
+        Direction[] sides = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
+        for (int i = 0; i < 4; i++) {
+            Direction d = sides[i];
+            if (!set.contains(p.relative(d))) continue;
+            boolean diagonalUp = set.contains(p.above().relative(d));
+            if (up && !diagonalUp) bits |= 1 << (4 + i);
+            if (!up && diagonalUp) bits |= 1 << (8 + i);
+        }
+        return bits;
     }
 
     /** An inside corner: joined on both sides, but the block diagonally between them isn't in the aquarium. */

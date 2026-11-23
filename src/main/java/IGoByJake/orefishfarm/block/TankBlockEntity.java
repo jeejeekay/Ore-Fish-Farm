@@ -707,10 +707,20 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
 
     // ------------------------------------------------------------------ saving and syncing
 
+    /** Extra model pieces for inside corners and steps, worked out by {@link Aquarium#extras} (bits listed there). */
+    int extras;
+    public static final net.minecraftforge.client.model.data.ModelProperty<Integer> EXTRAS = new net.minecraftforge.client.model.data.ModelProperty<>();
+
+    @Override
+    public net.minecraftforge.client.model.data.ModelData getModelData() {
+        return net.minecraftforge.client.model.data.ModelData.builder().with(EXTRAS, this.extras).build();
+    }
+
     @Override
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
         tag.putInt("Version", 3);
+        if (this.extras != 0) tag.putInt("Extras", this.extras);
         tag.putBoolean("Breeding", this.breeding);
         tag.put("Fish", this.fish.serializeNBT());
         tag.put("Shared", this.shared.serializeNBT());
@@ -776,6 +786,7 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
         this.bite = tag.getInt("Bite");
         this.burnItem = tag.contains("BurnItem") ? ItemStack.of(tag.getCompound("BurnItem")) : ItemStack.EMPTY;
         this.energy = tag.getInt("Energy");
+        this.extras = tag.getInt("Extras");
         this.needsCheck = true;
     }
 
@@ -793,9 +804,11 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
     @Override
     public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
         ResourceLocation before = this.habitat;
+        int extrasBefore = this.extras;
         super.onDataPacket(net, pkt);
-        // A new habitat with the same look still needs its tint redrawn.
-        if (this.level != null && this.level.isClientSide && !before.equals(this.habitat)) {
+        if (this.level != null && this.level.isClientSide && extrasBefore != this.extras) requestModelDataUpdate();
+        // A new habitat with the same look still needs its tint redrawn; new extras need the model rebuilt.
+        if (this.level != null && this.level.isClientSide && (!before.equals(this.habitat) || extrasBefore != this.extras)) {
             this.level.sendBlockUpdated(this.worldPosition, getBlockState(), getBlockState(), 8);
         }
     }

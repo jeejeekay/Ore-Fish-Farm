@@ -53,6 +53,12 @@ public final class ClientSetup {
     @SubscribeEvent
     public static void onModels(ModelEvent.RegisterAdditional event) {
         FishRender.registerModels(event);
+        TankExtrasModel.register(event);
+    }
+
+    @SubscribeEvent
+    public static void onModifyBaking(ModelEvent.ModifyBakingResult event) {
+        TankExtrasModel.wrap(event);
     }
 
     @SubscribeEvent

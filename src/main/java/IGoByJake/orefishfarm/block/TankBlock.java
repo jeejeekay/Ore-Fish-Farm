@@ -39,8 +39,9 @@ import java.util.List;
  * The one Fish Tank block. Kits change it in place: a habitat kit (water bucket, Heating Coil, Void Lens, or any
  * item a habitat file names) changes what it is filled with; a Dynamo Coil makes it a power tank (sneak-use with
  * an empty hand takes the coil back out). Tanks of the same habitat and role that touch join into one aquarium,
- * up to 8x8x8; the six connection properties hide the glass and frame between joined blocks, and the four inner_*
- * ones put a corner post where an L-shaped aquarium turns inward (else the walls leave a gap there).
+ * up to 8x8x8; the six connection properties hide the glass and frame between joined blocks. Inside corners and
+ * steps (where an aquarium turns inward, sideways or upward) get extra pieces from the block entity's model data
+ * ({@link TankBlockEntity#extras}), so they don't multiply the block states.
  */
 public class TankBlock extends BaseEntityBlock {
     public static final EnumProperty<TankRole> ROLE = EnumProperty.create("role", TankRole.class);
@@ -51,18 +52,12 @@ public class TankBlock extends BaseEntityBlock {
     public static final BooleanProperty WEST = BlockStateProperties.WEST;
     public static final BooleanProperty UP = BlockStateProperties.UP;
     public static final BooleanProperty DOWN = BlockStateProperties.DOWN;
-    /** Inside corners: both sides joined but the block between them (diagonally) isn't part of the aquarium. */
-    public static final BooleanProperty INNER_NE = BooleanProperty.create("inner_ne");
-    public static final BooleanProperty INNER_NW = BooleanProperty.create("inner_nw");
-    public static final BooleanProperty INNER_SE = BooleanProperty.create("inner_se");
-    public static final BooleanProperty INNER_SW = BooleanProperty.create("inner_sw");
 
     public TankBlock(Properties props) {
         super(props);
         registerDefaultState(this.stateDefinition.any().setValue(ROLE, TankRole.FISH).setValue(LOOK, TankLook.WATER)
                 .setValue(NORTH, false).setValue(EAST, false).setValue(SOUTH, false).setValue(WEST, false)
-                .setValue(UP, false).setValue(DOWN, false)
-                .setValue(INNER_NE, false).setValue(INNER_NW, false).setValue(INNER_SE, false).setValue(INNER_SW, false));
+                .setValue(UP, false).setValue(DOWN, false));
     }
 
     public static BooleanProperty side(Direction d) {
@@ -78,7 +73,7 @@ public class TankBlock extends BaseEntityBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> b) {
-        b.add(ROLE, LOOK, NORTH, EAST, SOUTH, WEST, UP, DOWN, INNER_NE, INNER_NW, INNER_SE, INNER_SW);
+        b.add(ROLE, LOOK, NORTH, EAST, SOUTH, WEST, UP, DOWN);
         // With Create installed: its Blaze Burner heat property, so Basins and boilers read the aquarium's heat.
         net.minecraft.world.level.block.state.properties.Property<?> heat = IGoByJake.orefishfarm.compat.CreateHeat.property();
         if (heat != null) b.add(heat);
