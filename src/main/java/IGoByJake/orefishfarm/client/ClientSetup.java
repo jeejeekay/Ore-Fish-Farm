@@ -24,6 +24,7 @@ public final class ClientSetup {
     public static void onClientSetup(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
             MenuScreens.register(Registry.AQUARIUM_MENU.get(), AquariumScreen::new);
+            MenuScreens.register(Registry.PIPE_MENU.get(), PipeScreen::new);
             // Vanilla's "cast" switch for the rods, so the line leaves the rod while fishing.
             for (var rod : java.util.List.of(Registry.LAVA_ROD, Registry.VOID_ROD)) {
                 net.minecraft.client.renderer.item.ItemProperties.register(rod.get(), new net.minecraft.resources.ResourceLocation("cast"), (stack, level, entity, seed) -> {
@@ -76,11 +77,12 @@ public final class ClientSetup {
             }
             return WATER;
         }, Registry.FISH_TANK.get(), Registry.BREEDING_TANK.get(), Registry.POWER_TANK.get());
+        event.register((state, level, pos, tint) -> tint == 0 ? WATER : -1, Registry.PIPE_TANK.get());
     }
 
     @SubscribeEvent
     public static void onItemColors(RegisterColorHandlersEvent.Item event) {
         event.register((stack, tint) -> tint == 0 ? WATER : -1,
-                Registry.FISH_TANK.get(), Registry.BREEDING_TANK.get(), Registry.POWER_TANK.get());
+                Registry.FISH_TANK.get(), Registry.BREEDING_TANK.get(), Registry.POWER_TANK.get(), Registry.PIPE_TANK.get());
     }
 }

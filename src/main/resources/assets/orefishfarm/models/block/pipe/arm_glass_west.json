@@ -1,0 +1,36 @@
+{
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "glass": "orefishfarm:block/tank_glass_cutout",
+  "particle": "orefishfarm:block/pipe_rim"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    3,
+    3
+   ],
+   "to": [
+    3,
+    13,
+    13
+   ],
+   "faces": {
+    "north": {
+     "texture": "#glass"
+    },
+    "south": {
+     "texture": "#glass"
+    },
+    "up": {
+     "texture": "#glass"
+    },
+    "down": {
+     "texture": "#glass"
+    }
+   }
+  }
+ ]
+}

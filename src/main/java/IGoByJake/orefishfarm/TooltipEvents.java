@@ -20,7 +20,7 @@ public final class TooltipEvents {
         if (!FishData.loaded() || !IGoByJake.orefishfarm.data.FishGenes.has(stack)) return;
         FishData.Fish fish = FishData.fish(stack);
         if (fish == null) return;
-        var stats = IGoByJake.orefishfarm.data.FishGenes.shownStats(fish.makesPower(), fish.makesHeat());
+        var stats = IGoByJake.orefishfarm.data.FishGenes.shownStats(fish);
         Component marker = IGoByJake.orefishfarm.data.StatBars.marker(stack, stats);
         var list = event.getTooltipElements();
         for (int i = 0; i < list.size(); i++) {
@@ -63,7 +63,12 @@ public final class TooltipEvents {
         if (event.getItemStack().is(Registry.DYNAMO_COIL.get())) {
             event.getToolTip().add(Component.translatable("tooltip.orefishfarm.dynamo_coil").withStyle(ChatFormatting.GOLD));
         }
-        if (fish != null) IGoByJake.orefishfarm.data.FishGenes.tooltip(event.getItemStack(), event.getToolTip(), fish.makesPower(), fish.makesHeat());
+        if (fish != null && FishData.isHauler(fish) && event.getItemStack().getItem() instanceof net.minecraft.world.item.BucketItem) {
+            double n = IGoByJake.orefishfarm.pipe.PipeNet.haulAmount(event.getItemStack(), fish);
+            event.getToolTip().add(Component.translatable("tooltip.orefishfarm.hauler", String.format(java.util.Locale.ROOT, n == Math.floor(n) ? "%.0f" : "%.2f", n))
+                    .withStyle(ChatFormatting.LIGHT_PURPLE));
+        }
+        if (fish != null) IGoByJake.orefishfarm.data.FishGenes.tooltip(event.getItemStack(), event.getToolTip(), IGoByJake.orefishfarm.data.FishGenes.shownStats(fish));
         if (event.getItemStack().is(FishItem.HYBRID_FISH)) {
             event.getToolTip().add(Component.literal("❤ ").withStyle(ChatFormatting.LIGHT_PURPLE)
                     .append(Component.translatable("tooltip.orefishfarm.hybrid_fish").withStyle(ChatFormatting.DARK_PURPLE)));

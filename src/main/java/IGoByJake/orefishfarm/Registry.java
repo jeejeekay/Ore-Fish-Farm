@@ -199,6 +199,14 @@ public final class Registry {
     public static final RegistryObject<MenuType<AquariumMenu>> AQUARIUM_MENU = MENUS.register("fish_tank",
             () -> IForgeMenuType.create(AquariumMenu::fromNetwork));
 
+    // Pipe Tanks: glass tubes of water that hauling fish carry items through (see pipe/PipeNetworks).
+    public static final RegistryObject<Block> PIPE_TANK = BLOCKS.register("pipe_tank", () -> new IGoByJake.orefishfarm.pipe.PipeTankBlock(
+            BlockBehaviour.Properties.of().mapColor(MapColor.WATER).strength(0.5F).sound(SoundType.GLASS).noOcclusion()
+                    .isRedstoneConductor((s, l, p) -> false).isSuffocating((s, l, p) -> false).isViewBlocking((s, l, p) -> false)));
+    public static final RegistryObject<Item> PIPE_TANK_ITEM = tabbed("pipe_tank", () -> new BlockItem(PIPE_TANK.get(), new Item.Properties()));
+    public static final RegistryObject<MenuType<IGoByJake.orefishfarm.pipe.PipeMenu>> PIPE_MENU = MENUS.register("pipe_network",
+            () -> IForgeMenuType.create(IGoByJake.orefishfarm.pipe.PipeMenu::fromNetwork));
+
     public static final RegistryObject<Codec<AddFishModifier>> ADD_FISH = LOOT_MODIFIERS.register("add_fish", AddFishModifier.CODEC);
     public static final RegistryObject<Codec<IGoByJake.orefishfarm.loot.TackleModifier>> TACKLE = LOOT_MODIFIERS.register("tackle", IGoByJake.orefishfarm.loot.TackleModifier.CODEC);
     public static final RegistryObject<Codec<IGoByJake.orefishfarm.loot.LiveCatchModifier>> LIVE_CATCH = LOOT_MODIFIERS.register("live_catch", IGoByJake.orefishfarm.loot.LiveCatchModifier.CODEC);

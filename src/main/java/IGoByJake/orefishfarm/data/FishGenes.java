@@ -69,8 +69,9 @@ public final class FishGenes {
         return s;
     }
     public static final int MAX_LEVEL = 10;
-    public static final String YIELD = "yield", SATIETY = "satiety", CHARGE = "charge", HEAT = "heat";
-    public static final List<String> STATS = List.of(YIELD, SATIETY, CHARGE, HEAT);
+    public static final String YIELD = "yield", SATIETY = "satiety", CHARGE = "charge", HEAT = "heat", HAUL = "haul";
+    /** Haul (2.23.0): how much a hauling fish carries per trip in Pipe Tanks. Fish from before it read as level 3. */
+    public static final List<String> STATS = List.of(YIELD, SATIETY, CHARGE, HEAT, HAUL);
     private static final String GENE_FOLDER = "genes/";
     private static final String LEVELS = "Levels", POTENTIAL = "Potential", OLD_STATS = "Stats";
 
@@ -221,6 +222,16 @@ public final class FishGenes {
                 }
                 setStats(stack, l, p);
             }
+            // A stat added after this fish got its stats (Haul in 2.23.0): roll it wild now, once.
+            CompoundTag lv = d.getCompound(LEVELS), pt = d.getCompound(POTENTIAL);
+            if (d.contains(LEVELS)) for (String stat : STATS) {
+                if (lv.contains(stat)) continue;
+                int l = wildLevel(random);
+                lv.putInt(stat, l);
+                pt.putInt(stat, wildPotential(l, random));
+                d.put(LEVELS, lv);
+                d.put(POTENTIAL, pt);
+            }
             return;
         }
         Item species = species(stack);
@@ -367,16 +378,28 @@ public final class FishGenes {
             case YIELD -> 0xE8B830;
             case SATIETY -> 0x6BBF4A;
             case HEAT -> 0xF0702A;
+            case HAUL -> 0xA77BE0;
             default -> 0x3FD0E0;
         };
     }
 
     /** The stats a fish shows: Yield and Satiety always, Charge for power fish, Heat for heat fish. */
     public static List<String> shownStats(boolean power, boolean heat) {
+        return shownStats(power, heat, false);
+    }
+
+    /** As {@link #shownStats(boolean, boolean)}, plus Haul for hauling fish (#orefishfarm:hauling_fish). */
+    public static List<String> shownStats(boolean power, boolean heat, boolean haul) {
         List<String> out = new ArrayList<>(List.of(YIELD, SATIETY));
         if (power) out.add(CHARGE);
         if (heat) out.add(HEAT);
+        if (haul) out.add(HAUL);
         return out;
+    }
+
+    /** The stats this fish shows. */
+    public static List<String> shownStats(FishData.Fish fish) {
+        return shownStats(fish.makesPower(), fish.makesHeat(), FishData.isHauler(fish));
     }
 
     /**
@@ -385,9 +408,13 @@ public final class FishGenes {
      * shows plain text sees "Yield 3/7 · Satiety 4/6 ..." instead.
      */
     public static void tooltip(ItemStack stack, List<Component> lines, boolean power, boolean heat) {
+        tooltip(stack, lines, shownStats(power, heat));
+    }
+
+    public static void tooltip(ItemStack stack, List<Component> lines, List<String> stats) {
         if (!has(stack)) return;
         if (isNewborn(stack)) lines.add(Component.translatable("tooltip.orefishfarm.newborn").withStyle(ChatFormatting.YELLOW));
-        lines.add(StatBars.marker(stack, shownStats(power, heat)));
+        lines.add(StatBars.marker(stack, stats));
         List<ResourceLocation> genes = genes(stack);
         if (!genes.isEmpty()) {
             MutableComponent g = Component.translatable("tooltip.orefishfarm.genes").withStyle(ChatFormatting.GRAY).append(" ");

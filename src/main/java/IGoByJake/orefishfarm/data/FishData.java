@@ -50,6 +50,7 @@ import java.util.Map;
  *                               0.25 = smouldering, 0.7 = kindled, 1.4 = seething (read by Create as burner heat).
  *     "habitat": "orefishfarm:water",  which tank it lives in (optional; water by default)
  *     "bucket": "somemod:fish_bucket", optional: this mod's own bucket for the fish (else the generic Fish Bucket)
+ *     "haul": 1.0,              optional: hauling fish (#orefishfarm:hauling_fish) carry this many times more in Pipe Tanks
  *     "scale": 2.0,               optional: the living mob (model and hitbox) is this many times bigger; tanks and screens unchanged
  *     "shear": { "item": "minecraft:string", "min": 1, "max": 3, "regrow": 6000 } }
  *                               optional: the living fish can be sheared like a sheep (only fish without a mob of
@@ -96,6 +97,24 @@ public final class FishData {
 
     public static final TagKey<Item> TANK_FISH = ItemTags.create(new ResourceLocation(OreFishFarm.MODID, "tank_fish"));
     public static final TagKey<Item> FISH_FOOD = ItemTags.create(new ResourceLocation(OreFishFarm.MODID, "fish_food"));
+    /** Fish that live in Pipe Tanks and carry items (species items, e.g. minecraft:cod). */
+    public static final TagKey<Item> HAULING_FISH = ItemTags.create(new ResourceLocation(OreFishFarm.MODID, "hauling_fish"));
+
+    /** Fish file "haul": this species' multiplier on what it carries (default 1). Read where the files are (server). */
+    private static Map<Item, Float> hauls = Map.of();
+
+    public static boolean isHauler(@Nullable Fish f) {
+        return f != null && new ItemStack(f.item()).is(HAULING_FISH);
+    }
+
+    /** A live fish (in its bucket) that can go in Pipe Tanks. */
+    public static boolean isHaulingFish(ItemStack stack) {
+        return isFish(stack) && isHauler(fish(stack));
+    }
+
+    public static float haulMultiplier(Fish f) {
+        return hauls.getOrDefault(f.item(), 1F);
+    }
 
     /** Every fish lives here unless its file says otherwise. */
     public static final ResourceLocation WATER = new ResourceLocation(OreFishFarm.MODID, "water");
@@ -673,6 +692,7 @@ public final class FishData {
         Map<Item, Float> scaleOut = new HashMap<>();
         Map<Item, ResourceLocation> tagOut = new HashMap<>();
         Map<Item, List<Drop>> dropOut = new HashMap<>();
+        Map<Item, Float> haulOut = new HashMap<>();
         files.forEach((id, json) -> {
             try {
                 JsonObject o = json.getAsJsonObject();
@@ -690,6 +710,7 @@ public final class FishData {
                         breedTime(o), GsonHelper.getAsInt(o, "power", 0), hab, bucket,
                         GsonHelper.getAsFloat(o, "heat", 0F)));
                 if (o.has("scale")) scaleOut.put(f, Mth.clamp(GsonHelper.getAsFloat(o, "scale"), 0.25F, 4F));
+                if (o.has("haul")) haulOut.put(f, Math.max(0F, GsonHelper.getAsFloat(o, "haul")));
                 if (o.has("product_tag")) tagOut.put(f, new ResourceLocation(GsonHelper.getAsString(o, "product_tag")));
                 if (o.has("products")) {
                     List<Drop> dl = new ArrayList<>();
@@ -719,6 +740,7 @@ public final class FishData {
         scales = scaleOut;
         productTags = tagOut;
         drops = dropOut;
+        hauls = haulOut;
         byBucket = indexBuckets(out);
         LOG.info("Ore Fish Farm: {} fish", out.size());
     }

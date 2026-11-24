@@ -11,7 +11,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 
 /** The server's fish and food lists (tooltips, slot checks), its tackle data (JEI, tackle popup), and the tackle popup's clicks. */
 public final class Network {
-    private static final String VERSION = "8";
+    private static final String VERSION = "9";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(new ResourceLocation(OreFishFarm.MODID, "main"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
@@ -33,6 +33,7 @@ public final class Network {
                 .decoder(IGoByJake.orefishfarm.tackle.TackleEvents.Action::read)
                 .consumerMainThread((msg, ctx) -> msg.handle(ctx.get().getSender()))
                 .add();
+        IGoByJake.orefishfarm.pipe.PipePackets.register(3);
     }
 
     public static void onDatapackSync(OnDatapackSyncEvent event) {
