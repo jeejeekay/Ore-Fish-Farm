@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "orefishfarm:item/fish_bucket/cuprum_eel"
+    "layer0": "orefishfarm:item/fish_bucket/cuprum_eel_moray"
   }
 }

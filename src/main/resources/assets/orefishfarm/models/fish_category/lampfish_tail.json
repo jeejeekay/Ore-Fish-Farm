@@ -1,0 +1,42 @@
+{
+ "credit": "Jake's Ore Fish Farm: shared 'lampfish' fish model (lanternfish: big eye, wide jaw, glowing photophore strips marked emissive with forge_data); side view, head toward +x. Articulated: lampfish_front holds still, lampfish swings. A fish uses it via fish/<fish>.json (parent lampfish), <fish>_front.json (parent lampfish_front) and <fish>_tail.json.",
+ "texture_size": [
+  32,
+  32
+ ],
+ "elements": [
+  {
+   "name": "tail",
+   "from": [
+    0.2,
+    5.6,
+    8
+   ],
+   "to": [
+    2.6,
+    8.8,
+    8
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      10.0,
+      0.0,
+      12.5,
+      3.0
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      12.5,
+      0.0,
+      15.0,
+      3.0
+     ]
+    }
+   }
+  }
+ ]
+}

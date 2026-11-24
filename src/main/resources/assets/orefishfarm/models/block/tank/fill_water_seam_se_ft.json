@@ -1,0 +1,44 @@
+{
+ "render_type": "minecraft:translucent",
+ "ambientocclusion": false,
+ "textures": {
+  "fill": "minecraft:block/water_still",
+  "particle": "minecraft:block/water_still"
+ },
+ "elements": [
+  {
+   "from": [
+    15.4,
+    0,
+    15.4
+   ],
+   "to": [
+    15.4,
+    13,
+    16
+   ],
+   "faces": {
+    "east": {
+     "texture": "#fill"
+    }
+   }
+  },
+  {
+   "from": [
+    15.4,
+    0,
+    15.4
+   ],
+   "to": [
+    16,
+    13,
+    15.4
+   ],
+   "faces": {
+    "south": {
+     "texture": "#fill"
+    }
+   }
+  }
+ ]
+}

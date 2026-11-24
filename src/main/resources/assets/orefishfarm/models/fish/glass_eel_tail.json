@@ -1,0 +1,7 @@
+{
+  "parent": "orefishfarm:fish_category/power_tail",
+  "textures": {
+    "t": "orefishfarm:item/fish/glass_eel",
+    "particle": "orefishfarm:item/fish/glass_eel"
+  }
+}

@@ -1,0 +1,492 @@
+{
+ "credit": "Jake's Ore Fish Farm: shared 'shark' fish model (nurse shark: broad flat head, barbels, two rear dorsals, long upper tail lobe); side view, head toward +x. Articulated: shark_front holds still, shark swings. A fish uses it with its own texture via fish/<fish>.json (parent shark), <fish>_front.json (parent shark_front) and <fish>_tail.json (parent shark_tail).",
+ "texture_size": [
+  32,
+  32
+ ],
+ "elements": [
+  {
+   "name": "head",
+   "from": [
+    12.2,
+    5.6,
+    6.6
+   ],
+   "to": [
+    15.0,
+    7.7,
+    9.4
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      6.0,
+      3.0,
+      8.0
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      3.0,
+      6.0,
+      6.0,
+      8.0
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      6.0,
+      6.0,
+      9.0,
+      8.0
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      9.0,
+      6.0,
+      12.0,
+      8.0
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      0.0,
+      3.0,
+      3.0
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      3.0,
+      0.0,
+      6.0,
+      3.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "snout",
+   "from": [
+    15.0,
+    5.8,
+    7.0
+   ],
+   "to": [
+    15.7,
+    7.1,
+    9.0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      8.0,
+      10.0,
+      8.5,
+      11.5
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      8.5,
+      10.0,
+      9.0,
+      11.5
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      9.0,
+      10.0,
+      11.0,
+      11.5
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      11.0,
+      10.0,
+      13.0,
+      11.5
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      12.0,
+      6.0,
+      12.5,
+      8.0
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      12.5,
+      6.0,
+      13.0,
+      8.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "body_front",
+   "from": [
+    8.5,
+    5.4,
+    6.5
+   ],
+   "to": [
+    12.2,
+    8.4,
+    9.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      6.0,
+      0.0,
+      9.5,
+      3.0
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      9.5,
+      0.0,
+      13.0,
+      3.0
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      13.0,
+      0.0,
+      16.0,
+      3.0
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      3.0,
+      3.0,
+      6.0
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      3.0,
+      3.0,
+      6.5,
+      6.0
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      6.5,
+      3.0,
+      10.0,
+      6.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "pectoral_n",
+   "from": [
+    9.4,
+    5.1,
+    5.1
+   ],
+   "to": [
+    11.8,
+    5.6,
+    6.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      6.0,
+      13.5,
+      8.5,
+      14.0
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      8.5,
+      13.5,
+      11.0,
+      14.0
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      11.0,
+      13.5,
+      12.5,
+      14.0
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      12.5,
+      13.5,
+      14.0,
+      14.0
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      13.0,
+      10.0,
+      15.5,
+      11.5
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      12.0,
+      2.5,
+      13.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "pectoral_s",
+   "from": [
+    9.4,
+    5.1,
+    9.5
+   ],
+   "to": [
+    11.8,
+    5.6,
+    10.9
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      15.0,
+      2.5,
+      15.5
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      2.5,
+      15.0,
+      5.0,
+      15.5
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      5.0,
+      15.0,
+      6.5,
+      15.5
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      6.5,
+      15.0,
+      8.0,
+      15.5
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      2.5,
+      12.0,
+      5.0,
+      13.5
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      5.0,
+      12.0,
+      7.5,
+      13.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "barbel_n",
+   "from": [
+    15.0,
+    5.2,
+    7.5
+   ],
+   "to": [
+    15.5,
+    5.8,
+    7.8
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      8.0,
+      15.0,
+      8.5,
+      15.5
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      8.5,
+      15.0,
+      9.0,
+      15.5
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      9.0,
+      15.0,
+      9.5,
+      15.5
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      9.5,
+      15.0,
+      10.0,
+      15.5
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      10.0,
+      15.0,
+      10.5,
+      15.5
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      10.5,
+      15.0,
+      11.0,
+      15.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "barbel_s",
+   "from": [
+    15.0,
+    5.2,
+    8.2
+   ],
+   "to": [
+    15.5,
+    5.8,
+    8.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      11.0,
+      15.0,
+      11.5,
+      15.5
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      11.5,
+      15.0,
+      12.0,
+      15.5
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      12.0,
+      15.0,
+      12.5,
+      15.5
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      12.5,
+      15.0,
+      13.0,
+      15.5
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      13.0,
+      15.0,
+      13.5,
+      15.5
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      13.5,
+      15.0,
+      14.0,
+      15.5
+     ]
+    }
+   }
+  }
+ ]
+}

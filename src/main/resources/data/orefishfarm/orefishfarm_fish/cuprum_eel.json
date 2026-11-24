@@ -6,6 +6,6 @@
   },
   "product_chance": 0.75,
   "breed_chance": 0.06,
-  "power": 30,
-  "habitat": "orefishfarm:water"
+  "power": 5,
+  "scale": 1.4
 }

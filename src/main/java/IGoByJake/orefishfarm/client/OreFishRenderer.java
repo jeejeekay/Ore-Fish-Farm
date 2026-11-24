@@ -23,18 +23,19 @@ public class OreFishRenderer extends EntityRenderer<OreFish> {
     public void render(OreFish fish, float yaw, float partial, PoseStack pose, MultiBufferSource buffers, int light) {
         float age = fish.tickCount + partial;
         boolean wet = fish.isInWater();
+        float big = SCALE * fish.sizeScale();
+        String variant = fish instanceof IGoByJake.orefishfarm.entity.DataFish df && df.isSheared() ? "_sheared" : "";
         pose.pushPose();
-        pose.translate(0, 0.2F, 0);
+        // Lifted so the model fills its hitbox and never pokes below it (into the ground or a tank's floor).
+        pose.translate(0, FishRender.lift(fish.fishItem(), variant, big, fish.getBbHeight()), 0);
         // Entity yaw 0 faces +z; the model's head is +x, so turn it a quarter.
         pose.mulPose(Axis.YP.rotationDegrees(-Mth.rotLerp(partial, fish.yBodyRotO, fish.yBodyRot) - 90F));
         if (!wet) {
             pose.translate(0, -0.05F, 0);
             pose.mulPose(Axis.XP.rotationDegrees(90)); // flopping on its side
         }
-        float big = SCALE * fish.sizeScale();
         pose.scale(big, big, big);
         float wag = Mth.sin(age * (wet ? 0.6F : 1.4F)) * (wet ? 18F : 28F);
-        String variant = fish instanceof IGoByJake.orefishfarm.entity.DataFish df && df.isSheared() ? "_sheared" : "";
         FishRender.render(fish.fishItem(), variant, pose, buffers, light, wag);
         pose.popPose();
         super.render(fish, yaw, partial, pose, buffers, light);

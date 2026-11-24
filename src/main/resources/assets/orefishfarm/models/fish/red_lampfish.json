@@ -1,0 +1,7 @@
+{
+  "parent": "orefishfarm:fish_category/lampfish",
+  "textures": {
+    "t": "orefishfarm:item/fish/red_lampfish",
+    "particle": "orefishfarm:item/fish/red_lampfish"
+  }
+}

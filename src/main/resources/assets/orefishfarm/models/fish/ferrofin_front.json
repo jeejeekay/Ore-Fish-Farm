@@ -1,0 +1,7 @@
+{
+ "parent": "orefishfarm:fish_category/paima_front",
+ "textures": {
+  "t": "orefishfarm:item/fish/ironpaima",
+  "particle": "orefishfarm:item/fish/ironpaima"
+ }
+}

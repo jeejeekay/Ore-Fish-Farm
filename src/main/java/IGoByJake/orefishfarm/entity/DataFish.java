@@ -107,7 +107,7 @@ public class DataFish extends OreFish implements net.minecraftforge.common.IForg
     @Override
     public void loadFromBucketTag(CompoundTag tag) {
         super.loadFromBucketTag(tag);
-        if (tag.contains(FishBucketItem.KEY)) this.entityData.set(SPECIES, tag.getString(FishBucketItem.KEY));
+        if (tag.contains(FishBucketItem.KEY)) this.entityData.set(SPECIES, IGoByJake.orefishfarm.Renamed.fix(tag.getString(FishBucketItem.KEY)));
         this.entityData.set(SHEARED, tag.getBoolean("Sheared"));
         this.regrow = tag.getInt("Regrow");
     }
@@ -123,7 +123,7 @@ public class DataFish extends OreFish implements net.minecraftforge.common.IForg
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
-        if (tag.contains("Species")) this.entityData.set(SPECIES, tag.getString("Species"));
+        if (tag.contains("Species")) this.entityData.set(SPECIES, IGoByJake.orefishfarm.Renamed.fix(tag.getString("Species")));
         this.entityData.set(SHEARED, tag.getBoolean("Sheared"));
         this.regrow = tag.getInt("Regrow");
     }

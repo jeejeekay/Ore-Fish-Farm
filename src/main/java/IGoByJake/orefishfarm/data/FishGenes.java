@@ -51,6 +51,23 @@ import java.util.List;
 public final class FishGenes {
     public static final String KEY = "OreFishGenes";
     public static final int MAX_GENES = 3;
+    /** Levels a cross-species baby loses in every stat. */
+    public static final int CROSS_PENALTY = 3;
+    /** How often a parent's gene passes to a baby of its own species, and to a baby of the other species. */
+    public static final float SAME_SPECIES_PASS = 0.5F, CROSS_SPECIES_PASS = 0.25F;
+
+    /** Copies a fish's stats and genes (and newborn flags) onto another fish, e.g. a baby that turned out a hybrid. */
+    public static void copyData(ItemStack from, ItemStack to) {
+        CompoundTag d = from.getTag() == null ? null : from.getTag().getCompound(KEY);
+        if (d != null && !d.isEmpty()) to.getOrCreateTag().put(KEY, d.copy());
+    }
+
+    /** A display copy of a fish carrying these genes (JEI shows what a parent needs). */
+    public static ItemStack withGenes(ItemStack stack, List<ResourceLocation> genes) {
+        ItemStack s = stack.copy();
+        if (!genes.isEmpty()) setGenes(s, new ArrayList<>(genes));
+        return s;
+    }
     public static final int MAX_LEVEL = 10;
     public static final String YIELD = "yield", SATIETY = "satiety", CHARGE = "charge", HEAT = "heat";
     public static final List<String> STATS = List.of(YIELD, SATIETY, CHARGE, HEAT);
@@ -157,6 +174,18 @@ public final class FishGenes {
         d.remove(OLD_STATS);
     }
 
+    /** Adds genes a baby is always born with (a breeding file's result_genes), up to {@value #MAX_GENES}. */
+    public static void addGenes(ItemStack stack, List<ResourceLocation> add) {
+        if (add.isEmpty()) return;
+        List<ResourceLocation> g = new ArrayList<>(genes(stack));
+        for (ResourceLocation r : add) {
+            if (g.contains(r)) continue;
+            if (g.size() >= MAX_GENES) g.remove(g.size() - 1);
+            g.add(0, r);
+        }
+        setGenes(stack, g);
+    }
+
     private static void setGenes(ItemStack stack, List<ResourceLocation> genes) {
         ListTag l = new ListTag();
         for (ResourceLocation g : genes) l.add(StringTag.valueOf(g.toString()));
@@ -235,8 +264,13 @@ public final class FishGenes {
      * tries, each won at breedRollChance + breedRollChancePerLevel x total; the number of wins, at most 10.
      */
     public static int roll(int total, RandomSource random) {
-        int tries = Math.max(0, total + Config.BREED_EXTRA_ROLLS.get());
-        double p = Mth.clamp(Config.BREED_ROLL_CHANCE.get() + Config.BREED_ROLL_CHANCE_PER_LEVEL.get() * total, 0, 1);
+        return roll(total, Config.BREED_EXTRA_ROLLS.get(), random);
+    }
+
+    /** The same roll with total + extra tries (potential uses breedPotentialBonusRolls). */
+    public static int roll(int total, int extra, RandomSource random) {
+        int tries = Math.max(0, total + extra);
+        double p = Mth.clamp(Config.BREED_ROLL_CHANCE.get() + Config.BREED_ROLL_CHANCE_PER_LEVEL.get() * total, 0, Config.BREED_ROLL_CHANCE_MAX.get());
         int wins = 0;
         for (int i = 0; i < tries && wins < MAX_LEVEL; i++) if (random.nextDouble() < p) wins++;
         return wins;
@@ -250,19 +284,27 @@ public final class FishGenes {
      */
     public static void inherit(ItemStack baby, ItemStack a, ItemStack b, RandomSource random) {
         int[] l = new int[STATS.size()], p = new int[STATS.size()];
+        // A cross between two species comes out CROSS_PENALTY levels lower in every stat (potential unchanged).
+        boolean cross = species(a) != species(b);
         for (int i = 0; i < l.length; i++) {
             String stat = STATS.get(i);
-            p[i] = roll(potential(a, stat) + potential(b, stat), random);
+            p[i] = roll(potential(a, stat) + potential(b, stat), Config.BREED_POTENTIAL_BONUS_ROLLS.get(), random);
             l[i] = Math.min(p[i], roll(level(a, stat) + level(b, stat), random));
+            if (cross) l[i] = Math.max(0, l[i] - CROSS_PENALTY);
         }
         Item species = species(baby);
         List<ResourceLocation> genes = new ArrayList<>(species == null ? List.of() : speciesGenes(species));
         List<ResourceLocation> ga = genes(a), gb = genes(b);
+        // Each parent gene passes on SAME_SPECIES_PASS of the time from a parent of the baby's own species, and only
+        // CROSS_SPECIES_PASS of the time from a parent of the other species (traits jump species less easily).
+        float ca = species(a) == species ? SAME_SPECIES_PASS : CROSS_SPECIES_PASS;
+        float cb = species(b) == species ? SAME_SPECIES_PASS : CROSS_SPECIES_PASS;
         for (int i = 0; i < Math.max(ga.size(), gb.size()) && genes.size() < MAX_GENES; i++) {
-            for (List<ResourceLocation> from : List.of(ga, gb)) {
+            for (int k = 0; k < 2; k++) {
+                List<ResourceLocation> from = k == 0 ? ga : gb;
                 if (genes.size() >= MAX_GENES || i >= from.size()) continue;
                 ResourceLocation g = from.get(i);
-                if (!genes.contains(g) && random.nextBoolean()) genes.add(g);
+                if (!genes.contains(g) && random.nextFloat() < (k == 0 ? ca : cb)) genes.add(g);
             }
         }
         while (genes.size() > MAX_GENES) genes.remove(0);

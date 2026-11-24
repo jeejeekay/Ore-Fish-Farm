@@ -36,7 +36,8 @@ import java.util.Map;
  *   { "fish": "orefishfarm:ferrofin",
  *     "product": { "item": "orefishfarm:iron_scale", "count": 1 },   (optional: a fish can make nothing)
  *     "product_chance": 0.75,   chance per bite (every biteTicks of eating) in a Fish Tank
- *     "breed_chance": 0.08,     chance per bite for a pair of this fish (while the tank's breeding is on)
+ *     "breed_time": 180,        seconds of eating between this fish's breeding tries (optional; config default 180).
+ *                               0 = never breeds, except where a breeding recipe names it.
  *     "power": 30,              FE/tick while eating in a power tank (optional; 0 = not a power fish)
  *     "heat": 0.6,              how much this fish warms its aquarium while it eats (optional; 0 = not a heat fish).
  *                               The aquarium adds up its eating heat fish (each times its Heat stat factor) per block:
@@ -51,10 +52,18 @@ import java.util.Map;
  *                               until the coat grows back after "regrow" ticks.
  *
  * data/&lt;ns&gt;/orefishfarm_breeding/&lt;name&gt;.json
- *   { "parents": ["orefishfarm:cuprum_eel",
- *                 { "species": "orefishfarm:zincray", "genes": ["orefishfarm:mutagenic"] }],   a parent can need genes
- *     "requires": ["somemod:gene"],   optional: genes at least one of the two parents must have
- *     "result": { "item": "orefishfarm:brass_bream", "count": 1 }, "chance": 0.04 }
+ *   { "parents": ["orefishfarm:cuprum_eel", "orefishfarm:zincray"],
+ *     "traits": ["orefishfarm:hot_blooded"],   optional: genes (traits) the baby must inherit
+ *     "result": "orefishfarm:brass_bream",
+ *     "chance": 0.1 }   optional: chance the result is born on a try (default: the config's hybridChance)
+ *   A recipe: any baby of these two that inherited all the traits becomes the result (with no traits, every baby
+ *   does). The two are then a valid pair whatever their breeding groups. Where several recipes fit, the one with
+ *   the most traits wins. How often fish try is each fish's breed_time (see TankBlockEntity.breed).
+ *   (Older files: genes on a parent and "requires" are read as traits too.)
+ *
+ * data/&lt;ns&gt;/tags/items/breeding/&lt;group&gt;.json   breeding groups (hidden from players; recipes are what JEI shows)
+ *   Two fish of different species can breed when they share a breeding group tag (any namespace); the baby is one
+ *   of the two species at random, 3 levels lower. Two of the same species can always breed (breed_chance above 0).
  *
  * data/&lt;ns&gt;/orefishfarm_gene/&lt;gene&gt;.json   (optional; the gene itself is a genes/ item tag, see FishGenes)
  *   { "color": "#C040C0" }
@@ -114,25 +123,19 @@ public final class FishData {
         return fish.isEmpty() ? null : shears.get(fish.getItem());
     }
 
-    public record Fish(Item item, ItemStack product, float productChance, float breedChance, int power, ResourceLocation habitat, @Nullable Item bucket, float heat) {
+    public record Fish(Item item, ItemStack product, float productChance, float breedTime, int power, ResourceLocation habitat, @Nullable Item bucket, float heat) {
         public boolean makesPower() { return this.power > 0; }
         public boolean makesHeat() { return this.heat > 0; }
         public boolean makesProduct() { return !this.product.isEmpty() && this.productChance > 0; }
     }
 
-    /** aGenes / bGenes: genes that parent must have; requires: genes at least one parent must have. */
-    public record Cross(Item a, Item b, ItemStack result, float chance, List<ResourceLocation> aGenes, List<ResourceLocation> bGenes,
-                        List<ResourceLocation> requires) {
+    /**
+     * A breeding recipe: a baby of these two species that inherited every one of the traits becomes the result.
+     * With no traits, every baby of the pair does. The recipe also makes the two a valid breeding pair. chance: the
+     * chance the result is born (below 0 = the config's hybridChance).
+     */
+    public record Cross(Item a, Item b, ItemStack result, List<ResourceLocation> traits, float chance) {
         boolean matches(Item x, Item y) { return (x == a && y == b) || (x == b && y == a); }
-
-        boolean matches(ItemStack x, Item xi, ItemStack y, Item yi) {
-            boolean ok;
-            if (xi == a && yi == b && FishGenes.hasAll(x, aGenes) && FishGenes.hasAll(y, bGenes)) ok = true;
-            else ok = xi == b && yi == a && FishGenes.hasAll(x, bGenes) && FishGenes.hasAll(y, aGenes);
-            if (!ok) return false;
-            for (ResourceLocation g : requires) if (!FishGenes.hasGene(x, g) && !FishGenes.hasGene(y, g)) return false;
-            return true;
-        }
     }
 
     private static Map<Item, Fish> fish = Map.of();
@@ -160,12 +163,45 @@ public final class FishData {
         return fromDisk ? (float) Math.min(1, f.productChance() * Config.PRODUCT_CHANCE.get()) : f.productChance();
     }
 
-    public static float breedChance(Fish f) {
-        return fromDisk ? (float) Math.min(1, f.breedChance() * Config.BREED_CHANCE.get()) : f.breedChance();
+    /** Ticks of eating between this fish's breeding tries (0 = it never tries). */
+    public static int breedTicks(Fish f) {
+        return f.breedTime() <= 0 ? 0 : Math.max(1, (int) Math.round(f.breedTime() * 20 * Config.BREED_TIME.get()));
     }
 
-    public static float crossChance(Cross c) {
-        return fromDisk ? (float) Math.min(1, c.chance() * Config.CROSSBREED_CHANCE.get()) : c.chance();
+    public static boolean canBreed(Fish f) { return f.breedTime() > 0; }
+
+    /** The chance a baby is born, by what it is: one species (both parents and baby), a mix of two, or a recipe fish. */
+    public static float sameSpeciesChance() { return Config.SAME_SPECIES_CHANCE.get().floatValue(); }
+    public static float crossChance() { return Config.CROSS_CHANCE.get().floatValue(); }
+    public static float hybridChance(Cross c) { return c.chance() >= 0 ? c.chance() : Config.HYBRID_CHANCE.get().floatValue(); }
+
+    /**
+     * Whether these two fish can breed with each other: a breeding recipe names them, or they're the same species, or
+     * they share a breeding group tag (#*:breeding/*). Without a recipe, a fish with breed_time 0 can't breed at all.
+     */
+    public static boolean canPair(Fish fx, Fish fy) {
+        if (cross(fx.item(), fy.item()) != null) return true;
+        if (!canBreed(fx) || !canBreed(fy)) return false;
+        if (fx.item() == fy.item()) return true;
+        java.util.Set<ResourceLocation> gx = breedingGroups(fx.item());
+        for (ResourceLocation g : breedingGroups(fy.item())) if (gx.contains(g)) return true;
+        return false;
+    }
+
+    /** The breeding group tags (any namespace, path breeding/...) this fish is in. */
+    public static java.util.Set<ResourceLocation> breedingGroups(Item item) {
+        java.util.Set<ResourceLocation> out = new java.util.HashSet<>();
+        net.minecraft.core.registries.BuiltInRegistries.ITEM.wrapAsHolder(item).tags().forEach(t -> {
+            if (t.location().getPath().startsWith("breeding/")) out.add(t.location());
+        });
+        return out;
+    }
+
+    /** The hybrid rules for these two species (either way round). */
+    public static List<Cross> hybridsFor(Item x, Item y) {
+        List<Cross> out = new ArrayList<>();
+        for (Cross c : crosses) if (c.matches(x, y)) out.add(c);
+        return out;
     }
 
     public static java.util.Collection<Fish> allFish() {
@@ -209,7 +245,7 @@ public final class FishData {
             buf.writeResourceLocation(ForgeRegistries.ITEMS.getKey(f.item()));
             buf.writeItem(f.product());
             buf.writeFloat(productChance(f));
-            buf.writeFloat(breedChance(f));
+            buf.writeFloat(f.breedTime());
             buf.writeVarInt(powerPerTick(f));
             buf.writeResourceLocation(f.habitat());
             buf.writeBoolean(f.bucket() != null);
@@ -222,10 +258,8 @@ public final class FishData {
             buf.writeResourceLocation(ForgeRegistries.ITEMS.getKey(c.a()));
             buf.writeResourceLocation(ForgeRegistries.ITEMS.getKey(c.b()));
             buf.writeItem(c.result());
-            buf.writeFloat(crossChance(c));
-            writeIds(buf, c.aGenes());
-            writeIds(buf, c.bGenes());
-            writeIds(buf, c.requires());
+            writeIds(buf, c.traits());
+            buf.writeFloat(c.chance());
         }
         buf.writeVarInt(foods.size());
         foods.forEach((item, food) -> {
@@ -291,9 +325,9 @@ public final class FishData {
             Item a = ForgeRegistries.ITEMS.getValue(buf.readResourceLocation());
             Item b = ForgeRegistries.ITEMS.getValue(buf.readResourceLocation());
             ItemStack r = buf.readItem();
-            float c = buf.readFloat();
-            List<ResourceLocation> ag = readIds(buf), bg = readIds(buf), rq = readIds(buf);
-            if (a != null && b != null) x.add(new Cross(a, b, r, c, ag, bg, rq));
+            List<ResourceLocation> t = readIds(buf);
+            float ch = buf.readFloat();
+            if (a != null && b != null) x.add(new Cross(a, b, r, t, ch));
         }
         Map<Item, Food> food = new HashMap<>();
         n = buf.readVarInt();
@@ -348,11 +382,11 @@ public final class FishData {
         Item own = speciesOfBucket(stack.getItem());
         if (own != null) {
             Fish o = byItem(own);
-            if (o != null) return o.bucket() != null ? o : new Fish(o.item(), o.product(), o.productChance(), o.breedChance(), o.power(), o.habitat(), stack.getItem(), o.heat());
+            if (o != null) return o.bucket() != null ? o : new Fish(o.item(), o.product(), o.productChance(), o.breedTime(), o.power(), o.habitat(), stack.getItem(), o.heat());
         }
         // Any other mob bucket (cod, axolotl, another mod's fish): a plain water fish with no product.
         if (stack.getItem() instanceof net.minecraft.world.item.MobBucketItem) {
-            return new Fish(stack.getItem(), ItemStack.EMPTY, 0, Config.DEFAULT_BREED_CHANCE.get().floatValue(), 0, WATER, stack.getItem(), 0);
+            return new Fish(stack.getItem(), ItemStack.EMPTY, 0, Config.DEFAULT_BREED_TIME.get().floatValue(), 0, WATER, stack.getItem(), 0);
         }
         return null;
     }
@@ -361,7 +395,7 @@ public final class FishData {
     private static Fish byItem(Item item) {
         Fish f = fish.get(item);
         if (f != null) return f;
-        if (new ItemStack(item).is(TANK_FISH)) return new Fish(item, ItemStack.EMPTY, 0, Config.DEFAULT_BREED_CHANCE.get().floatValue(), 0, WATER, vanillaBucket(item), 0);
+        if (new ItemStack(item).is(TANK_FISH)) return new Fish(item, ItemStack.EMPTY, 0, Config.DEFAULT_BREED_TIME.get().floatValue(), 0, WATER, vanillaBucket(item), 0);
         return null;
     }
 
@@ -499,15 +533,6 @@ public final class FishData {
         return null;
     }
 
-    /** The crossbreed these two fish make, checking the genes each entry asks for. */
-    @Nullable
-    public static Cross cross(ItemStack x, ItemStack y) {
-        Fish fx = fish(x), fy = fish(y);
-        if (fx == null || fy == null) return null;
-        for (Cross c : crosses) if (c.matches(x, fx.item(), y, fy.item())) return c;
-        return null;
-    }
-
     public static void onAddReloadListeners(AddReloadListenerEvent event) {
         event.addListener(new Listener("orefishfarm_fish", FishData::loadFish));
         event.addListener(new Listener("orefishfarm_breeding", FishData::loadCrosses));
@@ -566,7 +591,7 @@ public final class FishData {
                 ResourceLocation hab = o.has("habitat") ? new ResourceLocation(GsonHelper.getAsString(o, "habitat")) : WATER;
                 Item bucket = o.has("bucket") ? item(GsonHelper.getAsString(o, "bucket")) : null;
                 out.put(f, new Fish(f, product, GsonHelper.getAsFloat(o, "product_chance", 0.75F),
-                        GsonHelper.getAsFloat(o, "breed_chance", 0.1F), GsonHelper.getAsInt(o, "power", 0), hab, bucket,
+                        breedTime(o), GsonHelper.getAsInt(o, "power", 0), hab, bucket,
                         GsonHelper.getAsFloat(o, "heat", 0F)));
                 if (o.has("scale")) scaleOut.put(f, Mth.clamp(GsonHelper.getAsFloat(o, "scale"), 0.25F, 4F));
                 if (o.has("shear")) {
@@ -594,20 +619,42 @@ public final class FishData {
                 JsonObject o = json.getAsJsonObject();
                 JsonArray p = GsonHelper.getAsJsonArray(o, "parents");
                 Item a = parentItem(p.get(0)), b = parentItem(p.get(1));
-                ItemStack r = stack(o.get("result"));
-                if (a == null || b == null || r == null) return;
-                out.add(new Cross(a, b, r, GsonHelper.getAsFloat(o, "chance", 0.05F), parentGenes(p.get(0)), parentGenes(p.get(1)),
-                        o.has("requires") ? ids(GsonHelper.getAsJsonArray(o, "requires")) : List.of()));
+                JsonElement re = o.get("result");
+                ItemStack r = re != null && re.isJsonPrimitive() ? stackOf(re.getAsString()) : stack(re);
+                if (a == null || b == null || r == null) { LOG.warn("Breeding file {} names a fish that isn't there; skipped", id); return; }
+                java.util.LinkedHashSet<ResourceLocation> traits = new java.util.LinkedHashSet<>();
+                if (o.has("traits")) traits.addAll(ids(GsonHelper.getAsJsonArray(o, "traits")));
+                if (o.has("requires")) traits.addAll(ids(GsonHelper.getAsJsonArray(o, "requires")));
+                traits.addAll(parentGenes(p.get(0)));
+                traits.addAll(parentGenes(p.get(1)));
+                out.add(new Cross(a, b, r, new ArrayList<>(traits), GsonHelper.getAsFloat(o, "chance", -1F)));
             } catch (Exception ex) {
                 LOG.error("Bad breeding file {}: {}", id, ex.getMessage());
             }
         });
+        out.sort(java.util.Comparator.comparingInt((Cross c) -> c.traits().size()).reversed());
         crosses = out;
+        LOG.info("Ore Fish Farm: {} breeding recipes", out.size());
+    }
+
+    /** breed_time in seconds; an old file's breed_chance 0 still means "never breeds". */
+    private static float breedTime(JsonObject o) {
+        if (o.has("breed_time")) return Math.max(0, GsonHelper.getAsFloat(o, "breed_time"));
+        if (o.has("breed_chance") && GsonHelper.getAsFloat(o, "breed_chance") <= 0) return 0;
+        return Config.DEFAULT_BREED_TIME.get();
+    }
+
+    @Nullable
+    private static ItemStack stackOf(String id) {
+        Item i = item(id);
+        return i == null ? null : new ItemStack(i);
     }
 
     @Nullable
     private static Item parentItem(JsonElement e) {
-        return item(e.isJsonPrimitive() ? e.getAsString() : GsonHelper.getAsString(e.getAsJsonObject(), "species"));
+        if (e.isJsonPrimitive()) return item(e.getAsString());
+        JsonObject o = e.getAsJsonObject();
+        return item(GsonHelper.getAsString(o, o.has("fish") ? "fish" : "species"));
     }
 
     private static List<ResourceLocation> parentGenes(JsonElement e) {

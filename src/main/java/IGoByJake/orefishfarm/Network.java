@@ -11,7 +11,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 
 /** The server's fish and food lists (tooltips, slot checks), its tackle data (JEI, tackle popup), and the tackle popup's clicks. */
 public final class Network {
-    private static final String VERSION = "6";
+    private static final String VERSION = "8";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(new ResourceLocation(OreFishFarm.MODID, "main"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 

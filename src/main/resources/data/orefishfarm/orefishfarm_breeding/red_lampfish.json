@@ -1,0 +1,10 @@
+{
+  "parents": [
+    "orefishfarm:glass_eel",
+    "orefishfarm:ferrofin"
+  ],
+  "traits": [
+    "orefishfarm:charged"
+  ],
+  "result": "orefishfarm:red_lampfish"
+}

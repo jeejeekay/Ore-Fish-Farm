@@ -2,6 +2,10 @@
   "replace": false,
   "values": [
     "orefishfarm:cuprum_eel",
-    "orefishfarm:zincray"
+    "orefishfarm:zincray",
+    "orefishfarm:glass_eel",
+    "orefishfarm:stone_fish",
+    "orefishfarm:mudskipper",
+    "orefishfarm:sandshark"
   ]
 }

@@ -8,19 +8,19 @@
   ],
   "fish": [
     {
-      "item": "orefishfarm:obsidian_fish",
-      "chance": 0.04
+      "item": "orefishfarm:glass_eel",
+      "chance": 0.03
+    },
+    {
+      "item": "orefishfarm:furry_trout",
+      "chance": 0.03
+    },
+    {
+      "item": "orefishfarm:mudskipper",
+      "chance": 0.03
     },
     {
       "item": "orefishfarm:ferrofin",
-      "chance": 0.01
-    },
-    {
-      "item": "orefishfarm:gilded_carp",
-      "chance": 0.008
-    },
-    {
-      "item": "orefishfarm:zincray",
       "chance": 0.01
     },
     {

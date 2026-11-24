@@ -1,6 +1,30 @@
 {
   "replace": false,
   "values": [
-    "minecraft:the_end"
+    "minecraft:the_end",
+    {
+      "id": "ad_astra:earth_orbit",
+      "required": false
+    },
+    {
+      "id": "ad_astra:moon_orbit",
+      "required": false
+    },
+    {
+      "id": "ad_astra:mars_orbit",
+      "required": false
+    },
+    {
+      "id": "ad_astra:venus_orbit",
+      "required": false
+    },
+    {
+      "id": "ad_astra:mercury_orbit",
+      "required": false
+    },
+    {
+      "id": "ad_astra:glacio_orbit",
+      "required": false
+    }
   ]
 }

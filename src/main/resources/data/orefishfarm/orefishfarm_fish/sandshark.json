@@ -1,0 +1,11 @@
+{
+  "fish": "orefishfarm:sandshark",
+  "product": {
+    "item": "orefishfarm:sandy_teeth",
+    "count": 1
+  },
+  "product_chance": 1.0,
+  "breed_chance": 0.1,
+  "habitat": "orefishfarm:water",
+  "scale": 2.0
+}

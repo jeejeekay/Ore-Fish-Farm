@@ -89,6 +89,7 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
         @Override
         protected void onContentsChanged(int slot) {
             stress[slot] = 0;
+            breedTimer[slot] = -1; // a fish just put in starts its breeding timer from the top
             // A fish without stats or genes yet (made in a recipe, from creative) gets them on the way in.
             if (level != null && !level.isClientSide) FishGenes.ensure(getStackInSlot(slot), level.random);
             setChanged();
@@ -557,60 +558,78 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
         }
     }
 
+    /** Ticks left on each fish slot's breeding timer (-1 = not started; not saved, so it restarts on a reload). */
+    final int[] breedTimer = new int[FISH];
+    { java.util.Arrays.fill(this.breedTimer, -1); }
+
     /**
-     * Pairs up the eating fish: two of a species, then any two that make a crossbreed (checking the genes the
-     * entry asks for). Each pair rolls once. No hints: pairs just sometimes breed. Newborns (not yet scooped out
-     * with a bucket) never breed, so a fresh baby can't pair up with its parents before the player picks the pairs.
+     * Each eating fish (not a newborn) runs down its breeding timer by a bite. A fish whose timer is up picks a random
+     * partner among the fish that haven't bred this bite and are a valid pair with it (FishData.canPair: same species,
+     * a shared breeding group tag, or a breeding recipe), and tries for a baby (breedPair); its timer then starts
+     * again. With no partner it keeps waiting and tries again next bite. Each fish breeds at most once a bite.
+     * Newborns (not yet scooped out with a bucket) never breed, so a fresh baby can't pair up with its parents before
+     * the player picks the pairs.
      */
     private void breed(List<FishRef> eaters) {
-        Set<FishRef> busy = new HashSet<>();
-        Map<Item, List<FishRef>> bySpecies = new LinkedHashMap<>();
+        int bite = Config.BITE_TICKS.get();
+        List<FishRef> pool = new ArrayList<>(), ready = new ArrayList<>();
         for (FishRef f : eaters) {
             if (FishGenes.isNewborn(f.stack())) continue;
             FishData.Fish d = FishData.fish(f.stack());
-            if (d != null) bySpecies.computeIfAbsent(d.item(), k -> new ArrayList<>()).add(f);
+            if (d == null) continue;
+            pool.add(f);
+            if (!FishData.canBreed(d)) continue;
+            int[] t = f.be().breedTimer;
+            if (t[f.slot()] < 0) t[f.slot()] = FishData.breedTicks(d);
+            t[f.slot()] = Math.max(0, t[f.slot()] - bite);
+            if (t[f.slot()] == 0) ready.add(f);
         }
-        List<FishRef> singles = new ArrayList<>();
-        for (List<FishRef> same : bySpecies.values()) {
-            FishData.Fish d = FishData.fish(same.get(0).stack());
-            float chance = d == null ? 0 : FishData.breedChance(d);
-            int i = 0;
-            if (chance > 0) {
-                for (; i + 1 < same.size(); i += 2) {
-                    busy.add(same.get(i));
-                    busy.add(same.get(i + 1));
-                    if (this.level.random.nextFloat() < chance) placeBaby(d, same.get(i).stack(), same.get(i + 1).stack());
-                }
+        for (int i = ready.size() - 1; i > 0; i--) java.util.Collections.swap(ready, i, this.level.random.nextInt(i + 1));
+        Set<FishRef> done = new HashSet<>();
+        for (FishRef me : ready) {
+            if (done.contains(me)) continue;
+            FishData.Fish fm = FishData.fish(me.stack());
+            List<FishRef> mates = new ArrayList<>();
+            for (FishRef o : pool) {
+                if (o.equals(me) || done.contains(o)) continue;
+                FishData.Fish fo = FishData.fish(o.stack());
+                if (fo != null && FishData.canPair(fm, fo)) mates.add(o);
             }
-            for (; i < same.size(); i++) singles.add(same.get(i));
-        }
-        for (int a = 0; a < singles.size(); a++) {
-            FishRef x = singles.get(a);
-            if (busy.contains(x)) continue;
-            FishData.Fish fx = FishData.fish(x.stack());
-            for (int b = a + 1; b < singles.size(); b++) {
-                FishRef y = singles.get(b);
-                if (busy.contains(y)) continue;
-                FishData.Cross c = fx == null ? null : FishData.cross(x.stack(), y.stack());
-                if (c == null) continue;
-                busy.add(x);
-                busy.add(y);
-                if (this.level.random.nextFloat() < FishData.crossChance(c)) {
-                    FishData.Fish child = FishData.fish(c.result());
-                    if (child != null) placeBaby(child, x.stack(), y.stack());
-                }
-                break;
-            }
+            if (mates.isEmpty()) continue;
+            FishRef mate = mates.get(this.level.random.nextInt(mates.size()));
+            done.add(me);
+            done.add(mate);
+            me.be().breedTimer[me.slot()] = FishData.breedTicks(fm);
+            breedPair(fm, FishData.fish(mate.stack()), me.stack(), mate.stack());
         }
     }
 
-    /** A newborn takes a free fish slot and stays there until it is scooped out. No free slot: no baby. */
-    private void placeBaby(FishData.Fish species, ItemStack a, ItemStack b) {
+    /**
+     * One baby of these two: one of the two species at random (a baby of two species is 3 levels lower, see
+     * FishGenes.inherit). If a breeding recipe names the pair and the baby inherited all of its traits, the baby
+     * becomes the recipe's fish instead. Then the baby is born only with the chance for what it is (FishData:
+     * same species, a mix of two, or a recipe fish).
+     */
+    private void breedPair(FishData.Fish fa, FishData.Fish fb, ItemStack a, ItemStack b) {
         if (this.level == null) return;
-        ItemStack baby = FishData.bucketOf(species);
+        ItemStack baby = FishData.bucketOf(fa.item() == fb.item() || this.level.random.nextBoolean() ? fa : fb);
         FishGenes.inherit(baby, a, b, this.level.random);
+        float chance = fa.item() == fb.item() ? FishData.sameSpeciesChance() : FishData.crossChance();
+        for (FishData.Cross c : FishData.hybridsFor(fa.item(), fb.item())) {
+            if (!FishGenes.hasAll(baby, c.traits())) continue;
+            FishData.Fish h = FishData.fish(c.result());
+            if (h == null) continue;
+            ItemStack hybrid = FishData.bucketOf(h);
+            FishGenes.copyData(baby, hybrid);
+            FishGenes.addGenes(hybrid, FishGenes.speciesGenes(h.item()));
+            baby = hybrid;
+            chance = FishData.hybridChance(c);
+            break;
+        }
+        if (this.level.random.nextFloat() >= chance) return;
         if (insertFishAnywhere(baby)) this.level.playSound(null, this.worldPosition, SoundEvents.BUBBLE_COLUMN_UPWARDS_AMBIENT, SoundSource.BLOCKS, 0.6F, 1.4F);
     }
+
 
     /** Into the shared output; returns what didn't fit. */
     ItemStack addOutput(ItemStack stack) {

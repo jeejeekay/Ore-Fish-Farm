@@ -1,0 +1,7 @@
+{
+ "parent": "orefishfarm:fish_category/moray_front",
+ "textures": {
+  "t": "orefishfarm:item/fish/cuprum_eel_moray",
+  "particle": "orefishfarm:item/fish/cuprum_eel_moray"
+ }
+}

@@ -1,0 +1,16 @@
+{
+  "fish": "orefishfarm:furry_trout",
+  "product": {
+    "item": "minecraft:string",
+    "count": 1
+  },
+  "product_chance": 0.75,
+  "breed_chance": 0.1,
+  "habitat": "orefishfarm:water",
+  "shear": {
+    "item": "minecraft:string",
+    "min": 1,
+    "max": 3,
+    "regrow": 12000
+  }
+}

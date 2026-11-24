@@ -1,7 +1,7 @@
 {
- "parent": "orefishfarm:fish_category/power_tail",
+ "parent": "orefishfarm:fish_category/moray_tail",
  "textures": {
-  "t": "orefishfarm:item/fish/cuprum_eel",
-  "particle": "orefishfarm:item/fish/cuprum_eel"
+  "t": "orefishfarm:item/fish/cuprum_eel_moray",
+  "particle": "orefishfarm:item/fish/cuprum_eel_moray"
  }
 }

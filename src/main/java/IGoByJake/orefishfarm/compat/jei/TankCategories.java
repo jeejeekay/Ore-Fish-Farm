@@ -98,20 +98,27 @@ public final class TankCategories {
 
         @Override
         public void setRecipe(IRecipeLayoutBuilder b, TankRecipes.Breeding r, IFocusGroup focuses) {
-            b.addSlot(RecipeIngredientRole.INPUT, 20, 6).setBackground(this.slot, -1, -1).addItemStack(r.a());
-            b.addSlot(RecipeIngredientRole.INPUT, 38, 6).setBackground(this.slot, -1, -1).addItemStack(r.b());
-            b.addSlot(RecipeIngredientRole.CATALYST, 2, 26).setBackground(this.slot, -1, -1).addItemStacks(r.foods());
-            b.addSlot(RecipeIngredientRole.OUTPUT, 104, 6).setBackground(this.slot, -1, -1).addItemStack(r.result());
+            // parent + parent -> baby (or either baby), centred across the page
+            b.addSlot(RecipeIngredientRole.INPUT, 8, 8).setBackground(this.slot, -1, -1).addItemStack(r.a());
+            b.addSlot(RecipeIngredientRole.INPUT, 34, 8).setBackground(this.slot, -1, -1).addItemStack(r.b());
+            for (int i = 0; i < r.results().size(); i++)
+                b.addSlot(RecipeIngredientRole.OUTPUT, (r.results().size() == 1 ? 98 : 88) + i * 20, 8).setBackground(this.slot, -1, -1).addItemStack(r.results().get(i));
         }
 
         @Override
         public void draw(TankRecipes.Breeding r, IRecipeSlotsView v, GuiGraphics g, double mx, double my) {
-            this.arrow.draw(g, 70, 6);
-            centred(g, Component.translatable(r.hybrid() ? "jei.orefishfarm.hybrid" : "jei.orefishfarm.baby", pct(r.chance())), 80, 30);
+            g.drawString(net.minecraft.client.Minecraft.getInstance().font, "+", 27, 12, 0xFF404040, false);
+            this.arrow.draw(g, 58, 8);
+            centred(g, Component.translatable(r.hybrid() ? "jei.orefishfarm.hybrid" : r.results().size() > 1 ? "jei.orefishfarm.mixed" : "jei.orefishfarm.baby", pct(r.chance())), W / 2, 30);
             if (!r.genes().isEmpty()) {
+                // the genes the baby must inherit, each in its gene colour
                 net.minecraft.network.chat.MutableComponent needs = Component.translatable("jei.orefishfarm.needs_genes");
-                for (int i = 0; i < r.genes().size(); i++) needs.append(i == 0 ? " " : ", ").append(IGoByJake.orefishfarm.data.FishGenes.geneName(r.genes().get(i)));
-                centred(g, needs, 64, 42);
+                for (int i = 0; i < r.genes().size(); i++) {
+                    var gene = r.genes().get(i);
+                    needs.append(i == 0 ? " " : ", ").append(IGoByJake.orefishfarm.data.FishGenes.geneName(gene).copy()
+                            .withStyle(s -> s.withColor(IGoByJake.orefishfarm.data.FishGenes.color(gene))));
+                }
+                centred(g, needs, W / 2, 42);
             }
         }
     }

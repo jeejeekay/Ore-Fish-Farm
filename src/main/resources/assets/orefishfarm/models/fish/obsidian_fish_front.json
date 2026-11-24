@@ -1,0 +1,7 @@
+{
+ "parent": "orefishfarm:fish_category/marlin_front",
+ "textures": {
+  "t": "orefishfarm:item/fish/obsidmarlin",
+  "particle": "orefishfarm:item/fish/obsidmarlin"
+ }
+}

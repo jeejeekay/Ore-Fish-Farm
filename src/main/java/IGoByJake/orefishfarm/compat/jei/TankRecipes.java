@@ -14,8 +14,11 @@ public final class TankRecipes {
 
     public record Product(ItemStack fish, ItemStack product, float chance, List<ItemStack> foods) {}
 
-    /** genes: genes the parents must carry for this crossbreed (shown under the arrow). */
-    public record Breeding(ItemStack a, ItemStack b, ItemStack result, float chance, boolean hybrid, List<ItemStack> foods,
+    /**
+     * One breeding pair and what it can make. results: the baby species (one for a same-species pair, either parent's
+     * for a mixed pair), or the recipe fish for a hybrid. genes: the traits a hybrid baby must inherit.
+     */
+    public record Breeding(ItemStack a, ItemStack b, List<ItemStack> results, float chance, boolean hybrid, List<ItemStack> foods,
                            List<net.minecraft.resources.ResourceLocation> genes) {}
 
     public record Power(ItemStack fish, int fePerTick, List<ItemStack> foods) {}
@@ -35,18 +38,27 @@ public final class TankRecipes {
         return out;
     }
 
+    /**
+     * Every pair of fish that can breed (FishData.canPair), each pair once (A + B, never B + A again), with the
+     * species its babies can be; then every recipe (hybrid). Looking up a fish's recipes finds every pair that makes it.
+     */
     public static List<Breeding> breeding() {
         List<ItemStack> foods = FishData.allFoods();
         List<Breeding> out = new ArrayList<>();
-        for (FishData.Fish f : sorted()) {
-            float c = FishData.breedChance(f);
-            if (c > 0) out.add(new Breeding(FishData.bucketOf(f), FishData.bucketOf(f), FishData.bucketOf(f), c, false, foods, List.of()));
+        List<FishData.Fish> all = sorted();
+        for (int i = 0; i < all.size(); i++) {
+            for (int j = i; j < all.size(); j++) {
+                FishData.Fish fa = all.get(i), fb = all.get(j);
+                if (!FishData.canPair(fa, fb)) continue;
+                if (fa.item() == fb.item()) {
+                    out.add(new Breeding(FishData.bucketOf(fa), FishData.bucketOf(fb), List.of(FishData.bucketOf(fa)), FishData.sameSpeciesChance(), false, foods, List.of()));
+                } else { // either parent's species (a recipe pair's babies that miss its traits are plain ones too)
+                    out.add(new Breeding(FishData.bucketOf(fa), FishData.bucketOf(fb), List.of(FishData.bucketOf(fa), FishData.bucketOf(fb)), FishData.crossChance(), false, foods, List.of()));
+                }
+            }
         }
         for (FishData.Cross x : FishData.allCrosses()) {
-            java.util.LinkedHashSet<net.minecraft.resources.ResourceLocation> g = new java.util.LinkedHashSet<>(x.aGenes());
-            g.addAll(x.bGenes());
-            g.addAll(x.requires());
-            out.add(new Breeding(bucket(x.a()), bucket(x.b()), bucket(x.result().getItem()), FishData.crossChance(x), true, foods, new ArrayList<>(g)));
+            out.add(new Breeding(bucket(x.a()), bucket(x.b()), List.of(bucket(x.result().getItem())), FishData.hybridChance(x), true, foods, x.traits()));
         }
         return out;
     }

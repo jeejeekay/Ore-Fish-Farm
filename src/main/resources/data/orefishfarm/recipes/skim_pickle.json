@@ -10,7 +10,7 @@
       "item": "minecraft:string"
     },
     "G": {
-      "item": "minecraft:gold_nugget"
+      "tag": "forge:nuggets/gold"
     },
     "P": {
       "item": "minecraft:sea_pickle"

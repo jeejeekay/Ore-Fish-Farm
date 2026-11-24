@@ -1,0 +1,44 @@
+{
+ "render_type": "minecraft:translucent",
+ "ambientocclusion": false,
+ "textures": {
+  "fill": "minecraft:block/lava_still",
+  "particle": "minecraft:block/lava_still"
+ },
+ "elements": [
+  {
+   "from": [
+    15.4,
+    3,
+    0
+   ],
+   "to": [
+    15.4,
+    13,
+    0.6
+   ],
+   "faces": {
+    "east": {
+     "texture": "#fill"
+    }
+   }
+  },
+  {
+   "from": [
+    15.4,
+    3,
+    0.6
+   ],
+   "to": [
+    16,
+    13,
+    0.6
+   ],
+   "faces": {
+    "north": {
+     "texture": "#fill"
+    }
+   }
+  }
+ ]
+}

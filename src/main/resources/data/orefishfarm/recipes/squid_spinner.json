@@ -10,7 +10,7 @@
       "item": "minecraft:string"
     },
     "N": {
-      "item": "minecraft:iron_nugget"
+      "tag": "forge:nuggets/iron"
     },
     "I": {
       "item": "minecraft:ink_sac"

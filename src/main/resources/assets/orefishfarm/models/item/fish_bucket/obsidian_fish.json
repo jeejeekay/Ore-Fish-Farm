@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "orefishfarm:item/fish_bucket/obsidian_fish"
+    "layer0": "orefishfarm:item/fish_bucket/obsidmarlin"
   }
 }

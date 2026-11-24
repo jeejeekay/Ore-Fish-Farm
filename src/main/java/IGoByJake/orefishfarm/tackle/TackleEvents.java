@@ -16,8 +16,9 @@ import net.minecraftforge.event.entity.player.ItemFishedEvent;
  *   <li>In an inventory, the tackle popup (client/TackleBubble) clips the carried piece on or takes a piece off;
  *       the server does the swap here ({@link #clipOn}, {@link #takeOff}).</li>
  *   <li>In the world, a rod in one hand and a piece in the other: right-click clips it on if the rod has none.</li>
- *   <li>Every fish caught wears the piece by one. When it breaks, the next piece of the same kind in the
- *       player's inventory clips on by itself.</li>
+ *   <li>Every catch wears the piece by one, and so does a cast that catches nothing (the bobber goes away
+ *       without anything being fished: reeled in empty, a Salvage Fishing dive with no catch, or the rod put
+ *       away). When it breaks, the next piece of the same kind in the player's inventory clips on by itself.</li>
  * </ul>
  */
 public final class TackleEvents {
@@ -112,9 +113,25 @@ public final class TackleEvents {
         player.displayClientMessage(Component.translatable("message.orefishfarm.tackle_clipped", name.getHoverName()).withStyle(ChatFormatting.GRAY), true);
     }
 
+    /** Bobbers that have fished something; a bobber that leaves the world without being in here caught nothing. */
+    private static final java.util.Set<FishingHook> CAUGHT = java.util.Collections.newSetFromMap(new java.util.WeakHashMap<>());
+
     public static void onFished(ItemFishedEvent event) {
         FishingHook hook = event.getHookEntity();
-        Player player = hook.getPlayerOwner();
+        CAUGHT.add(hook);
+        wear(hook.getPlayerOwner());
+    }
+
+    /** A bobber gone without a catch wears the tackle too. Chunk unloads and dimension changes don't count. */
+    public static void onHookLeave(net.minecraftforge.event.entity.EntityLeaveLevelEvent event) {
+        if (!(event.getEntity() instanceof FishingHook hook) || event.getLevel().isClientSide) return;
+        if (CAUGHT.remove(hook)) return;
+        var reason = hook.getRemovalReason();
+        if (reason != net.minecraft.world.entity.Entity.RemovalReason.DISCARDED && reason != net.minecraft.world.entity.Entity.RemovalReason.KILLED) return;
+        wear(hook.getPlayerOwner());
+    }
+
+    private static void wear(Player player) {
         if (player == null || player.level().isClientSide) return;
         ItemStack rod = Tackle.rodOf(player);
         ItemStack tackle = Tackle.get(rod);

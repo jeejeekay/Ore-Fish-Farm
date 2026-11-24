@@ -1,0 +1,7 @@
+{
+  "parent": "orefishfarm:fish_category/stonefish_tail",
+  "textures": {
+    "t": "orefishfarm:item/fish/stone_fish",
+    "particle": "orefishfarm:item/fish/stone_fish"
+  }
+}

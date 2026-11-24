@@ -53,7 +53,7 @@ public class FishBucketItem extends MobBucketItem {
         if (!(stack.getItem() instanceof FishBucketItem)) return null;
         CompoundTag tag = stack.getTag();
         if (tag == null || !tag.contains(KEY)) return null;
-        ResourceLocation id = ResourceLocation.tryParse(tag.getString(KEY));
+        ResourceLocation id = Renamed.fix(ResourceLocation.tryParse(tag.getString(KEY)));
         if (id == null) return null;
         Item item = ForgeRegistries.ITEMS.getValue(id);
         return item == null || item == net.minecraft.world.item.Items.AIR ? null : item;

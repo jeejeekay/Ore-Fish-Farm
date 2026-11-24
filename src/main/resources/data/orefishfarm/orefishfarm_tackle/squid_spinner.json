@@ -2,9 +2,20 @@
   "item": "orefishfarm:squid_spinner",
   "bonuses": [
     {
-      "fish": "orefishfarm:ferrofin",
+      "fish": "orefishfarm:obsidian_fish",
       "chance": 0.06,
       "liquid": "water"
+    },
+    {
+      "fish": "orefishfarm:gilded_carp",
+      "chance": 0.03,
+      "liquid": "water"
+    },
+    {
+      "fish": "orefishfarm:ferrofin",
+      "chance": 0.06,
+      "liquid": "lava",
+      "dimension": "minecraft:overworld"
     }
   ]
 }

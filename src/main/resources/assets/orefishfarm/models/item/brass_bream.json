@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "orefishfarm:item/brass_bream"
+    "layer0": "orefishfarm:item/brasszino"
   }
 }

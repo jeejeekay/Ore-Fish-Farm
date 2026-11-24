@@ -1,0 +1,7 @@
+{
+ "parent": "orefishfarm:fish_category/sturgeon_front",
+ "textures": {
+  "t": "orefishfarm:item/fish/sturginc",
+  "particle": "orefishfarm:item/fish/sturginc"
+ }
+}

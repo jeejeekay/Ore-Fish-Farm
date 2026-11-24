@@ -1,7 +1,7 @@
 {
- "parent": "orefishfarm:fish_category/stone",
+ "parent": "orefishfarm:fish_category/marlin",
  "textures": {
-  "t": "orefishfarm:item/fish/obsidian_fish",
-  "particle": "orefishfarm:item/fish/obsidian_fish"
+  "t": "orefishfarm:item/fish/obsidmarlin",
+  "particle": "orefishfarm:item/fish/obsidmarlin"
  }
 }

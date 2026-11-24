@@ -26,7 +26,7 @@ import java.util.List;
 
 /**
  * Wraps the fish tank's block models to add the pieces an aquarium needs where it turns inward, chosen by the block
- * entity's {@link TankBlockEntity#EXTRAS} model data (see Aquarium.extras): corner posts at inside corners, and at
+ * entity's {@link TankBlockEntity#EXTRAS} model data (see Aquarium.extras): liquid seams at inside corners (they close the sliver where two panes end), and at
  * steps the glass and water above the water line plus the top rim. Keeping these out of the block state stops the
  * state count multiplying.
  */
@@ -46,13 +46,15 @@ public class TankExtrasModel extends BakedModelWrapper<BakedModel> {
     /** Every extra piece, for ModelEvent.RegisterAdditional. */
     public static void register(ModelEvent.RegisterAdditional event) {
         for (String role : new String[]{"fish", "power"}) {
-            for (String c : CORNERS) event.register(tank(role + "_post_" + c));
             for (String l : SIDE_LETTER) event.register(tank(role + "_rim_" + l));
         }
         for (String side : SIDES) {
             event.register(tank("glass_" + side + "_step"));
             for (String look : new String[]{"water", "lava", "void"}) event.register(tank("fill_" + look + "_" + side + "_step"));
         }
+        for (String look : new String[]{"water", "lava", "void"})
+            for (String c : CORNERS)
+                for (String ud : new String[]{"ff", "ft", "tf", "tt"}) event.register(tank("fill_" + look + "_seam_" + c + "_" + ud));
     }
 
     /** Wraps every fish tank state's model. */
@@ -69,8 +71,10 @@ public class TankExtrasModel extends BakedModelWrapper<BakedModel> {
         List<ResourceLocation> out = new ArrayList<>();
         String role = state.getValue(TankBlock.ROLE) == TankRole.POWER ? "power" : "fish";
         String look = state.getValue(TankBlock.LOOK).getSerializedName();
+        String ud = (state.getValue(TankBlock.UP) ? "t" : "f") + (state.getValue(TankBlock.DOWN) ? "t" : "f");
         for (int i = 0; i < 4; i++) {
-            if ((bits & (1 << i)) != 0) out.add(tank(role + "_post_" + CORNERS[i]));
+            // inside corner: short strips of the liquid that close the sliver where the two neighbours' panes end
+            if ((bits & (1 << i)) != 0) out.add(tank("fill_" + look + "_seam_" + CORNERS[i] + "_" + ud));
             if ((bits & (1 << (4 + i))) != 0) {
                 out.add(tank("glass_" + SIDES[i] + "_step"));
                 out.add(tank("fill_" + look + "_" + SIDES[i] + "_step"));

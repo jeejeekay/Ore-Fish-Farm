@@ -1,0 +1,10 @@
+{
+  "fish": "orefishfarm:stone_fish",
+  "product": {
+    "item": "orefishfarm:pebbled_scale",
+    "count": 1
+  },
+  "product_chance": 1.0,
+  "breed_chance": 0.1,
+  "habitat": "orefishfarm:water"
+}

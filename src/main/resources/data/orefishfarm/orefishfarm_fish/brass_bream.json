@@ -5,6 +5,6 @@
     "count": 1
   },
   "product_chance": 0.6,
-  "breed_chance": 0.05,
-  "habitat": "orefishfarm:water"
+  "habitat": "orefishfarm:water",
+  "scale": 1.75
 }

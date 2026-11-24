@@ -185,12 +185,8 @@ public class TankBlock extends BaseEntityBlock {
             return InteractionResult.CONSUME;
         }
         FishData.Habitat h = FishData.habitatForKit(held);
-        // Habitat kits: refill the whole aquarium.
-        if (h != null) {
-            if (h.id().equals(c.habitat())) {
-                player.displayClientMessage(Component.translatable("message.orefishfarm.already_habitat", FishData.habitatName(h.id())), true);
-                return InteractionResult.CONSUME;
-            }
+        // Habitat kits: refill the whole aquarium. Its own habitat's bucket just opens the screen (below).
+        if (h != null && !h.id().equals(c.habitat())) {
             FishData.Habitat old = FishData.habitat(c.habitat());
             Aquarium.convert(level, c, h.id(), null);
             // The habitat's bucket is poured in (a lava or void bucket comes back empty); an empty bucket is kept.

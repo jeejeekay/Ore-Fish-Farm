@@ -1,0 +1,11 @@
+{
+  "fish": "orefishfarm:red_lampfish",
+  "product": {
+    "item": "minecraft:redstone",
+    "count": 1
+  },
+  "product_chance": 0.5,
+  "breed_chance": 0.05,
+  "habitat": "orefishfarm:water",
+  "scale": 1.5
+}

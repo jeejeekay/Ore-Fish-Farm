@@ -6,11 +6,10 @@ import net.minecraftforge.common.ForgeConfigSpec;
 public final class Config {
     public static final ForgeConfigSpec SPEC;
     public static final ForgeConfigSpec.DoubleValue PRODUCT_CHANCE;
-    public static final ForgeConfigSpec.DoubleValue BREED_CHANCE;
-    public static final ForgeConfigSpec.DoubleValue CROSSBREED_CHANCE;
+    public static final ForgeConfigSpec.DoubleValue SAME_SPECIES_CHANCE, CROSS_CHANCE, HYBRID_CHANCE, BREED_TIME;
     public static final ForgeConfigSpec.DoubleValue POWER;
     public static final ForgeConfigSpec.DoubleValue FOOD_TIME;
-    public static final ForgeConfigSpec.DoubleValue DEFAULT_BREED_CHANCE;
+    public static final ForgeConfigSpec.IntValue DEFAULT_BREED_TIME;
     public static final ForgeConfigSpec.IntValue DEFAULT_FOOD_TICKS;
     public static final ForgeConfigSpec.IntValue BITE_TICKS;
     public static final ForgeConfigSpec.IntValue ENERGY_CAPACITY;
@@ -26,6 +25,8 @@ public final class Config {
     public static final ForgeConfigSpec.IntValue BREED_EXTRA_ROLLS;
     public static final ForgeConfigSpec.DoubleValue BREED_ROLL_CHANCE;
     public static final ForgeConfigSpec.DoubleValue BREED_ROLL_CHANCE_PER_LEVEL;
+    public static final ForgeConfigSpec.DoubleValue BREED_ROLL_CHANCE_MAX;
+    public static final ForgeConfigSpec.IntValue BREED_POTENTIAL_BONUS_ROLLS;
     public static final ForgeConfigSpec.DoubleValue TANK_SIZE_POWER;
     public static final ForgeConfigSpec.DoubleValue TANK_REFERENCE_SIZE;
     public static final ForgeConfigSpec.DoubleValue TANK_MAX_JOINED;
@@ -41,9 +42,14 @@ public final class Config {
         b.comment("Chances are rolled once per bite: every biteTicks (see [food]) that a tank spends eating.",
                 "Each fish's own numbers live in data/<namespace>/orefishfarm_fish/*.json; these multiply them.").push("odds");
         PRODUCT_CHANCE = b.comment("Multiplier on every fish's scale/product chance.").defineInRange("productChanceMultiplier", 1.0, 0.0, 100.0);
-        BREED_CHANCE = b.comment("Multiplier on same-species breeding chances.").defineInRange("breedChanceMultiplier", 1.0, 0.0, 100.0);
-        CROSSBREED_CHANCE = b.comment("Multiplier on cross-breeding (hybrid) chances from orefishfarm_breeding/*.json.").defineInRange("crossbreedChanceMultiplier", 1.0, 0.0, 100.0);
-        DEFAULT_BREED_CHANCE = b.comment("Breeding chance for fish in the #orefishfarm:tank_fish tag that have no fish file (e.g. cod).").defineInRange("defaultBreedChance", 0.1, 0.0, 1.0);
+        b.pop().push("breeding");
+        b.comment("Each fish has a breeding timer (breed_time in its fish file) that runs while it eats. When it runs out the",
+                "fish picks a random partner it can breed with, makes the baby, and the baby is born with one of these chances.");
+        SAME_SPECIES_CHANCE = b.comment("Chance a baby of two fish of the same species is born.").defineInRange("sameSpeciesChance", 0.5, 0.0, 1.0);
+        CROSS_CHANCE = b.comment("Chance a baby of two different species (not a recipe fish) is born.").defineInRange("crossChance", 0.3, 0.0, 1.0);
+        HYBRID_CHANCE = b.comment("Chance a recipe fish (orefishfarm_breeding/*.json) is born, unless the recipe gives its own chance.").defineInRange("hybridChance", 0.1, 0.0, 1.0);
+        BREED_TIME = b.comment("Multiplier on every fish's breeding timer.").defineInRange("breedTimeMultiplier", 1.0, 0.01, 100.0);
+        DEFAULT_BREED_TIME = b.comment("Breeding timer in seconds for fish with no breed_time (and fish in #orefishfarm:tank_fish with no fish file, e.g. cod).").defineInRange("defaultBreedTime", 180, 1, 86400);
         b.pop().push("food");
         FOOD_TIME = b.comment("Multiplier on how long each piece of food lasts.").defineInRange("foodTimeMultiplier", 1.0, 0.01, 100.0);
         DEFAULT_FOOD_TICKS = b.comment("Ticks one item lasts for foods in the #orefishfarm:fish_food tag that have no food file.").defineInRange("defaultFoodTicks", 4800, 1, 72000);
@@ -71,12 +77,17 @@ public final class Config {
                 .defineInRange("wildPotentialBase", 9.0, -10.0, 20.0);
         WILD_POTENTIAL_PER_LEVEL = b.defineInRange("wildPotentialPerLevel", 0.5, -5.0, 5.0);
         WILD_POTENTIAL_SPREAD = b.defineInRange("wildPotentialSpread", 1.5, 0.0, 10.0);
+        // (new key names in 2.19.0, so the new defaults replace the old ones in existing config files)
         BREED_EXTRA_ROLLS = b.comment("Breeding, for each stat: the baby's potential rolls the parents' two potentials added, then its level",
-                "rolls their two levels added (at most that potential). A roll of a total makes total + breedExtraRolls tries,",
-                "each won at breedRollChance + breedRollChancePerLevel x total; the baby gets the number of wins (at most 10).")
-                .defineInRange("breedExtraRolls", 3, 0, 40);
-        BREED_ROLL_CHANCE = b.defineInRange("breedRollChance", 0.10, 0.0, 1.0);
-        BREED_ROLL_CHANCE_PER_LEVEL = b.defineInRange("breedRollChancePerLevel", 0.02, -1.0, 1.0);
+                "rolls their two levels added (at most that potential). A roll of a total makes total + breedBonusRolls tries,",
+                "each won at breedRollBaseChance + breedRollChancePerPoint x total (at most breedRollChanceMax);",
+                "the baby gets the number of wins (at most 10).")
+                .defineInRange("breedBonusRolls", 1, 0, 40);
+        BREED_ROLL_CHANCE = b.defineInRange("breedRollBaseChance", 0.25, 0.0, 1.0);
+        BREED_ROLL_CHANCE_PER_LEVEL = b.defineInRange("breedRollChancePerPoint", 0.025, -1.0, 1.0);
+        BREED_ROLL_CHANCE_MAX = b.defineInRange("breedRollChanceMax", 0.5, 0.0, 1.0);
+        BREED_POTENTIAL_BONUS_ROLLS = b.comment("The same roll for the baby's potential, but with total + this many tries (default one fewer than the potentials added).")
+                .defineInRange("breedPotentialBonusRolls", -1, -40, 40);
         b.pop().push("tank_display");
         TANK_SIZE_POWER = b.comment("How big each mob is drawn in a tank. A mob as long as referenceSize (a cod, 0.5) is drawn at the tank's",
                 "normal size (0.45 blocks in a joined aquarium); others at normal x (their size / referenceSize) ^ sizePower.",

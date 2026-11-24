@@ -33,14 +33,17 @@ import java.util.function.Consumer;
  * <p>For an item {@code ns:path} it looks for a side-view model at {@code assets/ns/models/fish/path.json} (head
  * toward +x, in a 16x16x16 box), plus an optional {@code path_tail.json} that wags. Any resource pack can add one
  * for any mod's fish. With no model it falls back to the item's own sprite.
+ *
+ * <p>Articulated fish (salmon-style swimming) also have {@code path_front.json}: the front stays still and the body
+ * model swings from the front's back edge, carrying the tail with it.
  */
 public final class FishRender {
     private FishRender() {}
 
-    private record Fish(BakedModel body, BakedModel tail, float jointX) {}
+    private record Fish(BakedModel body, BakedModel tail, float jointX, @org.jetbrains.annotations.Nullable BakedModel front, float bodyJoint, float minY, float maxY) {}
 
     private static final Map<ResourceLocation, Fish> CACHE = new HashMap<>();
-    private static final Fish NONE = new Fish(null, null, 0);
+    private static final Fish NONE = new Fish(null, null, 0, null, 0, 0.375F, 0.625F);
 
     /** Registers every models/fish/*.json so it gets baked. */
     public static void registerModels(ModelEvent.RegisterAdditional event) {
@@ -78,7 +81,13 @@ public final class FishRender {
             if (tail == missing && !suffix.isEmpty()) // a variant without its own tail uses the plain one
                 tail = models.getModel(new ResourceLocation(item.getNamespace(), "fish/" + item.getPath() + "_tail"));
             if (tail == missing) tail = null;
-            return new Fish(body, tail, tail == null ? 0.5F : maxX(tail));
+            BakedModel front = models.getModel(new ResourceLocation(k.getNamespace(), "fish/" + k.getPath() + "_front"));
+            if (front == missing && !suffix.isEmpty())
+                front = models.getModel(new ResourceLocation(item.getNamespace(), "fish/" + item.getPath() + "_front"));
+            if (front == missing) front = null;
+            float[] y = {1, 0};
+            for (BakedModel part : new BakedModel[]{body, tail, front}) if (part != null) yRange(part, y);
+            return new Fish(body, tail, tail == null ? 0.5F : maxX(tail), front, front == null ? 0.5F : minX(front), y[0], y[1]);
         });
     }
 
@@ -95,6 +104,51 @@ public final class FishRender {
         for (Direction d : Direction.values()) model.getQuads(null, d, r).forEach(scan);
         return max[0];
     }
+
+    /** Widens {@code y} (min, max) to the model's lowest and highest points. */
+    private static void yRange(BakedModel model, float[] y) {
+        RandomSource r = RandomSource.create(0);
+        Consumer<BakedQuad> scan = q -> {
+            int[] v = q.getVertices();
+            int stride = v.length / 4;
+            for (int i = 0; i < 4; i++) {
+                float vy = Float.intBitsToFloat(v[i * stride + 1]);
+                y[0] = Math.min(y[0], vy);
+                y[1] = Math.max(y[1], vy);
+            }
+        };
+        model.getQuads(null, null, r).forEach(scan);
+        for (Direction d : Direction.values()) model.getQuads(null, d, r).forEach(scan);
+    }
+
+    /**
+     * How high to lift a fish drawn {@code scale} long so it sits in a hitbox {@code boxHeight} tall: its model
+     * centred in the box, and never with any part below the box's bottom (so big or deep-bodied fish don't sink
+     * into the ground).
+     */
+    public static float lift(ItemStack stack, String variant, float scale, float boxHeight) {
+        Fish fish = variant.isEmpty() ? NONE : lookup(stack, variant);
+        if (fish.body == null) fish = lookup(stack);
+        float centred = boxHeight / 2 - ((fish.minY + fish.maxY) / 2 - 0.5F) * scale;
+        return Math.max(centred, (0.5F - fish.minY) * scale + 0.01F);
+    }
+
+    /** The front's joint is its back edge (smallest x). */
+    private static float minX(BakedModel model) {
+        float[] min = {1};
+        RandomSource r = RandomSource.create(0);
+        Consumer<BakedQuad> scan = q -> {
+            int[] v = q.getVertices();
+            int stride = v.length / 4;
+            for (int i = 0; i < 4; i++) min[0] = Math.min(min[0], Float.intBitsToFloat(v[i * stride]));
+        };
+        model.getQuads(null, null, r).forEach(scan);
+        for (Direction d : Direction.values()) model.getQuads(null, d, r).forEach(scan);
+        return min[0];
+    }
+
+    /** How much of the wag the swinging body takes, and how much the tail adds on top, for articulated fish. */
+    private static final float BODY_SWING = 0.35F, TAIL_SWING = 0.75F;
 
     public static boolean hasModel(ItemStack stack) {
         return !stack.isEmpty() && lookup(stack).body != null;
@@ -123,15 +177,26 @@ public final class FishRender {
         VertexConsumer vc = buffers.getBuffer(RenderType.entityTranslucentCull(InventoryMenu.BLOCK_ATLAS));
         pose.pushPose();
         pose.translate(-0.5F, -0.5F, -0.5F);
+        float tailOwn = tailDeg;
+        if (fish.front != null) {
+            // Salmon-style: the front holds still, the body swings from the front's back edge, the tail follows.
+            items.renderModelLists(fish.front, stack, light, OverlayTexture.NO_OVERLAY, pose, vc);
+            pose.pushPose();
+            pose.translate(fish.bodyJoint, 0.5F, 0.5F);
+            pose.mulPose(Axis.YP.rotationDegrees(tailDeg * BODY_SWING));
+            pose.translate(-fish.bodyJoint, -0.5F, -0.5F);
+            tailOwn = tailDeg * TAIL_SWING;
+        }
         items.renderModelLists(fish.body, stack, light, OverlayTexture.NO_OVERLAY, pose, vc);
         if (fish.tail != null) {
             pose.pushPose();
             pose.translate(fish.jointX, 0.5F, 0.5F);
-            pose.mulPose(Axis.YP.rotationDegrees(tailDeg));
+            pose.mulPose(Axis.YP.rotationDegrees(tailOwn));
             pose.translate(-fish.jointX, -0.5F, -0.5F);
             items.renderModelLists(fish.tail, stack, light, OverlayTexture.NO_OVERLAY, pose, vc);
             pose.popPose();
         }
+        if (fish.front != null) pose.popPose();
         pose.popPose();
     }
 

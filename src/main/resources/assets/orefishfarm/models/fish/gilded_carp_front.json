@@ -1,0 +1,7 @@
+{
+ "parent": "orefishfarm:fish_category/mahi_front",
+ "textures": {
+  "t": "orefishfarm:item/fish/dorada",
+  "particle": "orefishfarm:item/fish/dorada"
+ }
+}

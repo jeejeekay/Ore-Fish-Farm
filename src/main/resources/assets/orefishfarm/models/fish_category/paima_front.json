@@ -1,0 +1,147 @@
+{
+ "credit": "Jake's Ore Fish Farm: shared fish shape, paima front (head and neck). Articulated: <shape>_front stays still, <shape> swings from its front edge (FishRender).",
+ "texture_size": [
+  32,
+  32
+ ],
+ "elements": [
+  {
+   "name": "mid",
+   "from": [
+    9.8,
+    6.1,
+    6.95
+   ],
+   "to": [
+    12.15,
+    8.3,
+    9.05
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      2.5,
+      8,
+      0,
+      10
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      0,
+      8,
+      2.5,
+      10
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      5,
+      8,
+      7.5,
+      10
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      10,
+      8,
+      12.5,
+      10
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      5,
+      8,
+      7,
+      10
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      5,
+      8,
+      7,
+      10
+     ]
+    }
+   }
+  },
+  {
+   "name": "head",
+   "from": [
+    12.15,
+    6.2,
+    7.1
+   ],
+   "to": [
+    14.5,
+    7.75,
+    8.9
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      5,
+      8,
+      2.5,
+      10
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      2.5,
+      8,
+      5,
+      10
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      7.5,
+      8,
+      10,
+      10
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      12.5,
+      8,
+      15,
+      10
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      11,
+      0,
+      13,
+      2
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      5,
+      8,
+      6.5,
+      9.5
+     ]
+    }
+   }
+  }
+ ]
+}

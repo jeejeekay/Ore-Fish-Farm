@@ -192,7 +192,7 @@ public final class Aquarium {
     /**
      * The extra pieces a tank block needs where the aquarium turns inward ({@link TankBlockEntity#extras} bits):
      * <ul>
-     *   <li>0-3 (NE, NW, SE, SW): a corner post where it turns inward sideways (L shapes);</li>
+     *   <li>0-3 (NE, NW, SE, SW): a liquid seam where it turns inward sideways (L shapes), closing the sliver where the two panes end;</li>
      *   <li>4-7 (N, E, S, W): glass and water on that side above the water line, where this block has the
      *       aquarium above it and beside it but not diagonally up that way (a step: the neighbour's top is open);</li>
      *   <li>8-11 (N, E, S, W): the top rim on that side, where this block's top is open but the block beside it has

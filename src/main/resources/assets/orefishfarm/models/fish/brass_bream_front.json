@@ -1,0 +1,7 @@
+{
+ "parent": "orefishfarm:fish_category/salminus_front",
+ "textures": {
+  "t": "orefishfarm:item/fish/brasszino",
+  "particle": "orefishfarm:item/fish/brasszino"
+ }
+}

@@ -1,0 +1,7 @@
+{
+  "parent": "orefishfarm:fish_category/mudskipper_tail",
+  "textures": {
+    "t": "orefishfarm:item/fish/mudskipper",
+    "particle": "orefishfarm:item/fish/mudskipper"
+  }
+}

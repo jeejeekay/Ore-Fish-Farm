@@ -1,0 +1,7 @@
+{
+  "parent": "orefishfarm:fish_category/shark_tail",
+  "textures": {
+    "t": "orefishfarm:item/fish/sandshark",
+    "particle": "orefishfarm:item/fish/sandshark"
+  }
+}

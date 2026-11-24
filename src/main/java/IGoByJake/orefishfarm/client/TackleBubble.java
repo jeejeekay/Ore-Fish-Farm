@@ -10,6 +10,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -101,7 +102,13 @@ public final class TackleBubble {
 
     /** What the rod's own piece catches; nothing until a piece is on. */
     private static List<Tackle.Bonus> catches(ItemStack carried, ItemStack on) {
-        return on.isEmpty() ? List.of() : Tackle.bonusesOf(on);
+        if (on.isEmpty()) return List.of();
+        // only the catches for the dimension you're in (catches with no dimension work anywhere)
+        var level = net.minecraft.client.Minecraft.getInstance().level;
+        ResourceLocation here = level == null ? null : level.dimension().location();
+        List<Tackle.Bonus> out = new java.util.ArrayList<>();
+        for (Tackle.Bonus b : Tackle.bonusesOf(on)) if (b.dimension() == null || here == null || b.dimension().equals(here)) out.add(b);
+        return out;
     }
 
     // the bubble's size eases toward its target, so it grows when a piece goes on and shrinks when one comes off
@@ -219,7 +226,8 @@ public final class TackleBubble {
         if (target == null || screen != s) return;
         float alpha = fadeStart >= 0 ? 1F - (now - fadeStart) / (float) OUT_MS : Math.min(1F, (now - showStart) / (float) IN_MS);
         if (alpha <= 0F) {
-            target = null;
+            // fully faded out: gone. (At the very start of a pop-in alpha is 0 too; that frame just draws nothing.)
+            if (fadeStart >= 0) target = null;
             return;
         }
         float ease = alpha * alpha * (3 - 2 * alpha);
@@ -233,8 +241,9 @@ public final class TackleBubble {
         ItemStack on = Tackle.get(target.getItem());
         List<Tackle.Bonus> fish = catches(carried, on);
         g.pose().pushPose();
-        // pops in rising RISE px into place, sinks RISE px as it fades out
-        g.pose().translate(0, (1F - ease) * RISE * (below ? -1 : 1), 300);
+        // pops in rising RISE px into place, sinks RISE px as it fades out. z 360: slot item counts sit at
+        // 100 (slot) + 200 (decorations) + a hair for the text, so 300 would tie with them.
+        g.pose().translate(0, (1F - ease) * RISE * (below ? -1 : 1), 360);
         panel(g, ease);
         if (ease > 0.08F) {
             Component t = title(carried, on);
@@ -295,18 +304,9 @@ public final class TackleBubble {
         drawCarried(g, carried, mx, my);
     }
 
-    /** "Overworld · Lava · 6%". */
+    /** "Lava · 6%" (only this dimension's catches are listed, so no dimension name). */
     private static net.minecraft.network.chat.MutableComponent where(Tackle.Bonus b) {
         var c = Component.empty();
-        if (b.dimension() != null) {
-            String key = "dimension." + b.dimension().getNamespace() + "." + b.dimension().getPath();
-            if (net.minecraft.locale.Language.getInstance().has(key)) c.append(Component.translatable(key));
-            else {
-                String p = b.dimension().getPath().replace('_', ' ');
-                c.append(Character.toUpperCase(p.charAt(0)) + p.substring(1));
-            }
-            c.append(" · ");
-        }
         c.append(Component.translatable("jei.orefishfarm.liquid." + (b.liquid() == null ? "any" : b.liquid())));
         float pct = b.chance() * 100F;
         return c.append(" · " + (pct == Math.round(pct) ? String.valueOf(Math.round(pct)) : String.format("%.1f", pct)) + "%");

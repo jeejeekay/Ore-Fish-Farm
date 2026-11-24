@@ -1,0 +1,430 @@
+{
+ "credit": "Jake's Ore Fish Farm: shared 'lampfish' fish model (lanternfish: big eye, wide jaw, glowing photophore strips marked emissive with forge_data); side view, head toward +x. Articulated: lampfish_front holds still, lampfish swings. A fish uses it via fish/<fish>.json (parent lampfish), <fish>_front.json (parent lampfish_front) and <fish>_tail.json.",
+ "texture_size": [
+  32,
+  32
+ ],
+ "elements": [
+  {
+   "name": "body_rear",
+   "from": [
+    4.4,
+    6.25,
+    7.35
+   ],
+   "to": [
+    8.0,
+    8.15,
+    8.65
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      5.5,
+      3.5,
+      7.5
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      3.5,
+      5.5,
+      7.0,
+      7.5
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      7.0,
+      5.5,
+      8.5,
+      7.5
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      8.5,
+      5.5,
+      10.0,
+      7.5
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      7.0,
+      7.5,
+      10.5,
+      9.0
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      10.5,
+      7.5,
+      14.0,
+      9.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "stalk",
+   "from": [
+    2.6,
+    6.7,
+    7.6
+   ],
+   "to": [
+    4.4,
+    7.7,
+    8.4
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      2.0,
+      9.0,
+      4.0,
+      10.0
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      4.0,
+      9.0,
+      6.0,
+      10.0
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      6.0,
+      9.0,
+      7.0,
+      10.0
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      7.0,
+      9.0,
+      8.0,
+      10.0
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      8.0,
+      9.0,
+      10.0,
+      10.0
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      10.0,
+      9.0,
+      12.0,
+      10.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "dorsal",
+   "from": [
+    5.6,
+    8.1,
+    8
+   ],
+   "to": [
+    7.8,
+    9.6,
+    8
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      14.0,
+      7.5,
+      16.0,
+      9.0
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      9.0,
+      2.0,
+      10.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "adipose",
+   "from": [
+    3.4,
+    7.7,
+    7.9
+   ],
+   "to": [
+    4.0,
+    8.1,
+    8.1
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      13.0,
+      10.5,
+      13.5,
+      11.0
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      13.5,
+      10.5,
+      14.0,
+      11.0
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      14.0,
+      10.5,
+      14.5,
+      11.0
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      14.5,
+      10.5,
+      15.0,
+      11.0
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      15.0,
+      10.5,
+      15.5,
+      11.0
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      15.5,
+      10.5,
+      16.0,
+      11.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "anal",
+   "from": [
+    3.8,
+    5.6,
+    8
+   ],
+   "to": [
+    6.2,
+    6.3,
+    8
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      11.0,
+      2.5,
+      11.5
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      2.5,
+      11.0,
+      5.0,
+      11.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "glow_low_r_n",
+   "from": [
+    4.6,
+    6.25,
+    7.33
+   ],
+   "to": [
+    8.0,
+    6.65,
+    7.33
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      12.0,
+      3.5,
+      12.5
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      3.5,
+      12.0,
+      7.0,
+      12.5
+     ]
+    }
+   },
+   "forge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   }
+  },
+  {
+   "name": "glow_low_r_s",
+   "from": [
+    4.6,
+    6.25,
+    8.67
+   ],
+   "to": [
+    8.0,
+    6.65,
+    8.67
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      7.0,
+      12.0,
+      10.5,
+      12.5
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      10.5,
+      12.0,
+      14.0,
+      12.5
+     ]
+    }
+   },
+   "forge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   }
+  },
+  {
+   "name": "glow_mid_r_n",
+   "from": [
+    4.4,
+    7.05,
+    7.33
+   ],
+   "to": [
+    8.0,
+    7.45,
+    7.33
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      12.5,
+      3.5,
+      13.0
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      3.5,
+      12.5,
+      7.0,
+      13.0
+     ]
+    }
+   },
+   "forge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   }
+  },
+  {
+   "name": "glow_mid_r_s",
+   "from": [
+    4.4,
+    7.05,
+    8.67
+   ],
+   "to": [
+    8.0,
+    7.45,
+    8.67
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      7.0,
+      12.5,
+      10.5,
+      13.0
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      10.5,
+      12.5,
+      14.0,
+      13.0
+     ]
+    }
+   },
+   "forge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   }
+  }
+ ]
+}

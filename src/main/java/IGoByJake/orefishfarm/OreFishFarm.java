@@ -37,8 +37,10 @@ public class OreFishFarm {
         MinecraftForge.EVENT_BUS.addListener(IGoByJake.orefishfarm.tackle.Tackle::onAddReloadListeners);
         MinecraftForge.EVENT_BUS.addListener(IGoByJake.orefishfarm.tackle.TackleEvents::onRightClickItem);
         MinecraftForge.EVENT_BUS.addListener(IGoByJake.orefishfarm.tackle.TackleEvents::onFished);
+        MinecraftForge.EVENT_BUS.addListener(IGoByJake.orefishfarm.tackle.TackleEvents::onHookLeave);
         MinecraftForge.EVENT_BUS.addListener(IGoByJake.orefishfarm.voidliquid.VoidLiquid::onLivingTick);
         MinecraftForge.EVENT_BUS.addListener(IGoByJake.orefishfarm.voidliquid.VoidLiquid::onRightClickItem);
+        MinecraftForge.EVENT_BUS.addListener(IGoByJake.orefishfarm.SquidBuckets::onInteract);
         Network.register();
     }
 }

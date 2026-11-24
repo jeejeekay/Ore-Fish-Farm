@@ -3,9 +3,8 @@
     "orefishfarm:cuprum_eel",
     "orefishfarm:zincray"
   ],
-  "result": {
-    "item": "orefishfarm:brass_bream",
-    "count": 1
-  },
-  "chance": 0.04
+  "traits": [
+    "orefishfarm:hot_blooded"
+  ],
+  "result": "orefishfarm:brass_bream"
 }

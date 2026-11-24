@@ -133,6 +133,14 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
                 double hx = hl < 1.0E-6 ? 1 : Math.abs(dir.x) / hl, hz = hl < 1.0E-6 ? 1 : Math.abs(dir.z) / hl;
                 path.ease(time, perp + (full - perp) * hx, perp + (full - perp) * hz);
                 Vec3 p = paths.clamp(path.at(time), path.blockAt(time), path.marginX, path.marginZ);
+                // Over a floor block, keep the whole fish above the floor (3/16 up): a big or deep-bodied fish
+                // would otherwise sink into it. The mob is drawn centred on p, bbHeight tall at this size.
+                BlockPos at = BlockPos.containing(p);
+                if (mob != null && paths.isFloor(at)) {
+                    float sc = size / Math.max(0.2F, Math.max(mob.getBbWidth(), mob.getBbHeight()));
+                    double minY = at.getY() + 3 / 16.0 + 0.01 + mob.getBbHeight() * sc / 2;
+                    if (p.y < minY) p = new Vec3(p.x, minY, p.z);
+                }
                 double dx = dir.x, dy = dir.y, dz = dir.z;
                 float yaw = (float) Math.atan2(-dz, dx);
                 float pitch = style == BOTTOM ? 0F : (float) Mth.clamp(Math.atan2(dy, Math.sqrt(dx * dx + dz * dz)), -0.4, 0.4);
@@ -244,6 +252,9 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
         private static final int STOPS = 10;
         private static final double SPEED = 0.35, BOTTOM_SPEED = 0.2, FAST_SPEED = 1.1; // blocks per second
         final Vec3[] pts;
+        /** Bottom feeders weave side to side (and bob a little) as they swim, so a row of them doesn't stack up. */
+        boolean weave;
+        float wavePhase, waveRate, waveSize;
         final BlockPos[] blocks;
         final float[] start;
         /** Seconds the fish rests at each waypoint before moving on (bottom feeders grazing). */
@@ -275,6 +286,9 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
                 speed = FAST_SPEED;
             } else {
                 boolean bottom = style == BOTTOM;
+                // each bottom feeder keeps its own lane, a little to one side of the block's middle line, so a row
+                // of them in a 1-wide tank spreads out instead of piling up on the centre line
+                double laneOff = bottom ? (r.nextDouble() * 2 - 1) * 0.13 : 0;
                 BlockPos first = p.members.get(home);
                 if (bottom && !p.isFloor(first)) { // start on the bottom layer, under the home block if possible
                     BlockPos f = first;
@@ -297,10 +311,10 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
                         }
                         next = near.get(r.nextInt(near.size()));
                     }
-                    if (!next.equals(cur) && !walk(p, r, cur, next, pts, blocks, bottom)) next = cur;
+                    if (!next.equals(cur) && !walk(p, r, cur, next, pts, blocks, bottom, laneOff)) next = cur;
                     cur = next;
                     if (i == STOPS) break;
-                    stop(p, r, cur, bottom, pts, blocks);
+                    stop(p, r, cur, bottom, laneOff, pts, blocks);
                 }
                 if (bottom) speed = BOTTOM_SPEED;
             }
@@ -309,8 +323,15 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
             this.blocks = blocks.toArray(new BlockPos[0]);
             this.start = new float[n + 1];
             this.dwell = new float[n];
+            if (style == BOTTOM) {
+                this.weave = true;
+                this.wavePhase = r.nextFloat() * 6.2832F;
+                this.waveRate = 1.6F + r.nextFloat() * 1.4F;   // radians per second
+                this.waveSize = 0.06F + r.nextFloat() * 0.05F; // blocks to each side
+            }
             for (int i = 0; i < n; i++) {
-                if (style == BOTTOM && r.nextFloat() < 0.6F) this.dwell[i] = 1.5F + r.nextFloat() * 3F;
+                // bottom feeders rest now and then, but mostly keep swimming low along the floor
+                if (style == BOTTOM && r.nextFloat() < 0.35F) this.dwell[i] = 1.0F + r.nextFloat() * 2.5F;
                 double d = this.pts[i].distanceTo(this.pts[(i + 1) % n]);
                 this.start[i + 1] = this.start[i] + this.dwell[i] + (float) Math.max(style == FAST ? 0.05 : 1.0, d / speed);
             }
@@ -372,16 +393,16 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
          * along one of the block's glass walls, two points close to it, so the fish cruises alongside the glass.
          * Bottom feeders' runs stay between the corner rocks.
          */
-        private static void stop(Paths p, Random r, BlockPos b, boolean bottom, List<Vec3> pts, List<BlockPos> blocks) {
+        private static void stop(Paths p, Random r, BlockPos b, boolean bottom, double laneOff, List<Vec3> pts, List<BlockPos> blocks) {
             List<Direction> walls = new ArrayList<>();
             for (Direction d : Direction.Plane.HORIZONTAL) if (p.isGlass(b, d)) walls.add(d);
             if (walls.isEmpty() || r.nextFloat() >= (bottom ? 0.45F : 0.35F)) {
-                pts.add(bottom ? lane(p, r, b) : inside(p, r, b));
+                pts.add(bottom ? lane(p, r, b, laneOff) : inside(p, r, b));
                 blocks.add(b);
                 return;
             }
             Direction d = walls.get(r.nextInt(walls.size()));
-            double off = p.perp + 0.04;
+            double off = p.perp + 0.04 + (bottom ? Math.abs(laneOff) * 0.6 : 0);
             double a0 = bottom ? 0.36 : 0.25, a1 = 1 - a0;
             double s0 = a0 + r.nextDouble() * (a1 - a0), s1 = a0 + r.nextDouble() * (a1 - a0);
             if (Math.abs(s1 - s0) < 0.2) s1 = s0 < 0.5 ? a1 : a0;
@@ -394,11 +415,11 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
         }
 
         /** A bottom feeder's stop: low over the floor, on the clear lanes through the middle of the block. */
-        private static Vec3 lane(Paths p, Random r, BlockPos b) {
+        private static Vec3 lane(Paths p, Random r, BlockPos b, double laneOff) {
             double j = 0.1;
             boolean alongX = r.nextBoolean();
-            double x = b.getX() + 0.5 + (alongX ? (r.nextDouble() * 2 - 1) * 0.2 : (r.nextDouble() * 2 - 1) * j * 0.3);
-            double z = b.getZ() + 0.5 + (alongX ? (r.nextDouble() * 2 - 1) * j * 0.3 : (r.nextDouble() * 2 - 1) * 0.2);
+            double x = b.getX() + 0.5 + (alongX ? (r.nextDouble() * 2 - 1) * 0.2 : laneOff + (r.nextDouble() * 2 - 1) * j * 0.3);
+            double z = b.getZ() + 0.5 + (alongX ? laneOff + (r.nextDouble() * 2 - 1) * j * 0.3 : (r.nextDouble() * 2 - 1) * 0.2);
             return new Vec3(x, b.getY() + BOTTOM_Y + r.nextDouble() * 0.03, z);
         }
 
@@ -406,7 +427,7 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
          * Face points from {@code a} to {@code b} along a shortest route through touching tank blocks (for bottom
          * feeders, only sideways through the bottom layer). False if there is no such route.
          */
-        private static boolean walk(Paths p, Random r, BlockPos a, BlockPos b, List<Vec3> pts, List<BlockPos> blocks, boolean bottom) {
+        private static boolean walk(Paths p, Random r, BlockPos a, BlockPos b, List<Vec3> pts, List<BlockPos> blocks, boolean bottom, double laneOff) {
             Map<BlockPos, BlockPos> prev = new HashMap<>();
             java.util.ArrayDeque<BlockPos> queue = new java.util.ArrayDeque<>();
             prev.put(a, a);
@@ -425,8 +446,11 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
             for (BlockPos c = b; !c.equals(a); c = prev.get(c)) route.add(0, c);
             BlockPos from = a;
             for (BlockPos to : route) {
-                if (bottom) { // the middle of the shared face, low down: the lanes line up from block to block
-                    pts.add(new Vec3((from.getX() + to.getX()) / 2.0 + 0.5, from.getY() + BOTTOM_Y, (from.getZ() + to.getZ()) / 2.0 + 0.5));
+                if (bottom) { // the shared face, low down, on this fish's own lane: the lanes line up from block to block
+                    double side = laneOff + (r.nextDouble() * 2 - 1) * 0.02;
+                    boolean alongX = from.getX() != to.getX();
+                    pts.add(new Vec3((from.getX() + to.getX()) / 2.0 + 0.5 + (alongX ? 0 : side), from.getY() + BOTTOM_Y,
+                            (from.getZ() + to.getZ()) / 2.0 + 0.5 + (alongX ? side : 0)));
                 } else {
                     pts.add(face(r, from, to, p.inset));
                 }
@@ -495,7 +519,14 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
             float moving = this.start[i + 1] - this.start[i] - this.dwell[i];
             float f = Math.max(0F, u - this.start[i] - this.dwell[i]) / moving;
             Vec3 p0 = this.pts[(i - 1 + n) % n], p1 = this.pts[i], p2 = this.pts[(i + 1) % n], p3 = this.pts[(i + 2) % n];
-            return new Vec3(cr(p0.x, p1.x, p2.x, p3.x, f), cr(p0.y, p1.y, p2.y, p3.y, f), cr(p0.z, p1.z, p2.z, p3.z, f));
+            Vec3 base = new Vec3(cr(p0.x, p1.x, p2.x, p3.x, f), cr(p0.y, p1.y, p2.y, p3.y, f), cr(p0.z, p1.z, p2.z, p3.z, f));
+            if (!this.weave) return base;
+            // a sine wave across the way it's going, fading out at each stop so resting fish sit still
+            double dx = p2.x - p1.x, dz = p2.z - p1.z, len = Math.sqrt(dx * dx + dz * dz);
+            if (len < 1.0E-4) return base;
+            double fade = Math.sin(Math.PI * f), w = Math.sin(t * this.waveRate + this.wavePhase) * this.waveSize * fade;
+            double bob = Math.sin(t * this.waveRate * 0.5 + this.wavePhase * 1.7) * 0.025 * fade;
+            return base.add(-dz / len * w, Math.max(0, bob), dx / len * w);
         }
 
         private static double cr(double a, double b, double c, double d, float t) {

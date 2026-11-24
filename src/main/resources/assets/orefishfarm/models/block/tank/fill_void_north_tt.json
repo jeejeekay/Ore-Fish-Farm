@@ -1,27 +1,27 @@
 {
-  "render_type": "minecraft:translucent",
-  "ambientocclusion": false,
-  "textures": {
-    "fill": "orefishfarm:block/tank_void",
-    "particle": "orefishfarm:block/tank_void"
-  },
-  "elements": [
-    {
-      "from": [
-        0,
-        0,
-        0.6
-      ],
-      "to": [
-        16,
-        16,
-        0.6
-      ],
-      "faces": {
-        "north": {
-          "texture": "#fill"
-        }
-      }
+ "render_type": "minecraft:translucent",
+ "ambientocclusion": false,
+ "textures": {
+  "fill": "orefishfarm:block/tank_void",
+  "particle": "orefishfarm:block/tank_void"
+ },
+ "elements": [
+  {
+   "from": [
+    0.6,
+    0,
+    0.6
+   ],
+   "to": [
+    15.4,
+    16,
+    0.6
+   ],
+   "faces": {
+    "north": {
+     "texture": "#fill"
     }
-  ]
+   }
+  }
+ ]
 }

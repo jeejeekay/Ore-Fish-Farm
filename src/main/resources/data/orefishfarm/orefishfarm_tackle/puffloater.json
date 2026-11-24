@@ -4,17 +4,20 @@
     {
       "fish": "orefishfarm:cuprum_eel",
       "chance": 0.06,
-      "liquid": "water"
+      "liquid": "lava",
+      "dimension": "minecraft:overworld"
     },
     {
       "fish": "orefishfarm:zincray",
       "chance": 0.03,
-      "liquid": "water"
+      "liquid": "lava",
+      "dimension": "minecraft:overworld"
     },
     {
       "fish": "orefishfarm:ferrofin",
       "chance": 0.02,
-      "liquid": "water"
+      "liquid": "lava",
+      "dimension": "minecraft:overworld"
     }
   ]
 }

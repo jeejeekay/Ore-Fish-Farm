@@ -1,7 +1,7 @@
 {
- "parent": "orefishfarm:fish_category/alloy_tail",
+ "parent": "orefishfarm:fish_category/salminus_tail",
  "textures": {
-  "t": "orefishfarm:item/fish/brass_bream",
-  "particle": "orefishfarm:item/fish/brass_bream"
+  "t": "orefishfarm:item/fish/brasszino",
+  "particle": "orefishfarm:item/fish/brasszino"
  }
 }
