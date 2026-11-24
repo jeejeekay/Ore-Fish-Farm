@@ -299,6 +299,8 @@ public final class FishGenes {
         // CROSS_SPECIES_PASS of the time from a parent of the other species (traits jump species less easily).
         float ca = species(a) == species ? SAME_SPECIES_PASS : CROSS_SPECIES_PASS;
         float cb = species(b) == species ? SAME_SPECIES_PASS : CROSS_SPECIES_PASS;
+        // A gene both parents carry always passes on (before the rolls, so it gets a slot first).
+        for (ResourceLocation g : ga) if (gb.contains(g) && !genes.contains(g) && genes.size() < MAX_GENES) genes.add(g);
         for (int i = 0; i < Math.max(ga.size(), gb.size()) && genes.size() < MAX_GENES; i++) {
             for (int k = 0; k < 2; k++) {
                 List<ResourceLocation> from = k == 0 ? ga : gb;
