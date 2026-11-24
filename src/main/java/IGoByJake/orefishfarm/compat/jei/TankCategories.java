@@ -17,6 +17,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
+import java.util.List;
 
 /**
  * Layout shared by the three pages: fish slot(s) on the left, the food that runs the tank under them, an arrow,
@@ -68,6 +69,28 @@ public final class TankCategories {
 
     // ---- Fish Tank: fish (+ food) -> product, X% per bite
     static class ProductCategory extends Base<TankRecipes.Product> {
+        /** "2 in 13 drops", then "Needs gene: ..." and "Fed: ..." where the entry asks for them. */
+        static List<Component> dropNotes(TankRecipes.Product r) {
+            List<Component> out = new java.util.ArrayList<>();
+            var d = r.drop();
+            out.add(Component.translatable("jei.orefishfarm.drop_weight", d.weight(), r.totalWeight()));
+            if (!d.traits().isEmpty()) {
+                net.minecraft.network.chat.MutableComponent c = Component.translatable("jei.orefishfarm.needs_genes");
+                for (int i = 0; i < d.traits().size(); i++) {
+                    var gene = d.traits().get(i);
+                    c.append(i == 0 ? " " : ", ").append(IGoByJake.orefishfarm.data.FishGenes.geneName(gene).copy()
+                            .withStyle(st -> st.withColor(IGoByJake.orefishfarm.data.FishGenes.color(gene))));
+                }
+                out.add(c);
+            }
+            if (d.food() != null) {
+                Component food = d.food().startsWith("#") ? Component.literal(d.food())
+                        : new net.minecraft.world.item.ItemStack(net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation(d.food()))).getHoverName();
+                out.add(Component.translatable("jei.orefishfarm.needs_food", food));
+            }
+            return out;
+        }
+
         ProductCategory(IGuiHelper gui) { super(gui, Registry.FISH_TANK.get()); }
 
         @Override public RecipeType<TankRecipes.Product> getRecipeType() { return OreFishJei.PRODUCT; }
@@ -78,7 +101,8 @@ public final class TankCategories {
         public void setRecipe(IRecipeLayoutBuilder b, TankRecipes.Product r, IFocusGroup focuses) {
             // fish -> product, centred across the page
             b.addSlot(RecipeIngredientRole.INPUT, 28, 8).setBackground(this.slot, -1, -1).addItemStack(r.fish());
-            b.addSlot(RecipeIngredientRole.OUTPUT, 86, 8).setBackground(this.slot, -1, -1).addItemStacks(r.product());
+            var out = b.addSlot(RecipeIngredientRole.OUTPUT, 86, 8).setBackground(this.slot, -1, -1).addItemStacks(r.product());
+            if (r.drop() != null) out.addTooltipCallback((view, tips) -> tips.addAll(dropNotes(r)));
         }
 
         @Override
@@ -86,6 +110,10 @@ public final class TankCategories {
             this.arrow.draw(g, 54, 8);
             String secs = new java.text.DecimalFormat("0.#").format(IGoByJake.orefishfarm.Config.BITE_TICKS.get() / 20.0);
             centred(g, Component.translatable("jei.orefishfarm.per_food", pct(r.chance()), secs), W / 2, 30);
+            if (r.drop() != null) { // the most important condition on the page; all of them in the tooltip
+                List<Component> notes = dropNotes(r);
+                centred(g, notes.size() > 1 ? notes.get(1) : notes.get(0), W / 2, 42);
+            }
         }
     }
 

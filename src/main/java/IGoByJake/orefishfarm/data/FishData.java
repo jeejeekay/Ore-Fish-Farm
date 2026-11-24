@@ -35,6 +35,10 @@ import java.util.Map;
  * data/&lt;ns&gt;/orefishfarm_fish/&lt;name&gt;.json
  *   { "fish": "orefishfarm:ferrofin",
  *     "product": { "item": "orefishfarm:iron_scale", "count": 1 },   (optional: a fish can make nothing)
+ *     "products": [ { "item": "orefishfarm:brass_scale", "count": 1, "weight": 6 },     optional: a weighted list;
+ *                   { "item": "...", "weight": 2, "food": "orefishfarm:brine_flakes" },   only while the aquarium eats
+ *                   { "item": "...", "weight": 2, "traits": ["orefishfarm:charged"] } ],  this (item or "#tag"), only
+ *                                                 if the fish carries these genes. None met = the plain "product".
  *     "product_tag": "orefishfarm:bark_scales",   optional: shed a random item of this tag instead (product = the count
  *                                                 and what shows when the tag is empty)
  *     "product_chance": 0.75,   chance per bite (every biteTicks of eating) in a Fish Tank
@@ -113,6 +117,48 @@ public final class FishData {
     /** Fish that shed a random item from a tag each time ("product_tag"), e.g. the Barkacuda's bark scales. */
     private static Map<Item, ResourceLocation> productTags = Map.of();
     private static Map<Item, ResourceLocation> pendingProductTags = Map.of();
+
+    /**
+     * One entry of a fish's "products" list: the item, its weight against the other entries, and what it needs: a
+     * food the aquarium is eating (an item id, or "#tag") and genes the fish carries.
+     */
+    public record Drop(ItemStack item, int weight, @Nullable String food, List<ResourceLocation> traits) {
+        public boolean fedBy(ItemStack eating) {
+            if (food == null) return true;
+            if (eating == null || eating.isEmpty()) return false;
+            if (food.startsWith("#")) return eating.is(net.minecraft.tags.ItemTags.create(new ResourceLocation(food.substring(1))));
+            return String.valueOf(ForgeRegistries.ITEMS.getKey(eating.getItem())).equals(food);
+        }
+    }
+
+    private static Map<Item, List<Drop>> drops = Map.of();
+    private static Map<Item, List<Drop>> pendingDrops = Map.of();
+
+    /** This fish's "products" list, or empty if it has none. */
+    public static List<Drop> drops(Fish f) {
+        return drops.getOrDefault(f.item(), List.of());
+    }
+
+    /**
+     * What this fish sheds this time. With a "products" list: a weighted pick among the entries whose food and genes
+     * are met (none met = its plain product). Otherwise a random item of its product tag, or its product.
+     */
+    public static ItemStack productFor(Fish f, net.minecraft.util.RandomSource random, ItemStack fish, ItemStack eating) {
+        List<Drop> list = drops(f);
+        if (list.isEmpty()) return productFor(f, random);
+        List<Drop> ok = new ArrayList<>();
+        int total = 0;
+        for (Drop d : list) {
+            if (d.weight() > 0 && d.fedBy(eating) && FishGenes.hasAll(fish, d.traits())) { ok.add(d); total += d.weight(); }
+        }
+        if (ok.isEmpty()) return f.product().copy();
+        int roll = random.nextInt(total);
+        for (Drop d : ok) {
+            roll -= d.weight();
+            if (roll < 0) return d.item().copy();
+        }
+        return f.product().copy();
+    }
 
     /** What this fish sheds this time: a random item from its product tag, or its product. */
     public static ItemStack productFor(Fish f, net.minecraft.util.RandomSource random) {
@@ -275,6 +321,14 @@ public final class FishData {
             buf.writeFloat(scale(f.item()));
             ResourceLocation pt = productTags.get(f.item());
             buf.writeUtf(pt == null ? "" : pt.toString());
+            List<Drop> dl = drops.getOrDefault(f.item(), List.of());
+            buf.writeVarInt(dl.size());
+            for (Drop d : dl) {
+                buf.writeItem(d.item());
+                buf.writeVarInt(d.weight());
+                buf.writeUtf(d.food() == null ? "" : d.food());
+                writeIds(buf, d.traits());
+            }
         }
         buf.writeVarInt(crosses.size());
         for (Cross c : crosses) {
@@ -327,6 +381,7 @@ public final class FishData {
         Map<Item, Fish> f = new HashMap<>();
         Map<Item, Float> sc = new HashMap<>();
         Map<Item, ResourceLocation> tagsIn = new HashMap<>();
+        Map<Item, List<Drop>> dropsIn = new HashMap<>();
         int n = buf.readVarInt();
         for (int i = 0; i < n; i++) {
             Item item = ForgeRegistries.ITEMS.getValue(buf.readResourceLocation());
@@ -339,6 +394,15 @@ public final class FishData {
             float size = buf.readFloat();
             String pt = buf.readUtf();
             if (item != null && !pt.isEmpty()) tagsIn.put(item, new ResourceLocation(pt));
+            int nd = buf.readVarInt();
+            List<Drop> dl = new ArrayList<>();
+            for (int k = 0; k < nd; k++) {
+                ItemStack di = buf.readItem();
+                int w = buf.readVarInt();
+                String food = buf.readUtf();
+                dl.add(new Drop(di, w, food.isEmpty() ? null : food, readIds(buf)));
+            }
+            if (item != null && !dl.isEmpty()) dropsIn.put(item, dl);
             Fish fish = new Fish(item, product, pc, bc, pw, hab, bucket, heat);
             if (item != null) {
                 f.put(item, fish);
@@ -378,6 +442,7 @@ public final class FishData {
         n = buf.readVarInt();
         for (int i = 0; i < n; i++) gc.put(buf.readResourceLocation(), buf.readInt());
         pendingProductTags = tagsIn;
+        pendingDrops = dropsIn;
         return new Synced(f, x, food, hab, gc, sc);
     }
 
@@ -392,6 +457,7 @@ public final class FishData {
         geneColors = s.geneColors();
         scales = s.scales();
         productTags = pendingProductTags;
+        drops = pendingDrops;
         loaded = true;
         // JEI may already have built its lists before this arrived (on a server): give it the tank pages now.
         if (net.minecraftforge.fml.ModList.get().isLoaded("jei")) IGoByJake.orefishfarm.compat.jei.OreFishJei.lateRecipes();
@@ -606,6 +672,7 @@ public final class FishData {
         Map<Item, Shear> shearOut = new HashMap<>();
         Map<Item, Float> scaleOut = new HashMap<>();
         Map<Item, ResourceLocation> tagOut = new HashMap<>();
+        Map<Item, List<Drop>> dropOut = new HashMap<>();
         files.forEach((id, json) -> {
             try {
                 JsonObject o = json.getAsJsonObject();
@@ -624,6 +691,18 @@ public final class FishData {
                         GsonHelper.getAsFloat(o, "heat", 0F)));
                 if (o.has("scale")) scaleOut.put(f, Mth.clamp(GsonHelper.getAsFloat(o, "scale"), 0.25F, 4F));
                 if (o.has("product_tag")) tagOut.put(f, new ResourceLocation(GsonHelper.getAsString(o, "product_tag")));
+                if (o.has("products")) {
+                    List<Drop> dl = new ArrayList<>();
+                    for (JsonElement e : GsonHelper.getAsJsonArray(o, "products")) {
+                        JsonObject d = e.getAsJsonObject();
+                        ItemStack di = stack(d);
+                        if (di == null) continue; // an item from a mod that isn't installed
+                        dl.add(new Drop(di, Math.max(0, GsonHelper.getAsInt(d, "weight", 1)),
+                                d.has("food") ? GsonHelper.getAsString(d, "food") : null,
+                                d.has("traits") ? ids(GsonHelper.getAsJsonArray(d, "traits")) : List.of()));
+                    }
+                    if (!dl.isEmpty()) dropOut.put(f, dl);
+                }
                 if (o.has("shear")) {
                     JsonObject sh = GsonHelper.getAsJsonObject(o, "shear");
                     Item drop = item(GsonHelper.getAsString(sh, "item"));
@@ -639,6 +718,7 @@ public final class FishData {
         shears = shearOut;
         scales = scaleOut;
         productTags = tagOut;
+        drops = dropOut;
         byBucket = indexBuckets(out);
         LOG.info("Ore Fish Farm: {} fish", out.size());
     }

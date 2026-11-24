@@ -351,7 +351,9 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
                 x0 = Math.min(x0, b.getX()); x1 = Math.max(x1, b.getX());
                 z0 = Math.min(z0, b.getZ()); z1 = Math.max(z1, b.getZ());
             }
-            if (cols.size() == (x1 - x0 + 1) * (z1 - z0 + 1)) {
+            int y0 = Integer.MAX_VALUE, y1 = Integer.MIN_VALUE;
+            for (BlockPos b : p.members) { y0 = Math.min(y0, b.getY()); y1 = Math.max(y1, b.getY()); }
+            if (p.members.size() == (x1 - x0 + 1) * (z1 - z0 + 1) * (y1 - y0 + 1)) { // a full box
                 rectLap(p, r, pts, blocks, x0, z0, x1, z1);
                 return;
             }
@@ -460,7 +462,21 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
             int[] yr = cols.get(colKey(x, z));
             double lo = yr[0] + 0.35, hi = Math.max(lo, yr[1] + 1 - 0.3);
             double y = lo + (hi - lo) * (0.5 - 0.5 * Math.cos(2 * Math.PI * frac));
-            Vec3 v = new Vec3(px, y, pz);
+            // Around a step (the next column is shorter or starts higher): first move up or down inside the
+            // column it's in, to a height both columns share, so it never swims through the missing corner.
+            if (!pts.isEmpty()) {
+                Vec3 last = pts.get(pts.size() - 1);
+                int[] pr = cols.get(colKey((int) Math.floor(last.x), (int) Math.floor(last.z)));
+                if (pr != null && (last.y < lo || last.y > hi)) {
+                    double plo = Math.max(lo, pr[0] + 0.35), phi = Math.min(hi, Math.max(plo, pr[1] + 1 - 0.3));
+                    double ty = Mth.clamp(last.y, plo, phi);
+                    Vec3 mid = new Vec3(last.x, ty, last.z);
+                    pts.add(mid);
+                    blocks.add(nearest(p, mid));
+                    y = Mth.clamp(y, plo, phi);
+                }
+            }
+            Vec3 v = new Vec3(px, Mth.clamp(y, lo, hi), pz);
             pts.add(v);
             blocks.add(nearest(p, v));
         }

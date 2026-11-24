@@ -6,5 +6,27 @@
   },
   "product_chance": 0.6,
   "habitat": "orefishfarm:water",
-  "scale": 1.75
+  "scale": 1.75,
+  "products": [
+    {
+      "item": "orefishfarm:brass_scale",
+      "weight": 6
+    },
+    {
+      "item": "orefishfarm:zinc_scale",
+      "weight": 2
+    },
+    {
+      "item": "orefishfarm:copper_tooth",
+      "weight": 2,
+      "traits": [
+        "orefishfarm:charged"
+      ]
+    },
+    {
+      "item": "orefishfarm:gold_scale",
+      "weight": 3,
+      "food": "orefishfarm:brine_flakes"
+    }
+  ]
 }

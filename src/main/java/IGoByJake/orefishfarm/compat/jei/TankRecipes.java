@@ -12,7 +12,9 @@ import java.util.List;
 public final class TankRecipes {
     private TankRecipes() {}
 
-    public record Product(ItemStack fish, List<ItemStack> product, float chance, List<ItemStack> foods) {}
+    /** drop / totalWeight: one entry of a fish's weighted "products" list (null for a plain product). */
+    public record Product(ItemStack fish, List<ItemStack> product, float chance, List<ItemStack> foods,
+                          @javax.annotation.Nullable FishData.Drop drop, int totalWeight) {}
 
     /**
      * One breeding pair and what it can make. results: the baby species (one for a same-species pair, either parent's
@@ -33,7 +35,12 @@ public final class TankRecipes {
         List<ItemStack> foods = FishData.allFoods();
         List<Product> out = new ArrayList<>();
         for (FishData.Fish f : sorted()) {
-            if (f.makesProduct()) out.add(new Product(FishData.bucketOf(f), FishData.productChoices(f), FishData.productChance(f), foods));
+            List<FishData.Drop> drops = FishData.drops(f);
+            if (!drops.isEmpty()) { // one page per entry of a weighted list
+                int total = drops.stream().mapToInt(FishData.Drop::weight).sum();
+                for (FishData.Drop d : drops)
+                    out.add(new Product(FishData.bucketOf(f), List.of(d.item().copy()), FishData.productChance(f), foods, d, total));
+            } else if (f.makesProduct()) out.add(new Product(FishData.bucketOf(f), FishData.productChoices(f), FishData.productChance(f), foods, null, 0));
         }
         return out;
     }

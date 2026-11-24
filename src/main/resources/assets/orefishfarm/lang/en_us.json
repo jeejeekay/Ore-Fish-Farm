@@ -165,5 +165,7 @@
   "item.orefishfarm.acacia_bark_scale": "Acacia Bark Scale",
   "item.orefishfarm.dark_oak_bark_scale": "Dark Oak Bark Scale",
   "item.orefishfarm.mangrove_bark_scale": "Mangrove Bark Scale",
-  "item.orefishfarm.cherry_bark_scale": "Cherry Bark Scale"
+  "item.orefishfarm.cherry_bark_scale": "Cherry Bark Scale",
+  "jei.orefishfarm.drop_weight": "%s in %s drops",
+  "jei.orefishfarm.needs_food": "Fed: %s"
 }
