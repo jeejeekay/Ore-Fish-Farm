@@ -76,15 +76,16 @@ public final class TankCategories {
 
         @Override
         public void setRecipe(IRecipeLayoutBuilder b, TankRecipes.Product r, IFocusGroup focuses) {
-            b.addSlot(RecipeIngredientRole.INPUT, 20, 6).setBackground(this.slot, -1, -1).addItemStack(r.fish());
-            b.addSlot(RecipeIngredientRole.CATALYST, 2, 26).setBackground(this.slot, -1, -1).addItemStacks(r.foods());
-            b.addSlot(RecipeIngredientRole.OUTPUT, 92, 6).setBackground(this.slot, -1, -1).addItemStacks(r.product());
+            // fish -> product, centred across the page
+            b.addSlot(RecipeIngredientRole.INPUT, 28, 8).setBackground(this.slot, -1, -1).addItemStack(r.fish());
+            b.addSlot(RecipeIngredientRole.OUTPUT, 86, 8).setBackground(this.slot, -1, -1).addItemStacks(r.product());
         }
 
         @Override
         public void draw(TankRecipes.Product r, IRecipeSlotsView v, GuiGraphics g, double mx, double my) {
-            this.arrow.draw(g, 52, 6);
-            centred(g, Component.translatable("jei.orefishfarm.per_food", pct(r.chance())), 64, 30);
+            this.arrow.draw(g, 54, 8);
+            String secs = new java.text.DecimalFormat("0.#").format(IGoByJake.orefishfarm.Config.BITE_TICKS.get() / 20.0);
+            centred(g, Component.translatable("jei.orefishfarm.per_food", pct(r.chance()), secs), W / 2, 30);
         }
     }
 
@@ -133,15 +134,14 @@ public final class TankCategories {
 
         @Override
         public void setRecipe(IRecipeLayoutBuilder b, TankRecipes.Power r, IFocusGroup focuses) {
-            b.addSlot(RecipeIngredientRole.INPUT, 20, 6).setBackground(this.slot, -1, -1).addItemStack(r.fish());
-            b.addSlot(RecipeIngredientRole.CATALYST, 2, 26).setBackground(this.slot, -1, -1).addItemStacks(r.foods());
+            b.addSlot(RecipeIngredientRole.INPUT, 28, 8).setBackground(this.slot, -1, -1).addItemStack(r.fish());
         }
 
         @Override
         public void draw(TankRecipes.Power r, IRecipeSlotsView v, GuiGraphics g, double mx, double my) {
-            this.arrow.draw(g, 52, 6);
-            text(g, Component.literal("⚡ " + r.fePerTick() + " FE/t"), 80, 10);
-            centred(g, Component.translatable("jei.orefishfarm.while_eating"), 64, 30);
+            this.arrow.draw(g, 54, 8);
+            text(g, Component.literal("⚡ " + r.fePerTick() + " FE/t"), 82, 12);
+            centred(g, Component.translatable("jei.orefishfarm.while_eating"), W / 2, 30);
         }
     }
 }
