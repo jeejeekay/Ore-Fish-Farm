@@ -495,7 +495,24 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
         }
 
         /** Which way the fish faces at time {@code t}: along its path, or toward its next stop while resting. */
+        /**
+         * Which way the fish faces: the way it's going, averaged over about 0.8 s around now (weighted toward now),
+         * so corners and the turn after a rest become a smooth swing instead of a snap.
+         */
         Vec3 heading(float t, Paths paths) {
+            double x = 0, y = 0, z = 0;
+            for (int k = -3; k <= 3; k++) {
+                Vec3 d = rawHeading(t + k * 0.13F, paths);
+                double len = d.length();
+                if (len < 1.0E-9) continue;
+                double w = 4 - Math.abs(k);
+                x += d.x / len * w; y += d.y / len * w; z += d.z / len * w;
+            }
+            Vec3 sum = new Vec3(x, y, z);
+            return sum.lengthSqr() < 1.0E-6 ? rawHeading(t, paths) : sum;
+        }
+
+        private Vec3 rawHeading(float t, Paths paths) {
             int n = this.pts.length;
             float total = this.start[n];
             float u = t % total;
