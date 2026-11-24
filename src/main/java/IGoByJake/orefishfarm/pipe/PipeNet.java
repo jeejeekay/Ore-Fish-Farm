@@ -101,6 +101,12 @@ public final class PipeNet {
             return this.key == key && this.face == face;
         }
 
+        /** The block this endpoint is, as reached from pipe {@code pipe} (NONE if that pipe doesn't reach it). */
+        long blockAt(long pipe) {
+            for (long[] a : this.access) if (a[0] == pipe) return BlockPos.of(pipe).relative(net.minecraft.core.Direction.from3DDataValue((int) a[1])).asLong();
+            return NONE;
+        }
+
         long accessPipe(LongOpenHashSet pipes) {
             for (long[] a : this.access) if (pipes.contains(a[0])) return a[0];
             return this.access.isEmpty() ? BlockPos.asLong(0, -10000, 0) : this.access.get(0)[0];
@@ -128,6 +134,8 @@ public final class PipeNet {
         /** Pipe it swims from and to this leg (when idle, {@code at} is where it rests), and the leg's times. */
         long from, at;
         long legStart, legEnd;
+        /** The inventory block it swam into at the end of its last leg (drawn only; NONE = it's in a pipe). */
+        long inside = NONE;
         ItemStack cargo = ItemStack.EMPTY;
         int amount;
         /** Source and target endpoints of the trip, and where a load goes back to. */
@@ -277,7 +285,7 @@ public final class PipeNet {
                 f.src = s.id;
                 f.dst = t.id;
                 f.ret = s.id;
-                startLeg(level, f, srcPipe, TO_SOURCE, now);
+                startLeg(level, f, srcPipe, TO_SOURCE, now, s);
                 need -= amount;
                 did = true;
             }
@@ -316,7 +324,7 @@ public final class PipeNet {
                 }
                 f.amount = got;
                 Endpoint t = byId(f.dst);
-                startLeg(level, f, t == null ? f.at : t.accessPipe(this.pipes), TO_TARGET, now);
+                startLeg(level, f, t == null ? f.at : t.accessPipe(this.pipes), TO_TARGET, now, t);
             }
             case TO_TARGET, RETURNING -> {
                 Endpoint t = byId(f.dst);
@@ -363,24 +371,48 @@ public final class PipeNet {
             IItemHandler h = handler(level, e);
             if (h == null || ItemHandlerHelper.insertItemStacked(h, f.cargo.copyWithCount(1), true).getCount() > 0) continue;
             f.dst = id;
-            startLeg(level, f, e.accessPipe(this.pipes), RETURNING, now);
+            startLeg(level, f, e.accessPipe(this.pipes), RETURNING, now, e);
             return true;
         }
         return false;
     }
 
-    private void startLeg(ServerLevel level, HaulFish f, long to, byte state, long now) {
+    /**
+     * Sends the fish to pipe {@code to}. For the drawing, a leg that ends at an inventory runs on into that block
+     * (the fish swims into the chest), and the next leg starts back inside it.
+     */
+    private void startLeg(ServerLevel level, HaulFish f, long to, byte state, long now, @javax.annotation.Nullable Endpoint into) {
         long[] path = route(f.at, to);
+        long[] shown = path;
+        if (f.inside != NONE && path.length > 0) shown = prepend(f.inside, shown);
+        long block = into == null ? NONE : into.blockAt(to);
+        if (block != NONE && path.length > 0) shown = append(shown, block);
+        f.inside = block;
         double speed = Config.PIPE_SWIM_SPEED.get();
         FishData.Fish d = FishData.fish(f.bucket);
         if (d != null && new ItemStack(d.item()).is(FAST_SWIMMERS)) speed *= 1.5;
-        int ticks = Math.max(4, (int) Math.round((path.length - 1) * 20 / speed));
+        int ticks = Math.max(4, (int) Math.round((shown.length - 1) * 20 / speed));
         f.state = state;
         f.from = f.at;
         f.at = to;
         f.legStart = now;
         f.legEnd = now + ticks;
-        PipePackets.sendLeg(level, this, f, path);
+        PipePackets.sendLeg(level, this, f, shown);
+    }
+
+    static final long NONE = Long.MIN_VALUE;
+
+    private static long[] prepend(long v, long[] a) {
+        long[] o = new long[a.length + 1];
+        o[0] = v;
+        System.arraycopy(a, 0, o, 1, a.length);
+        return o;
+    }
+
+    private static long[] append(long[] a, long v) {
+        long[] o = java.util.Arrays.copyOf(a, a.length + 1);
+        o[a.length] = v;
+        return o;
     }
 
     // ================================================================== reservations

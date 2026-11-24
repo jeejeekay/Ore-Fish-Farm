@@ -1,0 +1,35 @@
+{
+ "render_type": "minecraft:translucent",
+ "ambientocclusion": false,
+ "textures": {
+  "glass": "orefishfarm:block/pipe_glass",
+  "glass_plain": "orefishfarm:block/pipe_glass_plain",
+  "particle": "orefishfarm:block/pipe_rim"
+ },
+ "elements": [
+  {
+   "from": [
+    4.25,
+    4.25,
+    4.25
+   ],
+   "to": [
+    4.25,
+    11.75,
+    11.75
+   ],
+   "faces": {
+    "west": {
+     "texture": "#glass",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "rotation": 90
+    }
+   }
+  }
+ ]
+}

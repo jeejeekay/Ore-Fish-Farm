@@ -2,7 +2,77 @@
  "multipart": [
   {
    "when": {
-    "north": "none"
+    "OR": [
+     {
+      "north": "none",
+      "east": "pipe|rim",
+      "up": "none",
+      "down": "none"
+     },
+     {
+      "north": "none",
+      "west": "pipe|rim",
+      "up": "none",
+      "down": "none"
+     }
+    ]
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/core_glass_north_x"
+   }
+  },
+  {
+   "when": {
+    "OR": [
+     {
+      "north": "none",
+      "up": "pipe|rim",
+      "east": "none",
+      "west": "none"
+     },
+     {
+      "north": "none",
+      "down": "pipe|rim",
+      "east": "none",
+      "west": "none"
+     }
+    ]
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/core_glass_north_y"
+   }
+  },
+  {
+   "when": {
+    "OR": [
+     {
+      "north": "none",
+      "east": "pipe|rim",
+      "up": "pipe|rim"
+     },
+     {
+      "north": "none",
+      "east": "pipe|rim",
+      "down": "pipe|rim"
+     },
+     {
+      "north": "none",
+      "west": "pipe|rim",
+      "up": "pipe|rim"
+     },
+     {
+      "north": "none",
+      "west": "pipe|rim",
+      "down": "pipe|rim"
+     },
+     {
+      "north": "none",
+      "east": "none",
+      "west": "none",
+      "up": "none",
+      "down": "none"
+     }
+    ]
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_glass_north"
@@ -42,7 +112,77 @@
   },
   {
    "when": {
-    "south": "none"
+    "OR": [
+     {
+      "south": "none",
+      "east": "pipe|rim",
+      "up": "none",
+      "down": "none"
+     },
+     {
+      "south": "none",
+      "west": "pipe|rim",
+      "up": "none",
+      "down": "none"
+     }
+    ]
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/core_glass_south_x"
+   }
+  },
+  {
+   "when": {
+    "OR": [
+     {
+      "south": "none",
+      "up": "pipe|rim",
+      "east": "none",
+      "west": "none"
+     },
+     {
+      "south": "none",
+      "down": "pipe|rim",
+      "east": "none",
+      "west": "none"
+     }
+    ]
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/core_glass_south_y"
+   }
+  },
+  {
+   "when": {
+    "OR": [
+     {
+      "south": "none",
+      "east": "pipe|rim",
+      "up": "pipe|rim"
+     },
+     {
+      "south": "none",
+      "east": "pipe|rim",
+      "down": "pipe|rim"
+     },
+     {
+      "south": "none",
+      "west": "pipe|rim",
+      "up": "pipe|rim"
+     },
+     {
+      "south": "none",
+      "west": "pipe|rim",
+      "down": "pipe|rim"
+     },
+     {
+      "south": "none",
+      "east": "none",
+      "west": "none",
+      "up": "none",
+      "down": "none"
+     }
+    ]
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_glass_south"
@@ -82,7 +222,77 @@
   },
   {
    "when": {
-    "west": "none"
+    "OR": [
+     {
+      "west": "none",
+      "up": "pipe|rim",
+      "south": "none",
+      "north": "none"
+     },
+     {
+      "west": "none",
+      "down": "pipe|rim",
+      "south": "none",
+      "north": "none"
+     }
+    ]
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/core_glass_west_y"
+   }
+  },
+  {
+   "when": {
+    "OR": [
+     {
+      "west": "none",
+      "south": "pipe|rim",
+      "up": "none",
+      "down": "none"
+     },
+     {
+      "west": "none",
+      "north": "pipe|rim",
+      "up": "none",
+      "down": "none"
+     }
+    ]
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/core_glass_west_z"
+   }
+  },
+  {
+   "when": {
+    "OR": [
+     {
+      "west": "none",
+      "up": "pipe|rim",
+      "south": "pipe|rim"
+     },
+     {
+      "west": "none",
+      "up": "pipe|rim",
+      "north": "pipe|rim"
+     },
+     {
+      "west": "none",
+      "down": "pipe|rim",
+      "south": "pipe|rim"
+     },
+     {
+      "west": "none",
+      "down": "pipe|rim",
+      "north": "pipe|rim"
+     },
+     {
+      "west": "none",
+      "up": "none",
+      "down": "none",
+      "south": "none",
+      "north": "none"
+     }
+    ]
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_glass_west"
@@ -122,7 +332,77 @@
   },
   {
    "when": {
-    "east": "none"
+    "OR": [
+     {
+      "east": "none",
+      "up": "pipe|rim",
+      "south": "none",
+      "north": "none"
+     },
+     {
+      "east": "none",
+      "down": "pipe|rim",
+      "south": "none",
+      "north": "none"
+     }
+    ]
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/core_glass_east_y"
+   }
+  },
+  {
+   "when": {
+    "OR": [
+     {
+      "east": "none",
+      "south": "pipe|rim",
+      "up": "none",
+      "down": "none"
+     },
+     {
+      "east": "none",
+      "north": "pipe|rim",
+      "up": "none",
+      "down": "none"
+     }
+    ]
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/core_glass_east_z"
+   }
+  },
+  {
+   "when": {
+    "OR": [
+     {
+      "east": "none",
+      "up": "pipe|rim",
+      "south": "pipe|rim"
+     },
+     {
+      "east": "none",
+      "up": "pipe|rim",
+      "north": "pipe|rim"
+     },
+     {
+      "east": "none",
+      "down": "pipe|rim",
+      "south": "pipe|rim"
+     },
+     {
+      "east": "none",
+      "down": "pipe|rim",
+      "north": "pipe|rim"
+     },
+     {
+      "east": "none",
+      "up": "none",
+      "down": "none",
+      "south": "none",
+      "north": "none"
+     }
+    ]
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_glass_east"
@@ -162,7 +442,77 @@
   },
   {
    "when": {
-    "up": "none"
+    "OR": [
+     {
+      "up": "none",
+      "east": "pipe|rim",
+      "south": "none",
+      "north": "none"
+     },
+     {
+      "up": "none",
+      "west": "pipe|rim",
+      "south": "none",
+      "north": "none"
+     }
+    ]
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/core_glass_up_x"
+   }
+  },
+  {
+   "when": {
+    "OR": [
+     {
+      "up": "none",
+      "south": "pipe|rim",
+      "east": "none",
+      "west": "none"
+     },
+     {
+      "up": "none",
+      "north": "pipe|rim",
+      "east": "none",
+      "west": "none"
+     }
+    ]
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/core_glass_up_z"
+   }
+  },
+  {
+   "when": {
+    "OR": [
+     {
+      "up": "none",
+      "east": "pipe|rim",
+      "south": "pipe|rim"
+     },
+     {
+      "up": "none",
+      "east": "pipe|rim",
+      "north": "pipe|rim"
+     },
+     {
+      "up": "none",
+      "west": "pipe|rim",
+      "south": "pipe|rim"
+     },
+     {
+      "up": "none",
+      "west": "pipe|rim",
+      "north": "pipe|rim"
+     },
+     {
+      "up": "none",
+      "east": "none",
+      "west": "none",
+      "south": "none",
+      "north": "none"
+     }
+    ]
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_glass_up"
@@ -202,7 +552,77 @@
   },
   {
    "when": {
-    "down": "none"
+    "OR": [
+     {
+      "down": "none",
+      "east": "pipe|rim",
+      "south": "none",
+      "north": "none"
+     },
+     {
+      "down": "none",
+      "west": "pipe|rim",
+      "south": "none",
+      "north": "none"
+     }
+    ]
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/core_glass_down_x"
+   }
+  },
+  {
+   "when": {
+    "OR": [
+     {
+      "down": "none",
+      "south": "pipe|rim",
+      "east": "none",
+      "west": "none"
+     },
+     {
+      "down": "none",
+      "north": "pipe|rim",
+      "east": "none",
+      "west": "none"
+     }
+    ]
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/core_glass_down_z"
+   }
+  },
+  {
+   "when": {
+    "OR": [
+     {
+      "down": "none",
+      "east": "pipe|rim",
+      "south": "pipe|rim"
+     },
+     {
+      "down": "none",
+      "east": "pipe|rim",
+      "north": "pipe|rim"
+     },
+     {
+      "down": "none",
+      "west": "pipe|rim",
+      "south": "pipe|rim"
+     },
+     {
+      "down": "none",
+      "west": "pipe|rim",
+      "north": "pipe|rim"
+     },
+     {
+      "down": "none",
+      "east": "none",
+      "west": "none",
+      "south": "none",
+      "north": "none"
+     }
+    ]
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_glass_down"
