@@ -90,6 +90,7 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
         protected void onContentsChanged(int slot) {
             stress[slot] = 0;
             breedTimer[slot] = -1; // a fish just put in starts its breeding timer from the top
+            shedTimer[slot] = -1;  // and its shedding timer somewhere random, so fish shed staggered
             // A fish without stats or genes yet (made in a recipe, from creative) gets them on the way in.
             if (level != null && !level.isClientSide) FishGenes.ensure(getStackInSlot(slot), level.random);
             setChanged();
@@ -130,6 +131,8 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
     int burn, burnTotal;
     /** Ticks eaten since the last bite. Carries over from one piece of food to the next. */
     int bite;
+    /** Length of the current aquarium bite (jittered; not saved). */
+    private int biteLen;
     ItemStack burnItem = ItemStack.EMPTY;
     int energy;
     /** Controller: whether pairs breed. */
@@ -450,9 +453,22 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
                 }
                 this.energy = (int) Math.min(energyCapacity(), (long) this.energy + rate);
             }
-            if (++this.bite >= Config.BITE_TICKS.get()) {
+            // Each fish sheds on its own timer (a bite, give or take the jitter), started at a random point.
+            if (!power) for (FishRef f : eaters) {
+                int[] t = f.be.shedTimer;
+                if (t[f.slot] < 0) t[f.slot] = 1 + this.level.random.nextInt(biteLength());
+                if (--t[f.slot] <= 0) {
+                    t[f.slot] = biteLength();
+                    shed(f);
+                }
+            }
+            // Breeding goes by the aquarium's bite, also jittered.
+            if (this.biteLen <= 0) this.biteLen = biteLength();
+            if (++this.bite >= this.biteLen) {
+                int elapsed = this.bite;
                 this.bite = 0;
-                takeBite(eaters, power);
+                this.biteLen = biteLength();
+                takeBite(eaters, power, elapsed);
             }
             setChanged();
         }
@@ -537,25 +553,35 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
         setChanged();
     }
 
-    /** One bite: pairs may breed (while breeding is on), then every eating fish rolls its product. */
-    private void takeBite(List<FishRef> eaters, boolean power) {
+    /** One aquarium bite: pairs may breed (while breeding is on). elapsed: ticks since the last bite. */
+    private void takeBite(List<FishRef> eaters, boolean power, int elapsed) {
         if (this.level == null) return;
         List<TankBlockEntity> mem = memberBEs();
-        if (this.breeding && mem != null && mem.size() >= BREED_MIN_BLOCKS) breed(eaters);
-        if (power) return;
-        // Yield above 1x makes more: the product chance x the Yield factor is how many products on average
-        // (2.25 = two, plus a 25% chance of a third).
-        bite:
-        for (FishRef f : eaters) {
-            FishData.Fish d = FishData.fish(f.stack());
-            if (d == null || !d.makesProduct()) continue;
-            double expected = FishData.productChance(d) * FishGenes.factor(f.stack(), FishGenes.YIELD);
-            int count = (int) Math.floor(expected) + (this.level.random.nextDouble() < expected - Math.floor(expected) ? 1 : 0);
-            for (int k = 0; k < count; k++) {
-                ItemStack rest = addOutput(FishData.productFor(d, this.level.random));
-                if (!rest.isEmpty()) break bite; // output full: the rest of this bite is wasted
-            }
+        if (this.breeding && mem != null && mem.size() >= BREED_MIN_BLOCKS) breed(eaters, elapsed);
+    }
+
+    /**
+     * One fish sheds: Yield above 1x makes more (the product chance x the Yield factor is how many products on
+     * average: 2.25 = two, plus a 25% chance of a third). If the output is full, the rest is wasted.
+     */
+    private void shed(FishRef f) {
+        FishData.Fish d = FishData.fish(f.stack());
+        if (d == null || !d.makesProduct()) return;
+        double expected = FishData.productChance(d) * FishGenes.factor(f.stack(), FishGenes.YIELD);
+        int count = (int) Math.floor(expected) + (this.level.random.nextDouble() < expected - Math.floor(expected) ? 1 : 0);
+        for (int k = 0; k < count; k++) {
+            if (!addOutput(FishData.productFor(d, this.level.random)).isEmpty()) return;
         }
+    }
+
+    /** Ticks left until each fish slot sheds again (-1 = not started; not saved). */
+    final int[] shedTimer = new int[FISH];
+    { java.util.Arrays.fill(this.shedTimer, -1); }
+
+    /** One bite's length: biteTicks, give or take up to biteJitterTicks. */
+    private int biteLength() {
+        int j = Config.BITE_JITTER.get();
+        return Math.max(1, Config.BITE_TICKS.get() + (j <= 0 || this.level == null ? 0 : this.level.random.nextInt(2 * j + 1) - j));
     }
 
     /** Ticks left on each fish slot's breeding timer (-1 = not started; not saved, so it restarts on a reload). */
@@ -570,8 +596,7 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
      * Newborns (not yet scooped out with a bucket) never breed, so a fresh baby can't pair up with its parents before
      * the player picks the pairs.
      */
-    private void breed(List<FishRef> eaters) {
-        int bite = Config.BITE_TICKS.get();
+    private void breed(List<FishRef> eaters, int bite) {
         List<FishRef> pool = new ArrayList<>(), ready = new ArrayList<>();
         for (FishRef f : eaters) {
             if (FishGenes.isNewborn(f.stack())) continue;

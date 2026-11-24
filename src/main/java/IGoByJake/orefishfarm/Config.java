@@ -12,6 +12,7 @@ public final class Config {
     public static final ForgeConfigSpec.IntValue DEFAULT_BREED_TIME;
     public static final ForgeConfigSpec.IntValue DEFAULT_FOOD_TICKS;
     public static final ForgeConfigSpec.IntValue BITE_TICKS;
+    public static final ForgeConfigSpec.IntValue BITE_JITTER;
     public static final ForgeConfigSpec.IntValue ENERGY_CAPACITY;
     public static final ForgeConfigSpec.IntValue ENERGY_OUTPUT;
     public static final ForgeConfigSpec.IntValue MAX_AQUARIUM_SIZE;
@@ -55,6 +56,9 @@ public final class Config {
         DEFAULT_FOOD_TICKS = b.comment("Ticks one item lasts for foods in the #orefishfarm:fish_food tag that have no food file.").defineInRange("defaultFoodTicks", 4800, 1, 72000);
         BITE_TICKS = b.comment("Ticks of eating between bites. Every bite, each eating fish rolls its scale/product chance and pairs roll to breed.",
                 "How long a piece of food lasts does not change how often fish roll.").defineInRange("biteTicks", 400, 1, 72000);
+        BITE_JITTER = b.comment("Each bite comes this many ticks early or late at random (any number up to it), and every fish",
+                "keeps its own bite timer, so fish shed at staggered times instead of all at once. 50 = 2.5 seconds.")
+                .defineInRange("biteJitterTicks", 50, 0, 72000);
         b.pop().push("power");
         POWER = b.comment("Multiplier on the FE/tick power fish make.").defineInRange("powerMultiplier", 1.0, 0.0, 100.0);
         ENERGY_CAPACITY = b.comment("FE each block of a power tank can hold (an aquarium holds this times its blocks).").defineInRange("energyCapacity", 20000, 100, Integer.MAX_VALUE);
