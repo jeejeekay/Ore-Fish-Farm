@@ -16,6 +16,11 @@
       "chance": 0.06,
       "liquid": "lava",
       "dimension": "minecraft:overworld"
+    },
+    {
+      "fish": "orefishfarm:barkacuda",
+      "chance": 0.04,
+      "liquid": "water"
     }
   ]
 }

@@ -552,7 +552,7 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
             double expected = FishData.productChance(d) * FishGenes.factor(f.stack(), FishGenes.YIELD);
             int count = (int) Math.floor(expected) + (this.level.random.nextDouble() < expected - Math.floor(expected) ? 1 : 0);
             for (int k = 0; k < count; k++) {
-                ItemStack rest = addOutput(d.product().copy());
+                ItemStack rest = addOutput(FishData.productFor(d, this.level.random));
                 if (!rest.isEmpty()) break bite; // output full: the rest of this bite is wasted
             }
         }

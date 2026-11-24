@@ -78,7 +78,7 @@ public final class TankCategories {
         public void setRecipe(IRecipeLayoutBuilder b, TankRecipes.Product r, IFocusGroup focuses) {
             b.addSlot(RecipeIngredientRole.INPUT, 20, 6).setBackground(this.slot, -1, -1).addItemStack(r.fish());
             b.addSlot(RecipeIngredientRole.CATALYST, 2, 26).setBackground(this.slot, -1, -1).addItemStacks(r.foods());
-            b.addSlot(RecipeIngredientRole.OUTPUT, 92, 6).setBackground(this.slot, -1, -1).addItemStack(r.product());
+            b.addSlot(RecipeIngredientRole.OUTPUT, 92, 6).setBackground(this.slot, -1, -1).addItemStacks(r.product());
         }
 
         @Override

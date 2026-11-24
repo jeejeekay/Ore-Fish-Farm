@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    "orefishfarm:oak_bark_scale",
+    "orefishfarm:spruce_bark_scale",
+    "orefishfarm:birch_bark_scale",
+    "orefishfarm:jungle_bark_scale",
+    "orefishfarm:acacia_bark_scale",
+    "orefishfarm:dark_oak_bark_scale",
+    "orefishfarm:mangrove_bark_scale",
+    "orefishfarm:cherry_bark_scale"
+  ]
+}

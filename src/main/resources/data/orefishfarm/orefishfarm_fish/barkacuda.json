@@ -1,0 +1,11 @@
+{
+  "fish": "orefishfarm:barkacuda",
+  "product": {
+    "item": "orefishfarm:oak_bark_scale",
+    "count": 1
+  },
+  "product_tag": "orefishfarm:bark_scales",
+  "product_chance": 1.0,
+  "habitat": "orefishfarm:water",
+  "scale": 1.5
+}

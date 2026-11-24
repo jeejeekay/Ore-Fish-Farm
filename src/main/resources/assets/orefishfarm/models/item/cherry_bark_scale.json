@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "orefishfarm:item/cherry_bark_scale"
+  }
+}

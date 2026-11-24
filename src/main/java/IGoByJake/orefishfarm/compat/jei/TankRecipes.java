@@ -12,7 +12,7 @@ import java.util.List;
 public final class TankRecipes {
     private TankRecipes() {}
 
-    public record Product(ItemStack fish, ItemStack product, float chance, List<ItemStack> foods) {}
+    public record Product(ItemStack fish, List<ItemStack> product, float chance, List<ItemStack> foods) {}
 
     /**
      * One breeding pair and what it can make. results: the baby species (one for a same-species pair, either parent's
@@ -33,7 +33,7 @@ public final class TankRecipes {
         List<ItemStack> foods = FishData.allFoods();
         List<Product> out = new ArrayList<>();
         for (FishData.Fish f : sorted()) {
-            if (f.makesProduct()) out.add(new Product(FishData.bucketOf(f), f.product().copy(), FishData.productChance(f), foods));
+            if (f.makesProduct()) out.add(new Product(FishData.bucketOf(f), FishData.productChoices(f), FishData.productChance(f), foods));
         }
         return out;
     }

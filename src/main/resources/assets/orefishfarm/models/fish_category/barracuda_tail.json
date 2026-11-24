@@ -1,0 +1,42 @@
+{
+ "credit": "Jake's Ore Fish Farm: shared 'barracuda' fish model (long slim body, jutting jaw, two small dorsals, forked tail); side view, head toward +x. Articulated: barracuda_front holds still, barracuda swings, barracuda_tail wags.",
+ "texture_size": [
+  32,
+  32
+ ],
+ "elements": [
+  {
+   "name": "tail",
+   "from": [
+    0.0,
+    4.8,
+    8
+   ],
+   "to": [
+    2.0,
+    9.6,
+    8
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      0.0,
+      2.0,
+      5.0
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      2.0,
+      0.0,
+      4.0,
+      5.0
+     ]
+    }
+   }
+  }
+ ]
+}

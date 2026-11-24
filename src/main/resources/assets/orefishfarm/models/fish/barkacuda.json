@@ -1,0 +1,7 @@
+{
+  "parent": "orefishfarm:fish_category/barracuda",
+  "textures": {
+    "t": "orefishfarm:item/fish/barkacuda",
+    "particle": "orefishfarm:item/fish/barkacuda"
+  }
+}

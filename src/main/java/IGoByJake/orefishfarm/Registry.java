@@ -79,6 +79,7 @@ public final class Registry {
     public static final RegistryObject<Item> MUDSKIPPER = fish("mudskipper");
     public static final RegistryObject<Item> SANDSHARK = fish("sandshark");
     public static final RegistryObject<Item> RED_LAMPFISH = fish("red_lampfish");
+    public static final RegistryObject<Item> BARKACUDA = fish("barkacuda");
 
     // Living fish: same ids as the items.
     private static RegistryObject<EntityType<OreFish>> fishMob(String name) {
@@ -110,6 +111,9 @@ public final class Registry {
     public static final RegistryObject<Item> PEBBLED_SCALE = item("pebbled_scale");
     public static final RegistryObject<Item> MUD_BLOB = item("mud_blob");
     public static final RegistryObject<Item> SANDY_TEETH = item("sandy_teeth");
+    // The Barkacuda sheds one of these at random; 9 make that tree's log.
+    public static final List<RegistryObject<Item>> BARK_SCALES = java.util.stream.Stream.of(
+            "oak", "spruce", "birch", "jungle", "acacia", "dark_oak", "mangrove", "cherry").map(w -> item(w + "_bark_scale")).toList();
     public static final RegistryObject<Item> FISH_FOOD = item("fish_food");
     public static final RegistryObject<Item> BRINE_FLAKES = item("brine_flakes");
     public static final RegistryObject<Item> EMBER_PELLETS = item("ember_pellets");

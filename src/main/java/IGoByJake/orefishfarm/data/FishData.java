@@ -35,6 +35,8 @@ import java.util.Map;
  * data/&lt;ns&gt;/orefishfarm_fish/&lt;name&gt;.json
  *   { "fish": "orefishfarm:ferrofin",
  *     "product": { "item": "orefishfarm:iron_scale", "count": 1 },   (optional: a fish can make nothing)
+ *     "product_tag": "orefishfarm:bark_scales",   optional: shed a random item of this tag instead (product = the count
+ *                                                 and what shows when the tag is empty)
  *     "product_chance": 0.75,   chance per bite (every biteTicks of eating) in a Fish Tank
  *     "breed_time": 180,        seconds of eating between this fish's breeding tries (optional; config default 180).
  *                               0 = never breeds, except where a breeding recipe names it.
@@ -108,6 +110,25 @@ public final class FishData {
     /** bucket: another mod's own bucket for this fish, if it has one (else the generic Fish Bucket is used). */
     /** How big each species is drawn (fish file "scale", default 1); synced to clients. */
     private static Map<Item, Float> scales = Map.of();
+    /** Fish that shed a random item from a tag each time ("product_tag"), e.g. the Barkacuda's bark scales. */
+    private static Map<Item, ResourceLocation> productTags = Map.of();
+    private static Map<Item, ResourceLocation> pendingProductTags = Map.of();
+
+    /** What this fish sheds this time: a random item from its product tag, or its product. */
+    public static ItemStack productFor(Fish f, net.minecraft.util.RandomSource random) {
+        List<ItemStack> all = productChoices(f);
+        return all.isEmpty() ? f.product().copy() : all.get(random.nextInt(all.size())).copy();
+    }
+
+    /** Every item this fish can shed (the tag's items, or just its product). */
+    public static List<ItemStack> productChoices(Fish f) {
+        ResourceLocation tag = productTags.get(f.item());
+        if (tag == null) return List.of(f.product().copy());
+        List<ItemStack> out = new ArrayList<>();
+        net.minecraft.core.registries.BuiltInRegistries.ITEM.getTagOrEmpty(net.minecraft.tags.ItemTags.create(tag))
+                .forEach(h -> out.add(new ItemStack(h.value(), Math.max(1, f.product().getCount()))));
+        return out.isEmpty() ? List.of(f.product().copy()) : out;
+    }
 
     public static float scale(Item fish) {
         return scales.getOrDefault(fish, 1F);
@@ -252,6 +273,8 @@ public final class FishData {
             if (f.bucket() != null) buf.writeResourceLocation(ForgeRegistries.ITEMS.getKey(f.bucket()));
             buf.writeFloat(f.heat());
             buf.writeFloat(scale(f.item()));
+            ResourceLocation pt = productTags.get(f.item());
+            buf.writeUtf(pt == null ? "" : pt.toString());
         }
         buf.writeVarInt(crosses.size());
         for (Cross c : crosses) {
@@ -303,6 +326,7 @@ public final class FishData {
     public static Synced read(net.minecraft.network.FriendlyByteBuf buf) {
         Map<Item, Fish> f = new HashMap<>();
         Map<Item, Float> sc = new HashMap<>();
+        Map<Item, ResourceLocation> tagsIn = new HashMap<>();
         int n = buf.readVarInt();
         for (int i = 0; i < n; i++) {
             Item item = ForgeRegistries.ITEMS.getValue(buf.readResourceLocation());
@@ -313,6 +337,8 @@ public final class FishData {
             Item bucket = buf.readBoolean() ? ForgeRegistries.ITEMS.getValue(buf.readResourceLocation()) : null;
             float heat = buf.readFloat();
             float size = buf.readFloat();
+            String pt = buf.readUtf();
+            if (item != null && !pt.isEmpty()) tagsIn.put(item, new ResourceLocation(pt));
             Fish fish = new Fish(item, product, pc, bc, pw, hab, bucket, heat);
             if (item != null) {
                 f.put(item, fish);
@@ -351,6 +377,7 @@ public final class FishData {
         Map<ResourceLocation, Integer> gc = new HashMap<>();
         n = buf.readVarInt();
         for (int i = 0; i < n; i++) gc.put(buf.readResourceLocation(), buf.readInt());
+        pendingProductTags = tagsIn;
         return new Synced(f, x, food, hab, gc, sc);
     }
 
@@ -364,6 +391,7 @@ public final class FishData {
         habitats = s.habitats();
         geneColors = s.geneColors();
         scales = s.scales();
+        productTags = pendingProductTags;
         loaded = true;
         // JEI may already have built its lists before this arrived (on a server): give it the tank pages now.
         if (net.minecraftforge.fml.ModList.get().isLoaded("jei")) IGoByJake.orefishfarm.compat.jei.OreFishJei.lateRecipes();
@@ -577,6 +605,7 @@ public final class FishData {
         Map<Item, Fish> out = new HashMap<>();
         Map<Item, Shear> shearOut = new HashMap<>();
         Map<Item, Float> scaleOut = new HashMap<>();
+        Map<Item, ResourceLocation> tagOut = new HashMap<>();
         files.forEach((id, json) -> {
             try {
                 JsonObject o = json.getAsJsonObject();
@@ -594,6 +623,7 @@ public final class FishData {
                         breedTime(o), GsonHelper.getAsInt(o, "power", 0), hab, bucket,
                         GsonHelper.getAsFloat(o, "heat", 0F)));
                 if (o.has("scale")) scaleOut.put(f, Mth.clamp(GsonHelper.getAsFloat(o, "scale"), 0.25F, 4F));
+                if (o.has("product_tag")) tagOut.put(f, new ResourceLocation(GsonHelper.getAsString(o, "product_tag")));
                 if (o.has("shear")) {
                     JsonObject sh = GsonHelper.getAsJsonObject(o, "shear");
                     Item drop = item(GsonHelper.getAsString(sh, "item"));
@@ -608,6 +638,7 @@ public final class FishData {
         fish = out;
         shears = shearOut;
         scales = scaleOut;
+        productTags = tagOut;
         byBucket = indexBuckets(out);
         LOG.info("Ore Fish Farm: {} fish", out.size());
     }

@@ -155,5 +155,15 @@
   "item.orefishfarm.sandy_teeth": "Sandy Teeth",
   "item.orefishfarm.red_lampfish": "Red Lampfish",
   "item.orefishfarm.red_lampfish.desc": "A see-through lanternfish lit with red spots. Bred from a charged glass eel and an ironpaima",
-  "item.orefishfarm.glass_tooth": "Glass Tooth"
+  "item.orefishfarm.glass_tooth": "Glass Tooth",
+  "item.orefishfarm.barkacuda": "Barkacuda",
+  "item.orefishfarm.barkacuda.desc": "Scaled in tree bark. Sheds bark scales of all kinds of trees",
+  "item.orefishfarm.oak_bark_scale": "Oak Bark Scale",
+  "item.orefishfarm.spruce_bark_scale": "Spruce Bark Scale",
+  "item.orefishfarm.birch_bark_scale": "Birch Bark Scale",
+  "item.orefishfarm.jungle_bark_scale": "Jungle Bark Scale",
+  "item.orefishfarm.acacia_bark_scale": "Acacia Bark Scale",
+  "item.orefishfarm.dark_oak_bark_scale": "Dark Oak Bark Scale",
+  "item.orefishfarm.mangrove_bark_scale": "Mangrove Bark Scale",
+  "item.orefishfarm.cherry_bark_scale": "Cherry Bark Scale"
 }
