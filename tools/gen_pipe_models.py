@@ -16,9 +16,9 @@ ROOT = 'src/main/resources/assets/orefishfarm'
 MD = ROOT + '/models/block/pipe'
 os.makedirs(MD, exist_ok=True)
 
-G0, G1 = 4.25, 11.75    # glass (7.5 wide since 2.23.1, a quarter thinner than the first 10)
-W0, W1 = 4.75, 11.25    # water
-R0, R1 = 3.5, 12.5      # rim collar
+G0, G1 = 4, 12          # glass: 8 px, half a block, on whole pixels (2.23.2)
+W0, W1 = 4.5, 11.5      # water, half a pixel inside the glass
+R0, R1 = 3, 13          # rim collar, a pixel proud of the glass
 DIRS = ['north', 'south', 'west', 'east', 'up', 'down']
 AXIS = {'north': ('z', -1), 'south': ('z', 1), 'west': ('x', -1), 'east': ('x', 1), 'up': ('y', 1), 'down': ('y', -1)}
 SIDES = {'x': ['north', 'south', 'up', 'down'], 'y': ['north', 'south', 'east', 'west'], 'z': ['east', 'west', 'up', 'down']}
@@ -39,15 +39,18 @@ def model(textures, elements, render='minecraft:translucent'):
     return {"render_type": render, "ambientocclusion": False, "textures": textures, "elements": elements}
 
 
-GLASS = {"glass": "orefishfarm:block/pipe_glass", "glass_plain": "orefishfarm:block/pipe_glass_plain", "particle": "orefishfarm:block/pipe_rim"}
+GLASS = {"glass_h": "orefishfarm:block/pipe_glass_h", "glass_v": "orefishfarm:block/pipe_glass_v",
+         "glass_plain": "orefishfarm:block/pipe_glass_plain", "particle": "orefishfarm:block/pipe_rim"}
 NORMAL = {'north': 'z', 'south': 'z', 'west': 'x', 'east': 'x', 'up': 'y', 'down': 'y'}
 
 
 def glass_face(face, along):
-    """A glass face whose stripes run along the pipe: the texture's rows go across the tube."""
+    """A glass face whose stripes run along the pipe. Default (position) UVs keep every texel on a whole pixel: the
+    tube spans texels 4..12 across, so glass_h (pattern in rows 4..11) fits faces whose v runs across the tube and
+    glass_v (the same in columns) the others."""
     across = ({'x', 'y', 'z'} - {NORMAL[face], along}).pop()
     v_axis = 'y' if face in ('north', 'south', 'east', 'west') else 'z'
-    return {"texture": "#glass", "uv": [0, 0, 16, 16], "rotation": 0 if across == v_axis else 90}
+    return {"texture": "#glass_h" if across == v_axis else "#glass_v"}
 WATER = {"fill": "minecraft:block/water_still", "particle": "orefishfarm:block/pipe_rim"}
 
 
@@ -71,13 +74,13 @@ for d in DIRS:
     # the core's side wall: stripes along whichever way the pipe runs past it (plain at junctions and lone pipes)
     others = [a for a in 'xyz' if a != ax]
     for along in others:
-        write(f'core_glass_{d}_{along}', model(GLASS, [{"from": gf, "to": gt, "faces": {d: glass_face(d, along)}}]))
-    write(f'core_glass_{d}', model(GLASS, [{"from": gf, "to": gt, "faces": {d: {"texture": "#glass_plain"}}}]))
+        write(f'core_glass_{d}_{along}', model(GLASS, [{"from": gf, "to": gt, "faces": {d: glass_face(d, along)}}], 'minecraft:cutout'))
+    write(f'core_glass_{d}', model(GLASS, [{"from": gf, "to": gt, "faces": {d: {"texture": "#glass_plain"}}}], 'minecraft:cutout'))
     write(f'core_{d}', model(WATER, [{"from": wf, "to": wt, "faces": {d: {"texture": "#fill", "tintindex": 0}}}]))
     # arm: four side faces of glass and of water, from the core to the block edge
     f, t = box(d, G0, G1, G1, 16)
     fw, tw = box(d, W0, W1, W1, 16)
-    write(f'arm_glass_{d}', model(GLASS, [{"from": f, "to": t, "faces": {s: glass_face(s, ax) for s in SIDES[ax]}}]))
+    write(f'arm_glass_{d}', model(GLASS, [{"from": f, "to": t, "faces": {s: glass_face(s, ax) for s in SIDES[ax]}}], 'minecraft:cutout'))
     write(f'arm_{d}', model(WATER, [{"from": fw, "to": tw, "faces": {s: {"texture": "#fill", "tintindex": 0} for s in SIDES[ax]}}]))
     # rim collar
     f, t = box(d, R0, R1, R1, 16)

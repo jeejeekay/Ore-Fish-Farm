@@ -3,7 +3,8 @@
  "render_type": "minecraft:translucent",
  "ambientocclusion": false,
  "textures": {
-  "glass": "orefishfarm:block/pipe_glass",
+  "glass_h": "orefishfarm:block/pipe_glass_h",
+  "glass_v": "orefishfarm:block/pipe_glass_v",
   "glass_plain": "orefishfarm:block/pipe_glass_plain",
   "particle": "orefishfarm:block/pipe_rim",
   "fill": "minecraft:block/water_still",
@@ -12,38 +13,31 @@
  "elements": [
   {
    "from": [
-    4.25,
-    4.25,
-    4.25
+    4,
+    4,
+    4
    ],
    "to": [
-    11.75,
-    11.75,
-    4.25
+    12,
+    12,
+    4
    ],
    "faces": {
     "north": {
-     "texture": "#glass",
-     "uv": [
-      0,
-      0,
-      16,
-      16
-     ],
-     "rotation": 0
+     "texture": "#glass_h"
     }
    }
   },
   {
    "from": [
-    4.75,
-    4.75,
-    4.75
+    4.5,
+    4.5,
+    4.5
    ],
    "to": [
-    11.25,
-    11.25,
-    4.75
+    11.5,
+    11.5,
+    4.5
    ],
    "faces": {
     "north": {
@@ -54,38 +48,31 @@
   },
   {
    "from": [
-    4.25,
-    4.25,
-    11.75
+    4,
+    4,
+    12
    ],
    "to": [
-    11.75,
-    11.75,
-    11.75
+    12,
+    12,
+    12
    ],
    "faces": {
     "south": {
-     "texture": "#glass",
-     "uv": [
-      0,
-      0,
-      16,
-      16
-     ],
-     "rotation": 0
+     "texture": "#glass_h"
     }
    }
   },
   {
    "from": [
-    4.75,
-    4.75,
-    11.25
+    4.5,
+    4.5,
+    11.5
    ],
    "to": [
-    11.25,
-    11.25,
-    11.25
+    11.5,
+    11.5,
+    11.5
    ],
    "faces": {
     "south": {
@@ -96,38 +83,31 @@
   },
   {
    "from": [
-    4.25,
-    11.75,
-    4.25
+    4,
+    12,
+    4
    ],
    "to": [
-    11.75,
-    11.75,
-    11.75
+    12,
+    12,
+    12
    ],
    "faces": {
     "up": {
-     "texture": "#glass",
-     "uv": [
-      0,
-      0,
-      16,
-      16
-     ],
-     "rotation": 0
+     "texture": "#glass_h"
     }
    }
   },
   {
    "from": [
-    4.75,
-    11.25,
-    4.75
+    4.5,
+    11.5,
+    4.5
    ],
    "to": [
-    11.25,
-    11.25,
-    11.25
+    11.5,
+    11.5,
+    11.5
    ],
    "faces": {
     "up": {
@@ -138,38 +118,31 @@
   },
   {
    "from": [
-    4.25,
-    4.25,
-    4.25
+    4,
+    4,
+    4
    ],
    "to": [
-    11.75,
-    4.25,
-    11.75
+    12,
+    4,
+    12
    ],
    "faces": {
     "down": {
-     "texture": "#glass",
-     "uv": [
-      0,
-      0,
-      16,
-      16
-     ],
-     "rotation": 0
+     "texture": "#glass_h"
     }
    }
   },
   {
    "from": [
-    4.75,
-    4.75,
-    4.75
+    4.5,
+    4.5,
+    4.5
    ],
    "to": [
-    11.25,
-    4.75,
-    11.25
+    11.5,
+    4.5,
+    11.5
    ],
    "faces": {
     "down": {
@@ -180,68 +153,40 @@
   },
   {
    "from": [
-    11.75,
-    4.25,
-    4.25
+    12,
+    4,
+    4
    ],
    "to": [
     16,
-    11.75,
-    11.75
+    12,
+    12
    ],
    "faces": {
     "north": {
-     "texture": "#glass",
-     "uv": [
-      0,
-      0,
-      16,
-      16
-     ],
-     "rotation": 0
+     "texture": "#glass_h"
     },
     "south": {
-     "texture": "#glass",
-     "uv": [
-      0,
-      0,
-      16,
-      16
-     ],
-     "rotation": 0
+     "texture": "#glass_h"
     },
     "up": {
-     "texture": "#glass",
-     "uv": [
-      0,
-      0,
-      16,
-      16
-     ],
-     "rotation": 0
+     "texture": "#glass_h"
     },
     "down": {
-     "texture": "#glass",
-     "uv": [
-      0,
-      0,
-      16,
-      16
-     ],
-     "rotation": 0
+     "texture": "#glass_h"
     }
    }
   },
   {
    "from": [
-    11.25,
-    4.75,
-    4.75
+    11.5,
+    4.5,
+    4.5
    ],
    "to": [
     16,
-    11.25,
-    11.25
+    11.5,
+    11.5
    ],
    "faces": {
     "north": {
@@ -265,67 +210,39 @@
   {
    "from": [
     0,
-    4.25,
-    4.25
+    4,
+    4
    ],
    "to": [
-    4.25,
-    11.75,
-    11.75
+    4,
+    12,
+    12
    ],
    "faces": {
     "north": {
-     "texture": "#glass",
-     "uv": [
-      0,
-      0,
-      16,
-      16
-     ],
-     "rotation": 0
+     "texture": "#glass_h"
     },
     "south": {
-     "texture": "#glass",
-     "uv": [
-      0,
-      0,
-      16,
-      16
-     ],
-     "rotation": 0
+     "texture": "#glass_h"
     },
     "up": {
-     "texture": "#glass",
-     "uv": [
-      0,
-      0,
-      16,
-      16
-     ],
-     "rotation": 0
+     "texture": "#glass_h"
     },
     "down": {
-     "texture": "#glass",
-     "uv": [
-      0,
-      0,
-      16,
-      16
-     ],
-     "rotation": 0
+     "texture": "#glass_h"
     }
    }
   },
   {
    "from": [
     0,
-    4.75,
-    4.75
+    4.5,
+    4.5
    ],
    "to": [
-    4.75,
-    11.25,
-    11.25
+    4.5,
+    11.5,
+    11.5
    ],
    "faces": {
     "north": {
@@ -348,14 +265,14 @@
   },
   {
    "from": [
-    12.5,
-    3.5,
-    3.5
+    13,
+    3,
+    3
    ],
    "to": [
     16,
-    12.5,
-    12.5
+    13,
+    13
    ],
    "faces": {
     "north": {
@@ -381,13 +298,13 @@
   {
    "from": [
     0,
-    3.5,
-    3.5
+    3,
+    3
    ],
    "to": [
-    3.5,
-    12.5,
-    12.5
+    3,
+    13,
+    13
    ],
    "faces": {
     "north": {
