@@ -343,12 +343,132 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
          * aquarium's blocks (odd shapes) are pulled into the nearest one by the frame clamp.
          */
         private static void lapPoints(Paths p, Random r, List<Vec3> pts, List<BlockPos> blocks) {
-            int x0 = Integer.MAX_VALUE, z0 = Integer.MAX_VALUE, y0 = Integer.MAX_VALUE, x1 = Integer.MIN_VALUE, z1 = Integer.MIN_VALUE, y1 = Integer.MIN_VALUE;
+            // The aquarium's footprint as columns, with each column's lowest and highest tank block.
+            Map<Long, int[]> cols = new HashMap<>();
+            int x0 = Integer.MAX_VALUE, z0 = Integer.MAX_VALUE, x1 = Integer.MIN_VALUE, z1 = Integer.MIN_VALUE;
             for (BlockPos b : p.members) {
+                cols.merge(colKey(b.getX(), b.getZ()), new int[]{b.getY(), b.getY()}, (o, n) -> new int[]{Math.min(o[0], n[0]), Math.max(o[1], n[1])});
                 x0 = Math.min(x0, b.getX()); x1 = Math.max(x1, b.getX());
-                y0 = Math.min(y0, b.getY()); y1 = Math.max(y1, b.getY());
                 z0 = Math.min(z0, b.getZ()); z1 = Math.max(z1, b.getZ());
             }
+            if (cols.size() == (x1 - x0 + 1) * (z1 - z0 + 1)) {
+                rectLap(p, r, pts, blocks, x0, z0, x1, z1);
+                return;
+            }
+            // Odd shapes: follow the outline block by block (keeping a hand on the outer wall), so the fish never
+            // cuts across empty space, then now and then wander through the middle and come back.
+            List<int[]> ring = outline(cols, r);
+            if (ring.size() < 2) {
+                rectLap(p, r, pts, blocks, x0, z0, x1, z1);
+                return;
+            }
+            double in = p.perp + 0.1;
+            int laps = 2, total = ring.size() * laps;
+            int idx = 0;
+            for (int lap = 0; lap < laps; lap++) {
+                for (int[] c : ring) {
+                    addColumnPoint(p, cols, c[0], c[1], in, (double) idx++ / total, pts, blocks);
+                }
+                if (r.nextFloat() < 0.6F) { // a detour through the middle, back to where it left the wall
+                    int[] from = ring.get(ring.size() - 1);
+                    List<int[]> detour = wander(cols, from, ring.get(0), r);
+                    for (int[] c : detour) addColumnPoint(p, cols, c[0], c[1], 0.5, (double) idx / total, pts, blocks);
+                }
+            }
+        }
+
+        private static long colKey(int x, int z) { return ((long) x << 32) ^ (z & 0xffffffffL); }
+
+        private static final int[][] STEPS = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}}; // east, south, west, north (clockwise)
+
+        /** The outer ring of columns, walked keeping the open side on one hand (a few laps' worth at most). */
+        private static List<int[]> outline(Map<Long, int[]> cols, Random r) {
+            List<int[]> edge = new ArrayList<>();
+            for (long k : cols.keySet()) {
+                int x = (int) (k >> 32), z = (int) k;
+                for (int[] d : STEPS) if (!cols.containsKey(colKey(x + d[0], z + d[1]))) { edge.add(new int[]{x, z}); break; }
+            }
+            if (edge.isEmpty()) return edge;
+            edge.sort((u, v) -> u[0] != v[0] ? Integer.compare(u[0], v[0]) : Integer.compare(u[1], v[1]));
+            int[] start = edge.get(0);
+            boolean right = r.nextBoolean();
+            int dir = 1; // start heading south along the west side
+            List<int[]> out = new ArrayList<>();
+            int x = start[0], z = start[1];
+            for (int guard = 0; guard < cols.size() * 4 + 8; guard++) {
+                out.add(new int[]{x, z});
+                int[] order = right ? new int[]{(dir + 3) % 4, dir, (dir + 1) % 4, (dir + 2) % 4} : new int[]{(dir + 1) % 4, dir, (dir + 3) % 4, (dir + 2) % 4};
+                boolean moved = false;
+                for (int nd : order) {
+                    int nx = x + STEPS[nd][0], nz = z + STEPS[nd][1];
+                    if (!cols.containsKey(colKey(nx, nz)) || !isEdge(cols, nx, nz)) continue;
+                    x = nx; z = nz; dir = nd; moved = true;
+                    break;
+                }
+                if (!moved || (x == start[0] && z == start[1])) break;
+            }
+            return out;
+        }
+
+        private static boolean isEdge(Map<Long, int[]> cols, int x, int z) {
+            for (int[] d : STEPS) if (!cols.containsKey(colKey(x + d[0], z + d[1]))) return true;
+            return false;
+        }
+
+        /** A few random steps through the footprint from {@code from}, then the shortest way to {@code to}. */
+        private static List<int[]> wander(Map<Long, int[]> cols, int[] from, int[] to, Random r) {
+            List<int[]> out = new ArrayList<>();
+            int x = from[0], z = from[1];
+            for (int i = 0, n = 2 + r.nextInt(4); i < n; i++) {
+                List<int[]> opts = new ArrayList<>();
+                for (int[] d : STEPS) if (cols.containsKey(colKey(x + d[0], z + d[1]))) opts.add(new int[]{x + d[0], z + d[1]});
+                if (opts.isEmpty()) break;
+                int[] c = opts.get(r.nextInt(opts.size()));
+                x = c[0]; z = c[1];
+                out.add(c);
+            }
+            // breadth-first back to the ring
+            Map<Long, Long> prev = new HashMap<>();
+            java.util.ArrayDeque<int[]> q = new java.util.ArrayDeque<>();
+            q.add(new int[]{x, z});
+            prev.put(colKey(x, z), Long.MIN_VALUE);
+            long goal = colKey(to[0], to[1]);
+            while (!q.isEmpty() && !prev.containsKey(goal)) {
+                int[] c = q.poll();
+                for (int[] d : STEPS) {
+                    long k = colKey(c[0] + d[0], c[1] + d[1]);
+                    if (!cols.containsKey(k) || prev.containsKey(k)) continue;
+                    prev.put(k, colKey(c[0], c[1]));
+                    q.add(new int[]{c[0] + d[0], c[1] + d[1]});
+                }
+            }
+            List<int[]> back = new ArrayList<>();
+            for (Long k = goal; k != null && k != Long.MIN_VALUE && prev.containsKey(k); k = prev.get(k)) back.add(0, new int[]{(int) (k >> 32), (int) (long) k});
+            if (!back.isEmpty()) back.remove(back.size() - 1); // the ring's first point is next anyway
+            if (!back.isEmpty() && back.get(0)[0] == x && back.get(0)[1] == z) back.remove(0);
+            out.addAll(back);
+            return out;
+        }
+
+        /** A waypoint in a column: pushed toward its glass sides (by {@code in} from the glass), at a lap height. */
+        private static void addColumnPoint(Paths p, Map<Long, int[]> cols, int x, int z, double in, double frac, List<Vec3> pts, List<BlockPos> blocks) {
+            double px = x + 0.5, pz = z + 0.5, push = Math.max(0, 0.5 - in);
+            if (!cols.containsKey(colKey(x - 1, z))) px -= push;
+            if (!cols.containsKey(colKey(x + 1, z))) px += push;
+            if (!cols.containsKey(colKey(x, z - 1))) pz -= push;
+            if (!cols.containsKey(colKey(x, z + 1))) pz += push;
+            int[] yr = cols.get(colKey(x, z));
+            double lo = yr[0] + 0.35, hi = Math.max(lo, yr[1] + 1 - 0.3);
+            double y = lo + (hi - lo) * (0.5 - 0.5 * Math.cos(2 * Math.PI * frac));
+            Vec3 v = new Vec3(px, y, pz);
+            pts.add(v);
+            blocks.add(nearest(p, v));
+        }
+
+        /** Rectangular footprints: a rounded-rectangle lap round the outside, rising and falling over four laps. */
+        private static void rectLap(Paths p, Random r, List<Vec3> pts, List<BlockPos> blocks, int x0, int z0, int x1, int z1) {
+            int y0 = Integer.MAX_VALUE, y1 = Integer.MIN_VALUE;
+            for (BlockPos b : p.members) { y0 = Math.min(y0, b.getY()); y1 = Math.max(y1, b.getY()); }
             double in = p.perp + 0.1; // laps run alongside the glass, so they can hug it
             double ax = x0 + in, bx = x1 + 1 - in, az = z0 + in, bz = z1 + 1 - in;
             double lo = y0 + 0.35, hi = Math.max(lo, y1 + 1 - 0.3);
@@ -371,6 +491,12 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
                 double[] q = ring.get((i + shift) % ring.size());
                 double y = lo + (hi - lo) * (0.5 - 0.5 * Math.cos(2 * Math.PI * i / n));
                 Vec3 v = new Vec3(q[0], y, q[1]);
+                pts.add(v);
+                blocks.add(nearest(p, v));
+            }
+            // now and then a quick dash across the middle before the next laps
+            if (r.nextFloat() < 0.6F) for (int k = 0, m = 2 + r.nextInt(2); k < m; k++) {
+                Vec3 v = new Vec3(ax + r.nextDouble() * (bx - ax), lo + r.nextDouble() * (hi - lo), az + r.nextDouble() * (bz - az));
                 pts.add(v);
                 blocks.add(nearest(p, v));
             }
