@@ -9,9 +9,9 @@ import java.util.List;
  * TankExtrasModel bakes what this returns. The server works out each block's shape bits ({@link #shape}).
  *
  * <h2>Layers</h2>
- * Glass goes on Minecraft's tripwire layer, liquid on the translucent layer. Tripwire always draws after
- * translucent, so glass is always over the liquid, from any angle, without relying on Minecraft's occasional
- * re-sorting of see-through faces.
+ * Outer glass faces ({@link Face#cull}) go on Minecraft's tripwire layer, which always draws after the translucent
+ * layer: the outside of the glass is over the liquid from any angle and never hides what's behind it. Everything
+ * else (liquid, inner glass, outlines, undersides, corner pieces) is on the translucent layer.
  *
  * <h2>Layout, in pixels of the block</h2>
  * <ul>

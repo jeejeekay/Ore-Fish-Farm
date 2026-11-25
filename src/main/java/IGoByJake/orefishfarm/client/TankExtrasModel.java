@@ -36,14 +36,17 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * The fish tank's block model: the block state's own parts (the 3 px base, the floor, its decor, the coil) plus all
  * of the glass and liquid, which {@link TankGeometry} works out from the block's shape (model data
- * {@link TankBlockEntity#EXTRAS}). Glass is on the tripwire layer, which always draws after the translucent liquid,
- * so the glass is over the water from every angle. Walls' outer faces are culled against solid neighbours, so
- * nothing ever shares their plane. Baked once per shape and look.
+ * {@link TankBlockEntity#EXTRAS}). The walls' outer faces are on the tripwire layer, which always draws after the
+ * translucent layer, so the outside of the glass is over everything behind it from every angle and never hides
+ * it. The glass seen from inside or across the tank (inner faces, the top outline, steps' undersides, corner
+ * pieces) is on the translucent layer with the liquid. (All on tripwire, the front glass sometimes drew first and
+ * hid the far walls' edges, depending on Minecraft's occasional re-sort: 2.26.4.) Outer faces are culled against
+ * solid neighbours, so nothing ever shares their plane. Baked once per shape and look.
  */
 public class TankExtrasModel extends BakedModelWrapper<BakedModel> {
     private static final FaceBakery BAKERY = new FaceBakery();
     private static final ResourceLocation MODEL = new ResourceLocation("orefishfarm", "block/fish_tank_glass");
-    /** Per shape and look: [layer 0 = glass, 1 = liquid][cull side ordinal, 6 = none] */
+    /** Per shape and look: [layer 0 = tripwire (outer glass), 1 = translucent (liquid, inner glass)][cull side, 6 = none] */
     private static final Map<Long, List<BakedQuad>[][]> CACHE = new ConcurrentHashMap<>();
     private static final Direction[] DIRS = Direction.values();
 
@@ -154,7 +157,7 @@ public class TankExtrasModel extends BakedModelWrapper<BakedModel> {
             BakedQuad q = BAKERY.bakeQuad(new Vector3f(f.from[0], f.from[1], f.from[2]), new Vector3f(f.to[0], f.to[1], f.to[2]),
                     face, sp, dir, BlockModelRotation.X0_Y0, null, shade, MODEL);
             if (!f.glass && look == TankLook.LAVA) q = withAlpha(q, 0xB4);
-            out[f.glass ? 0 : 1][cull == null ? 6 : cull.ordinal()].add(q);
+            out[f.glass && f.cull ? 0 : 1][cull == null ? 6 : cull.ordinal()].add(q);
         }
         for (int l = 0; l < 2; l++) for (int k = 0; k < 7; k++) out[l][k] = List.copyOf(out[l][k]);
         return out;
