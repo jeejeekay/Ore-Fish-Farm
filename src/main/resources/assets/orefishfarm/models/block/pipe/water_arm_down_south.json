@@ -1,0 +1,28 @@
+{
+ "render_type": "minecraft:translucent",
+ "ambientocclusion": false,
+ "textures": {
+  "fill": "minecraft:block/water_still",
+  "particle": "orefishfarm:block/pipe_rim"
+ },
+ "elements": [
+  {
+   "from": [
+    4.5,
+    0,
+    11.5
+   ],
+   "to": [
+    11.5,
+    4.5,
+    11.5
+   ],
+   "faces": {
+    "south": {
+     "texture": "#fill",
+     "tintindex": 0
+    }
+   }
+  }
+ ]
+}

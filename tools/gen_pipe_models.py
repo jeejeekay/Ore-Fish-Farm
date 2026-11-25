@@ -1,16 +1,14 @@
-"""Pipe Tank models, blockstate, item model and glass textures (Ore Fish Farm 2.25.0).
+"""Pipe Tank models, blockstate, item model and glass textures (Ore Fish Farm 2.26.0).
 
-A 6x6 glass tube (5..11) of tinted, animated water, with an 8x8 black rim collar 2 px deep where it meets an
-inventory or is capped.
+An 8x8 glass tube (4..12) round a 7x7 tube of tinted, animated water (4.5..11.5), with a 10x10 black rim collar:
+where it meets an inventory the collar reaches 2 px out of the block (14..18) into the inventory's; a capped dead
+end keeps it inside (14..16).
 
 How it stays glitch-free
 ------------------------
-Minecraft sorts see-through faces back to front by each face's centre. Two see-through layers (glass and water)
-only sort reliably when every glass face has a water face of exactly the same size and shape right behind it:
-then, seen from outside, the glass's centre is always the nearer one. So every face here is a PAIR: the glass
-face on the tube's surface and a water twin of the same extent 0.1 px further in (far enough apart not to
-z-fight, close enough that nothing shows between them). Nothing else is see-through. Faces are at most 6 px
-across, so faces of different pairs (a bend's two arms) sort correctly too.
+The glass is drawn on Minecraft's "tripwire" layer, which always draws after the translucent layer the water is
+on, so glass is always over the water whatever the camera angle (Minecraft only re-sorts see-through faces now and
+then, which is what made water vanish at sharp angles in 2.25). Glass faces only sort against other glass.
 
 Faces
 -----
@@ -39,10 +37,12 @@ MD = ROOT + '/models/block/pipe'
 TX = ROOT + '/textures/block'
 os.makedirs(MD, exist_ok=True)
 
-G0, G1 = 5, 11     # the tube's glass: 6 px across, on whole pixels
-TWIN = 0.1         # water twin: this far inside its glass face
-R0, R1 = 4, 12     # the rim collar: 8 px across, 2 px deep (14..16 along)
-SPAN = G1 - G0     # 6
+G0, G1 = 4, 12     # the tube's glass: 8 px across, on whole pixels
+W0, W1 = 4.5, 11.5 # the water inside: 7 px
+R0, R1 = 3, 13     # the rim collar: 10 px across, 14..16 in the block (+2 px out at an inventory)
+SPAN = G1 - G0     # 8
+GLASS_LAYER = 'minecraft:tripwire'
+CONNECTED = 'pipe|rim|cap'
 
 DIRS = ['north', 'south', 'west', 'east', 'up', 'down']
 VEC = {'north': (0, 0, -1), 'south': (0, 0, 1), 'west': (-1, 0, 0), 'east': (1, 0, 0), 'up': (0, 1, 0), 'down': (0, -1, 0)}
@@ -79,7 +79,7 @@ FADE = [(236, 250, 255, 135), (226, 246, 254, 72)]  # in from a folding edge: st
 
 
 def edge_texture(mask):
-    """Texels 0..5 of a 16x16: body glass, fading in at each edge in the mask (u-min, u-max, v-min, v-max)."""
+    """Texels 0..7 of a 16x16: body glass, fading in at each edge in the mask (u-min, u-max, v-min, v-max)."""
     im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
     for u in range(SPAN):
         for v in range(SPAN):
@@ -99,31 +99,27 @@ for m in range(16):
 
 # ------------------------------------------------------------------ faces
 
-def face_pair(face, lo, hi, fades):
-    """
-    A glass face on side `face` of the box lo..hi (only the face's plane is used), with its water twin.
-    `fades` is the set of directions (in the face's plane) whose edge folds. Returns two elements.
-    """
+def glass_face(face, lo, hi, fades):
+    """A glass face on side `face` of the box lo..hi; `fades`: the directions whose edge folds. -> (element, mask)"""
     (ua, us), (va, vs) = UV_AXES[face]
     i = 'xyz'.index
     lu, lv = hi[i(ua)] - lo[i(ua)], hi[i(va)] - lo[i(va)]
-    # which model direction each texture edge points to
     edges = {1: toward(ua, -us), 2: toward(ua, us), 4: toward(va, -vs), 8: toward(va, vs)}
     mask = sum(b for b, d in edges.items() if d in fades)
     # texture window: SPAN texels hold the full pattern; a shorter face takes the end that has its fade
     u0 = SPAN - lu if (mask & 2 and not mask & 1) else 0
     v0 = SPAN - lv if (mask & 8 and not mask & 4) else 0
-    uv = [u0, v0, u0 + lu, v0 + lv]
-    # the face's plane
     n = i(AXIS[face])
-    plane = hi[n] if SIGN[face] > 0 else lo[n]
-    gf, gt = list(lo), list(hi)
-    gf[n] = gt[n] = plane
-    wf, wt = list(gf), list(gt)
-    wf[n] = wt[n] = plane - SIGN[face] * TWIN
-    glass = {"from": gf, "to": gt, "faces": {face: {"texture": f"#g{mask}", "uv": uv}}}
-    water = {"from": wf, "to": wt, "faces": {face: {"texture": "#fill", "tintindex": 0}}}
-    return [water, glass], mask
+    f, t = list(lo), list(hi)
+    f[n] = t[n] = hi[n] if SIGN[face] > 0 else lo[n]
+    return {"from": f, "to": t, "faces": {face: {"texture": f"#g{mask}", "uv": [u0, v0, u0 + lu, v0 + lv]}}}, mask
+
+
+def water_face(face, lo, hi):
+    n = 'xyz'.index(AXIS[face])
+    f, t = list(lo), list(hi)
+    f[n] = t[n] = hi[n] if SIGN[face] > 0 else lo[n]
+    return {"from": f, "to": t, "faces": {face: {"texture": "#fill", "tintindex": 0}}}
 
 
 def write(name, elements, textures, render='minecraft:translucent'):
@@ -133,18 +129,20 @@ def write(name, elements, textures, render='minecraft:translucent'):
 
 def textures_for(masks):
     t = {f"g{m}": f"orefishfarm:block/pipe_glass_{m}" for m in sorted(set(masks))}
-    t["fill"] = "minecraft:block/water_still"
     t["particle"] = "orefishfarm:block/pipe_rim"
     return t
 
 
-def arm_box(a):
-    lo, hi = [G0] * 3, [G1] * 3
+WATER_TEX = {"fill": "minecraft:block/water_still", "particle": "orefishfarm:block/pipe_rim"}
+
+
+def arm_box(a, a0=G0, a1=G1):
+    lo, hi = [a0] * 3, [a1] * 3
     n = 'xyz'.index(AXIS[a])
     if SIGN[a] > 0:
-        lo[n], hi[n] = G1, 16
+        lo[n], hi[n] = a1, 16
     else:
-        lo[n], hi[n] = 0, G0
+        lo[n], hi[n] = 0, a0
     return lo, hi
 
 
@@ -153,6 +151,7 @@ for old in glob.glob(MD + '/*.json'):
 
 parts = []
 CORE = ([G0] * 3, [G1] * 3)
+WCORE = ([W0] * 3, [W1] * 3)
 
 # core faces: side d unconnected; one model per combination of its four neighbours' connections
 for d in DIRS:
@@ -160,13 +159,15 @@ for d in DIRS:
     for combo in range(16):
         open_sides = [e for k, e in enumerate(around) if combo >> k & 1]  # connected
         fades = {e for e in around if e not in open_sides}
-        els, mask = face_pair(d, *CORE, fades)
+        el, mask = glass_face(d, *CORE, fades)
         name = f'core_{d}_{combo}'
-        write(name, els, textures_for([mask]))
+        write(name, [el], textures_for([mask]), GLASS_LAYER)
         when = {d: "none"}
         for e in around:
-            when[e] = "pipe|rim" if e in open_sides else "none"
+            when[e] = CONNECTED if e in open_sides else "none"
         parts.append({"when": when, "apply": {"model": f"orefishfarm:block/pipe/{name}"}})
+    write(f'water_core_{d}', [water_face(d, *WCORE)], WATER_TEX)
+    parts.append({"when": {d: "none"}, "apply": {"model": f"orefishfarm:block/pipe/water_core_{d}"}})
 
 # arm faces: arm a, wall s; the edge at the core folds only if s is connected too
 for a in DIRS:
@@ -175,27 +176,30 @@ for a in DIRS:
         long_edges = {e for e in perp(a) if AXIS[e] != AXIS[s]}
         for inner in (False, True):
             fades = set(long_edges) | ({OPP[a]} if inner else set())
-            els, mask = face_pair(s, lo, hi, fades)
+            el, mask = glass_face(s, lo, hi, fades)
             name = f'arm_{a}_{s}_{"inner" if inner else "flat"}'
-            write(name, els, textures_for([mask]))
-            parts.append({"when": {a: "pipe|rim", s: "pipe|rim" if inner else "none"},
+            write(name, [el], textures_for([mask]), GLASS_LAYER)
+            parts.append({"when": {a: CONNECTED, s: CONNECTED if inner else "none"},
                           "apply": {"model": f"orefishfarm:block/pipe/{name}"}})
+        write(f'water_arm_{a}_{s}', [water_face(s, *arm_box(a, W0, W1))], WATER_TEX)
+        parts.append({"when": {a: CONNECTED}, "apply": {"model": f"orefishfarm:block/pipe/water_arm_{a}_{s}"}})
 
-# rim collars (solid black, cutout)
+# rim collars (solid black, cutout): at an inventory 2 px out of the block, at a dead end inside it
 for d in DIRS:
-    lo, hi = [R0] * 3, [R1] * 3
-    n = 'xyz'.index(AXIS[d])
-    lo[n], hi[n] = (14, 16) if SIGN[d] > 0 else (0, 2)
-    write(f'rim_{d}', [{"from": lo, "to": hi, "faces": {f: {"texture": "#rim"} for f in DIRS}}],
-          {"rim": "orefishfarm:block/pipe_rim", "particle": "orefishfarm:block/pipe_rim"}, 'minecraft:cutout')
-    parts.append({"when": {d: "rim"}, "apply": {"model": f"orefishfarm:block/pipe/rim_{d}"}})
+    for kind, (a, b) in (('rim', (14, 18)), ('cap', (14, 16))):
+        lo, hi = [R0] * 3, [R1] * 3
+        n = 'xyz'.index(AXIS[d])
+        lo[n], hi[n] = (a, b) if SIGN[d] > 0 else (16 - b, 16 - a)
+        write(f'{kind}_{d}', [{"from": lo, "to": hi, "faces": {f: {"texture": "#rim"} for f in DIRS}}],
+              {"rim": "orefishfarm:block/pipe_rim", "particle": "orefishfarm:block/pipe_rim"}, 'minecraft:cutout')
+        parts.append({"when": {d: kind}, "apply": {"model": f"orefishfarm:block/pipe/{kind}_{d}"}})
 
 with open(ROOT + '/blockstates/pipe_tank.json', 'w') as fh:
     json.dump({"multipart": parts}, fh, indent=1)
 
 # Item: a lone pipe (east-west, rims both ends)
 state = {d: 'none' for d in DIRS}
-state['east'] = state['west'] = 'rim'
+state['east'] = state['west'] = 'cap'
 
 
 def matches(when):

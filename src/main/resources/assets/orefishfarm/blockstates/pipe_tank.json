@@ -15,7 +15,7 @@
   {
    "when": {
     "north": "none",
-    "west": "pipe|rim",
+    "west": "pipe|rim|cap",
     "east": "none",
     "up": "none",
     "down": "none"
@@ -28,7 +28,7 @@
    "when": {
     "north": "none",
     "west": "none",
-    "east": "pipe|rim",
+    "east": "pipe|rim|cap",
     "up": "none",
     "down": "none"
    },
@@ -39,8 +39,8 @@
   {
    "when": {
     "north": "none",
-    "west": "pipe|rim",
-    "east": "pipe|rim",
+    "west": "pipe|rim|cap",
+    "east": "pipe|rim|cap",
     "up": "none",
     "down": "none"
    },
@@ -53,7 +53,7 @@
     "north": "none",
     "west": "none",
     "east": "none",
-    "up": "pipe|rim",
+    "up": "pipe|rim|cap",
     "down": "none"
    },
    "apply": {
@@ -63,9 +63,9 @@
   {
    "when": {
     "north": "none",
-    "west": "pipe|rim",
+    "west": "pipe|rim|cap",
     "east": "none",
-    "up": "pipe|rim",
+    "up": "pipe|rim|cap",
     "down": "none"
    },
    "apply": {
@@ -76,8 +76,8 @@
    "when": {
     "north": "none",
     "west": "none",
-    "east": "pipe|rim",
-    "up": "pipe|rim",
+    "east": "pipe|rim|cap",
+    "up": "pipe|rim|cap",
     "down": "none"
    },
    "apply": {
@@ -87,9 +87,9 @@
   {
    "when": {
     "north": "none",
-    "west": "pipe|rim",
-    "east": "pipe|rim",
-    "up": "pipe|rim",
+    "west": "pipe|rim|cap",
+    "east": "pipe|rim|cap",
+    "up": "pipe|rim|cap",
     "down": "none"
    },
    "apply": {
@@ -102,7 +102,7 @@
     "west": "none",
     "east": "none",
     "up": "none",
-    "down": "pipe|rim"
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_north_8"
@@ -111,10 +111,10 @@
   {
    "when": {
     "north": "none",
-    "west": "pipe|rim",
+    "west": "pipe|rim|cap",
     "east": "none",
     "up": "none",
-    "down": "pipe|rim"
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_north_9"
@@ -124,9 +124,9 @@
    "when": {
     "north": "none",
     "west": "none",
-    "east": "pipe|rim",
+    "east": "pipe|rim|cap",
     "up": "none",
-    "down": "pipe|rim"
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_north_10"
@@ -135,10 +135,10 @@
   {
    "when": {
     "north": "none",
-    "west": "pipe|rim",
-    "east": "pipe|rim",
+    "west": "pipe|rim|cap",
+    "east": "pipe|rim|cap",
     "up": "none",
-    "down": "pipe|rim"
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_north_11"
@@ -149,8 +149,8 @@
     "north": "none",
     "west": "none",
     "east": "none",
-    "up": "pipe|rim",
-    "down": "pipe|rim"
+    "up": "pipe|rim|cap",
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_north_12"
@@ -159,10 +159,10 @@
   {
    "when": {
     "north": "none",
-    "west": "pipe|rim",
+    "west": "pipe|rim|cap",
     "east": "none",
-    "up": "pipe|rim",
-    "down": "pipe|rim"
+    "up": "pipe|rim|cap",
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_north_13"
@@ -172,9 +172,9 @@
    "when": {
     "north": "none",
     "west": "none",
-    "east": "pipe|rim",
-    "up": "pipe|rim",
-    "down": "pipe|rim"
+    "east": "pipe|rim|cap",
+    "up": "pipe|rim|cap",
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_north_14"
@@ -183,13 +183,21 @@
   {
    "when": {
     "north": "none",
-    "west": "pipe|rim",
-    "east": "pipe|rim",
-    "up": "pipe|rim",
-    "down": "pipe|rim"
+    "west": "pipe|rim|cap",
+    "east": "pipe|rim|cap",
+    "up": "pipe|rim|cap",
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_north_15"
+   }
+  },
+  {
+   "when": {
+    "north": "none"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/water_core_north"
    }
   },
   {
@@ -207,7 +215,7 @@
   {
    "when": {
     "south": "none",
-    "west": "pipe|rim",
+    "west": "pipe|rim|cap",
     "east": "none",
     "up": "none",
     "down": "none"
@@ -220,7 +228,7 @@
    "when": {
     "south": "none",
     "west": "none",
-    "east": "pipe|rim",
+    "east": "pipe|rim|cap",
     "up": "none",
     "down": "none"
    },
@@ -231,8 +239,8 @@
   {
    "when": {
     "south": "none",
-    "west": "pipe|rim",
-    "east": "pipe|rim",
+    "west": "pipe|rim|cap",
+    "east": "pipe|rim|cap",
     "up": "none",
     "down": "none"
    },
@@ -245,7 +253,7 @@
     "south": "none",
     "west": "none",
     "east": "none",
-    "up": "pipe|rim",
+    "up": "pipe|rim|cap",
     "down": "none"
    },
    "apply": {
@@ -255,9 +263,9 @@
   {
    "when": {
     "south": "none",
-    "west": "pipe|rim",
+    "west": "pipe|rim|cap",
     "east": "none",
-    "up": "pipe|rim",
+    "up": "pipe|rim|cap",
     "down": "none"
    },
    "apply": {
@@ -268,8 +276,8 @@
    "when": {
     "south": "none",
     "west": "none",
-    "east": "pipe|rim",
-    "up": "pipe|rim",
+    "east": "pipe|rim|cap",
+    "up": "pipe|rim|cap",
     "down": "none"
    },
    "apply": {
@@ -279,9 +287,9 @@
   {
    "when": {
     "south": "none",
-    "west": "pipe|rim",
-    "east": "pipe|rim",
-    "up": "pipe|rim",
+    "west": "pipe|rim|cap",
+    "east": "pipe|rim|cap",
+    "up": "pipe|rim|cap",
     "down": "none"
    },
    "apply": {
@@ -294,7 +302,7 @@
     "west": "none",
     "east": "none",
     "up": "none",
-    "down": "pipe|rim"
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_south_8"
@@ -303,10 +311,10 @@
   {
    "when": {
     "south": "none",
-    "west": "pipe|rim",
+    "west": "pipe|rim|cap",
     "east": "none",
     "up": "none",
-    "down": "pipe|rim"
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_south_9"
@@ -316,9 +324,9 @@
    "when": {
     "south": "none",
     "west": "none",
-    "east": "pipe|rim",
+    "east": "pipe|rim|cap",
     "up": "none",
-    "down": "pipe|rim"
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_south_10"
@@ -327,10 +335,10 @@
   {
    "when": {
     "south": "none",
-    "west": "pipe|rim",
-    "east": "pipe|rim",
+    "west": "pipe|rim|cap",
+    "east": "pipe|rim|cap",
     "up": "none",
-    "down": "pipe|rim"
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_south_11"
@@ -341,8 +349,8 @@
     "south": "none",
     "west": "none",
     "east": "none",
-    "up": "pipe|rim",
-    "down": "pipe|rim"
+    "up": "pipe|rim|cap",
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_south_12"
@@ -351,10 +359,10 @@
   {
    "when": {
     "south": "none",
-    "west": "pipe|rim",
+    "west": "pipe|rim|cap",
     "east": "none",
-    "up": "pipe|rim",
-    "down": "pipe|rim"
+    "up": "pipe|rim|cap",
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_south_13"
@@ -364,9 +372,9 @@
    "when": {
     "south": "none",
     "west": "none",
-    "east": "pipe|rim",
-    "up": "pipe|rim",
-    "down": "pipe|rim"
+    "east": "pipe|rim|cap",
+    "up": "pipe|rim|cap",
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_south_14"
@@ -375,13 +383,21 @@
   {
    "when": {
     "south": "none",
-    "west": "pipe|rim",
-    "east": "pipe|rim",
-    "up": "pipe|rim",
-    "down": "pipe|rim"
+    "west": "pipe|rim|cap",
+    "east": "pipe|rim|cap",
+    "up": "pipe|rim|cap",
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_south_15"
+   }
+  },
+  {
+   "when": {
+    "south": "none"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/water_core_south"
    }
   },
   {
@@ -399,7 +415,7 @@
   {
    "when": {
     "west": "none",
-    "north": "pipe|rim",
+    "north": "pipe|rim|cap",
     "south": "none",
     "up": "none",
     "down": "none"
@@ -412,7 +428,7 @@
    "when": {
     "west": "none",
     "north": "none",
-    "south": "pipe|rim",
+    "south": "pipe|rim|cap",
     "up": "none",
     "down": "none"
    },
@@ -423,8 +439,8 @@
   {
    "when": {
     "west": "none",
-    "north": "pipe|rim",
-    "south": "pipe|rim",
+    "north": "pipe|rim|cap",
+    "south": "pipe|rim|cap",
     "up": "none",
     "down": "none"
    },
@@ -437,7 +453,7 @@
     "west": "none",
     "north": "none",
     "south": "none",
-    "up": "pipe|rim",
+    "up": "pipe|rim|cap",
     "down": "none"
    },
    "apply": {
@@ -447,9 +463,9 @@
   {
    "when": {
     "west": "none",
-    "north": "pipe|rim",
+    "north": "pipe|rim|cap",
     "south": "none",
-    "up": "pipe|rim",
+    "up": "pipe|rim|cap",
     "down": "none"
    },
    "apply": {
@@ -460,8 +476,8 @@
    "when": {
     "west": "none",
     "north": "none",
-    "south": "pipe|rim",
-    "up": "pipe|rim",
+    "south": "pipe|rim|cap",
+    "up": "pipe|rim|cap",
     "down": "none"
    },
    "apply": {
@@ -471,9 +487,9 @@
   {
    "when": {
     "west": "none",
-    "north": "pipe|rim",
-    "south": "pipe|rim",
-    "up": "pipe|rim",
+    "north": "pipe|rim|cap",
+    "south": "pipe|rim|cap",
+    "up": "pipe|rim|cap",
     "down": "none"
    },
    "apply": {
@@ -486,7 +502,7 @@
     "north": "none",
     "south": "none",
     "up": "none",
-    "down": "pipe|rim"
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_west_8"
@@ -495,10 +511,10 @@
   {
    "when": {
     "west": "none",
-    "north": "pipe|rim",
+    "north": "pipe|rim|cap",
     "south": "none",
     "up": "none",
-    "down": "pipe|rim"
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_west_9"
@@ -508,9 +524,9 @@
    "when": {
     "west": "none",
     "north": "none",
-    "south": "pipe|rim",
+    "south": "pipe|rim|cap",
     "up": "none",
-    "down": "pipe|rim"
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_west_10"
@@ -519,10 +535,10 @@
   {
    "when": {
     "west": "none",
-    "north": "pipe|rim",
-    "south": "pipe|rim",
+    "north": "pipe|rim|cap",
+    "south": "pipe|rim|cap",
     "up": "none",
-    "down": "pipe|rim"
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_west_11"
@@ -533,8 +549,8 @@
     "west": "none",
     "north": "none",
     "south": "none",
-    "up": "pipe|rim",
-    "down": "pipe|rim"
+    "up": "pipe|rim|cap",
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_west_12"
@@ -543,10 +559,10 @@
   {
    "when": {
     "west": "none",
-    "north": "pipe|rim",
+    "north": "pipe|rim|cap",
     "south": "none",
-    "up": "pipe|rim",
-    "down": "pipe|rim"
+    "up": "pipe|rim|cap",
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_west_13"
@@ -556,9 +572,9 @@
    "when": {
     "west": "none",
     "north": "none",
-    "south": "pipe|rim",
-    "up": "pipe|rim",
-    "down": "pipe|rim"
+    "south": "pipe|rim|cap",
+    "up": "pipe|rim|cap",
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_west_14"
@@ -567,13 +583,21 @@
   {
    "when": {
     "west": "none",
-    "north": "pipe|rim",
-    "south": "pipe|rim",
-    "up": "pipe|rim",
-    "down": "pipe|rim"
+    "north": "pipe|rim|cap",
+    "south": "pipe|rim|cap",
+    "up": "pipe|rim|cap",
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_west_15"
+   }
+  },
+  {
+   "when": {
+    "west": "none"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/water_core_west"
    }
   },
   {
@@ -591,7 +615,7 @@
   {
    "when": {
     "east": "none",
-    "north": "pipe|rim",
+    "north": "pipe|rim|cap",
     "south": "none",
     "up": "none",
     "down": "none"
@@ -604,7 +628,7 @@
    "when": {
     "east": "none",
     "north": "none",
-    "south": "pipe|rim",
+    "south": "pipe|rim|cap",
     "up": "none",
     "down": "none"
    },
@@ -615,8 +639,8 @@
   {
    "when": {
     "east": "none",
-    "north": "pipe|rim",
-    "south": "pipe|rim",
+    "north": "pipe|rim|cap",
+    "south": "pipe|rim|cap",
     "up": "none",
     "down": "none"
    },
@@ -629,7 +653,7 @@
     "east": "none",
     "north": "none",
     "south": "none",
-    "up": "pipe|rim",
+    "up": "pipe|rim|cap",
     "down": "none"
    },
    "apply": {
@@ -639,9 +663,9 @@
   {
    "when": {
     "east": "none",
-    "north": "pipe|rim",
+    "north": "pipe|rim|cap",
     "south": "none",
-    "up": "pipe|rim",
+    "up": "pipe|rim|cap",
     "down": "none"
    },
    "apply": {
@@ -652,8 +676,8 @@
    "when": {
     "east": "none",
     "north": "none",
-    "south": "pipe|rim",
-    "up": "pipe|rim",
+    "south": "pipe|rim|cap",
+    "up": "pipe|rim|cap",
     "down": "none"
    },
    "apply": {
@@ -663,9 +687,9 @@
   {
    "when": {
     "east": "none",
-    "north": "pipe|rim",
-    "south": "pipe|rim",
-    "up": "pipe|rim",
+    "north": "pipe|rim|cap",
+    "south": "pipe|rim|cap",
+    "up": "pipe|rim|cap",
     "down": "none"
    },
    "apply": {
@@ -678,7 +702,7 @@
     "north": "none",
     "south": "none",
     "up": "none",
-    "down": "pipe|rim"
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_east_8"
@@ -687,10 +711,10 @@
   {
    "when": {
     "east": "none",
-    "north": "pipe|rim",
+    "north": "pipe|rim|cap",
     "south": "none",
     "up": "none",
-    "down": "pipe|rim"
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_east_9"
@@ -700,9 +724,9 @@
    "when": {
     "east": "none",
     "north": "none",
-    "south": "pipe|rim",
+    "south": "pipe|rim|cap",
     "up": "none",
-    "down": "pipe|rim"
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_east_10"
@@ -711,10 +735,10 @@
   {
    "when": {
     "east": "none",
-    "north": "pipe|rim",
-    "south": "pipe|rim",
+    "north": "pipe|rim|cap",
+    "south": "pipe|rim|cap",
     "up": "none",
-    "down": "pipe|rim"
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_east_11"
@@ -725,8 +749,8 @@
     "east": "none",
     "north": "none",
     "south": "none",
-    "up": "pipe|rim",
-    "down": "pipe|rim"
+    "up": "pipe|rim|cap",
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_east_12"
@@ -735,10 +759,10 @@
   {
    "when": {
     "east": "none",
-    "north": "pipe|rim",
+    "north": "pipe|rim|cap",
     "south": "none",
-    "up": "pipe|rim",
-    "down": "pipe|rim"
+    "up": "pipe|rim|cap",
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_east_13"
@@ -748,9 +772,9 @@
    "when": {
     "east": "none",
     "north": "none",
-    "south": "pipe|rim",
-    "up": "pipe|rim",
-    "down": "pipe|rim"
+    "south": "pipe|rim|cap",
+    "up": "pipe|rim|cap",
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_east_14"
@@ -759,13 +783,21 @@
   {
    "when": {
     "east": "none",
-    "north": "pipe|rim",
-    "south": "pipe|rim",
-    "up": "pipe|rim",
-    "down": "pipe|rim"
+    "north": "pipe|rim|cap",
+    "south": "pipe|rim|cap",
+    "up": "pipe|rim|cap",
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_east_15"
+   }
+  },
+  {
+   "when": {
+    "east": "none"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/water_core_east"
    }
   },
   {
@@ -783,7 +815,7 @@
   {
    "when": {
     "up": "none",
-    "north": "pipe|rim",
+    "north": "pipe|rim|cap",
     "south": "none",
     "west": "none",
     "east": "none"
@@ -796,7 +828,7 @@
    "when": {
     "up": "none",
     "north": "none",
-    "south": "pipe|rim",
+    "south": "pipe|rim|cap",
     "west": "none",
     "east": "none"
    },
@@ -807,8 +839,8 @@
   {
    "when": {
     "up": "none",
-    "north": "pipe|rim",
-    "south": "pipe|rim",
+    "north": "pipe|rim|cap",
+    "south": "pipe|rim|cap",
     "west": "none",
     "east": "none"
    },
@@ -821,7 +853,7 @@
     "up": "none",
     "north": "none",
     "south": "none",
-    "west": "pipe|rim",
+    "west": "pipe|rim|cap",
     "east": "none"
    },
    "apply": {
@@ -831,9 +863,9 @@
   {
    "when": {
     "up": "none",
-    "north": "pipe|rim",
+    "north": "pipe|rim|cap",
     "south": "none",
-    "west": "pipe|rim",
+    "west": "pipe|rim|cap",
     "east": "none"
    },
    "apply": {
@@ -844,8 +876,8 @@
    "when": {
     "up": "none",
     "north": "none",
-    "south": "pipe|rim",
-    "west": "pipe|rim",
+    "south": "pipe|rim|cap",
+    "west": "pipe|rim|cap",
     "east": "none"
    },
    "apply": {
@@ -855,9 +887,9 @@
   {
    "when": {
     "up": "none",
-    "north": "pipe|rim",
-    "south": "pipe|rim",
-    "west": "pipe|rim",
+    "north": "pipe|rim|cap",
+    "south": "pipe|rim|cap",
+    "west": "pipe|rim|cap",
     "east": "none"
    },
    "apply": {
@@ -870,7 +902,7 @@
     "north": "none",
     "south": "none",
     "west": "none",
-    "east": "pipe|rim"
+    "east": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_up_8"
@@ -879,10 +911,10 @@
   {
    "when": {
     "up": "none",
-    "north": "pipe|rim",
+    "north": "pipe|rim|cap",
     "south": "none",
     "west": "none",
-    "east": "pipe|rim"
+    "east": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_up_9"
@@ -892,9 +924,9 @@
    "when": {
     "up": "none",
     "north": "none",
-    "south": "pipe|rim",
+    "south": "pipe|rim|cap",
     "west": "none",
-    "east": "pipe|rim"
+    "east": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_up_10"
@@ -903,10 +935,10 @@
   {
    "when": {
     "up": "none",
-    "north": "pipe|rim",
-    "south": "pipe|rim",
+    "north": "pipe|rim|cap",
+    "south": "pipe|rim|cap",
     "west": "none",
-    "east": "pipe|rim"
+    "east": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_up_11"
@@ -917,8 +949,8 @@
     "up": "none",
     "north": "none",
     "south": "none",
-    "west": "pipe|rim",
-    "east": "pipe|rim"
+    "west": "pipe|rim|cap",
+    "east": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_up_12"
@@ -927,10 +959,10 @@
   {
    "when": {
     "up": "none",
-    "north": "pipe|rim",
+    "north": "pipe|rim|cap",
     "south": "none",
-    "west": "pipe|rim",
-    "east": "pipe|rim"
+    "west": "pipe|rim|cap",
+    "east": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_up_13"
@@ -940,9 +972,9 @@
    "when": {
     "up": "none",
     "north": "none",
-    "south": "pipe|rim",
-    "west": "pipe|rim",
-    "east": "pipe|rim"
+    "south": "pipe|rim|cap",
+    "west": "pipe|rim|cap",
+    "east": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_up_14"
@@ -951,13 +983,21 @@
   {
    "when": {
     "up": "none",
-    "north": "pipe|rim",
-    "south": "pipe|rim",
-    "west": "pipe|rim",
-    "east": "pipe|rim"
+    "north": "pipe|rim|cap",
+    "south": "pipe|rim|cap",
+    "west": "pipe|rim|cap",
+    "east": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_up_15"
+   }
+  },
+  {
+   "when": {
+    "up": "none"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/water_core_up"
    }
   },
   {
@@ -975,7 +1015,7 @@
   {
    "when": {
     "down": "none",
-    "north": "pipe|rim",
+    "north": "pipe|rim|cap",
     "south": "none",
     "west": "none",
     "east": "none"
@@ -988,7 +1028,7 @@
    "when": {
     "down": "none",
     "north": "none",
-    "south": "pipe|rim",
+    "south": "pipe|rim|cap",
     "west": "none",
     "east": "none"
    },
@@ -999,8 +1039,8 @@
   {
    "when": {
     "down": "none",
-    "north": "pipe|rim",
-    "south": "pipe|rim",
+    "north": "pipe|rim|cap",
+    "south": "pipe|rim|cap",
     "west": "none",
     "east": "none"
    },
@@ -1013,7 +1053,7 @@
     "down": "none",
     "north": "none",
     "south": "none",
-    "west": "pipe|rim",
+    "west": "pipe|rim|cap",
     "east": "none"
    },
    "apply": {
@@ -1023,9 +1063,9 @@
   {
    "when": {
     "down": "none",
-    "north": "pipe|rim",
+    "north": "pipe|rim|cap",
     "south": "none",
-    "west": "pipe|rim",
+    "west": "pipe|rim|cap",
     "east": "none"
    },
    "apply": {
@@ -1036,8 +1076,8 @@
    "when": {
     "down": "none",
     "north": "none",
-    "south": "pipe|rim",
-    "west": "pipe|rim",
+    "south": "pipe|rim|cap",
+    "west": "pipe|rim|cap",
     "east": "none"
    },
    "apply": {
@@ -1047,9 +1087,9 @@
   {
    "when": {
     "down": "none",
-    "north": "pipe|rim",
-    "south": "pipe|rim",
-    "west": "pipe|rim",
+    "north": "pipe|rim|cap",
+    "south": "pipe|rim|cap",
+    "west": "pipe|rim|cap",
     "east": "none"
    },
    "apply": {
@@ -1062,7 +1102,7 @@
     "north": "none",
     "south": "none",
     "west": "none",
-    "east": "pipe|rim"
+    "east": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_down_8"
@@ -1071,10 +1111,10 @@
   {
    "when": {
     "down": "none",
-    "north": "pipe|rim",
+    "north": "pipe|rim|cap",
     "south": "none",
     "west": "none",
-    "east": "pipe|rim"
+    "east": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_down_9"
@@ -1084,9 +1124,9 @@
    "when": {
     "down": "none",
     "north": "none",
-    "south": "pipe|rim",
+    "south": "pipe|rim|cap",
     "west": "none",
-    "east": "pipe|rim"
+    "east": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_down_10"
@@ -1095,10 +1135,10 @@
   {
    "when": {
     "down": "none",
-    "north": "pipe|rim",
-    "south": "pipe|rim",
+    "north": "pipe|rim|cap",
+    "south": "pipe|rim|cap",
     "west": "none",
-    "east": "pipe|rim"
+    "east": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_down_11"
@@ -1109,8 +1149,8 @@
     "down": "none",
     "north": "none",
     "south": "none",
-    "west": "pipe|rim",
-    "east": "pipe|rim"
+    "west": "pipe|rim|cap",
+    "east": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_down_12"
@@ -1119,10 +1159,10 @@
   {
    "when": {
     "down": "none",
-    "north": "pipe|rim",
+    "north": "pipe|rim|cap",
     "south": "none",
-    "west": "pipe|rim",
-    "east": "pipe|rim"
+    "west": "pipe|rim|cap",
+    "east": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_down_13"
@@ -1132,9 +1172,9 @@
    "when": {
     "down": "none",
     "north": "none",
-    "south": "pipe|rim",
-    "west": "pipe|rim",
-    "east": "pipe|rim"
+    "south": "pipe|rim|cap",
+    "west": "pipe|rim|cap",
+    "east": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_down_14"
@@ -1143,10 +1183,10 @@
   {
    "when": {
     "down": "none",
-    "north": "pipe|rim",
-    "south": "pipe|rim",
-    "west": "pipe|rim",
-    "east": "pipe|rim"
+    "north": "pipe|rim|cap",
+    "south": "pipe|rim|cap",
+    "west": "pipe|rim|cap",
+    "east": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/core_down_15"
@@ -1154,7 +1194,15 @@
   },
   {
    "when": {
-    "north": "pipe|rim",
+    "down": "none"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/water_core_down"
+   }
+  },
+  {
+   "when": {
+    "north": "pipe|rim|cap",
     "west": "none"
    },
    "apply": {
@@ -1163,8 +1211,8 @@
   },
   {
    "when": {
-    "north": "pipe|rim",
-    "west": "pipe|rim"
+    "north": "pipe|rim|cap",
+    "west": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/arm_north_west_inner"
@@ -1172,7 +1220,15 @@
   },
   {
    "when": {
-    "north": "pipe|rim",
+    "north": "pipe|rim|cap"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/water_arm_north_west"
+   }
+  },
+  {
+   "when": {
+    "north": "pipe|rim|cap",
     "east": "none"
    },
    "apply": {
@@ -1181,8 +1237,8 @@
   },
   {
    "when": {
-    "north": "pipe|rim",
-    "east": "pipe|rim"
+    "north": "pipe|rim|cap",
+    "east": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/arm_north_east_inner"
@@ -1190,7 +1246,15 @@
   },
   {
    "when": {
-    "north": "pipe|rim",
+    "north": "pipe|rim|cap"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/water_arm_north_east"
+   }
+  },
+  {
+   "when": {
+    "north": "pipe|rim|cap",
     "up": "none"
    },
    "apply": {
@@ -1199,8 +1263,8 @@
   },
   {
    "when": {
-    "north": "pipe|rim",
-    "up": "pipe|rim"
+    "north": "pipe|rim|cap",
+    "up": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/arm_north_up_inner"
@@ -1208,7 +1272,15 @@
   },
   {
    "when": {
-    "north": "pipe|rim",
+    "north": "pipe|rim|cap"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/water_arm_north_up"
+   }
+  },
+  {
+   "when": {
+    "north": "pipe|rim|cap",
     "down": "none"
    },
    "apply": {
@@ -1217,8 +1289,8 @@
   },
   {
    "when": {
-    "north": "pipe|rim",
-    "down": "pipe|rim"
+    "north": "pipe|rim|cap",
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/arm_north_down_inner"
@@ -1226,7 +1298,15 @@
   },
   {
    "when": {
-    "south": "pipe|rim",
+    "north": "pipe|rim|cap"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/water_arm_north_down"
+   }
+  },
+  {
+   "when": {
+    "south": "pipe|rim|cap",
     "west": "none"
    },
    "apply": {
@@ -1235,8 +1315,8 @@
   },
   {
    "when": {
-    "south": "pipe|rim",
-    "west": "pipe|rim"
+    "south": "pipe|rim|cap",
+    "west": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/arm_south_west_inner"
@@ -1244,7 +1324,15 @@
   },
   {
    "when": {
-    "south": "pipe|rim",
+    "south": "pipe|rim|cap"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/water_arm_south_west"
+   }
+  },
+  {
+   "when": {
+    "south": "pipe|rim|cap",
     "east": "none"
    },
    "apply": {
@@ -1253,8 +1341,8 @@
   },
   {
    "when": {
-    "south": "pipe|rim",
-    "east": "pipe|rim"
+    "south": "pipe|rim|cap",
+    "east": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/arm_south_east_inner"
@@ -1262,7 +1350,15 @@
   },
   {
    "when": {
-    "south": "pipe|rim",
+    "south": "pipe|rim|cap"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/water_arm_south_east"
+   }
+  },
+  {
+   "when": {
+    "south": "pipe|rim|cap",
     "up": "none"
    },
    "apply": {
@@ -1271,8 +1367,8 @@
   },
   {
    "when": {
-    "south": "pipe|rim",
-    "up": "pipe|rim"
+    "south": "pipe|rim|cap",
+    "up": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/arm_south_up_inner"
@@ -1280,7 +1376,15 @@
   },
   {
    "when": {
-    "south": "pipe|rim",
+    "south": "pipe|rim|cap"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/water_arm_south_up"
+   }
+  },
+  {
+   "when": {
+    "south": "pipe|rim|cap",
     "down": "none"
    },
    "apply": {
@@ -1289,8 +1393,8 @@
   },
   {
    "when": {
-    "south": "pipe|rim",
-    "down": "pipe|rim"
+    "south": "pipe|rim|cap",
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/arm_south_down_inner"
@@ -1298,7 +1402,15 @@
   },
   {
    "when": {
-    "west": "pipe|rim",
+    "south": "pipe|rim|cap"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/water_arm_south_down"
+   }
+  },
+  {
+   "when": {
+    "west": "pipe|rim|cap",
     "north": "none"
    },
    "apply": {
@@ -1307,8 +1419,8 @@
   },
   {
    "when": {
-    "west": "pipe|rim",
-    "north": "pipe|rim"
+    "west": "pipe|rim|cap",
+    "north": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/arm_west_north_inner"
@@ -1316,7 +1428,15 @@
   },
   {
    "when": {
-    "west": "pipe|rim",
+    "west": "pipe|rim|cap"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/water_arm_west_north"
+   }
+  },
+  {
+   "when": {
+    "west": "pipe|rim|cap",
     "south": "none"
    },
    "apply": {
@@ -1325,8 +1445,8 @@
   },
   {
    "when": {
-    "west": "pipe|rim",
-    "south": "pipe|rim"
+    "west": "pipe|rim|cap",
+    "south": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/arm_west_south_inner"
@@ -1334,7 +1454,15 @@
   },
   {
    "when": {
-    "west": "pipe|rim",
+    "west": "pipe|rim|cap"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/water_arm_west_south"
+   }
+  },
+  {
+   "when": {
+    "west": "pipe|rim|cap",
     "up": "none"
    },
    "apply": {
@@ -1343,8 +1471,8 @@
   },
   {
    "when": {
-    "west": "pipe|rim",
-    "up": "pipe|rim"
+    "west": "pipe|rim|cap",
+    "up": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/arm_west_up_inner"
@@ -1352,7 +1480,15 @@
   },
   {
    "when": {
-    "west": "pipe|rim",
+    "west": "pipe|rim|cap"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/water_arm_west_up"
+   }
+  },
+  {
+   "when": {
+    "west": "pipe|rim|cap",
     "down": "none"
    },
    "apply": {
@@ -1361,8 +1497,8 @@
   },
   {
    "when": {
-    "west": "pipe|rim",
-    "down": "pipe|rim"
+    "west": "pipe|rim|cap",
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/arm_west_down_inner"
@@ -1370,7 +1506,15 @@
   },
   {
    "when": {
-    "east": "pipe|rim",
+    "west": "pipe|rim|cap"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/water_arm_west_down"
+   }
+  },
+  {
+   "when": {
+    "east": "pipe|rim|cap",
     "north": "none"
    },
    "apply": {
@@ -1379,8 +1523,8 @@
   },
   {
    "when": {
-    "east": "pipe|rim",
-    "north": "pipe|rim"
+    "east": "pipe|rim|cap",
+    "north": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/arm_east_north_inner"
@@ -1388,7 +1532,15 @@
   },
   {
    "when": {
-    "east": "pipe|rim",
+    "east": "pipe|rim|cap"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/water_arm_east_north"
+   }
+  },
+  {
+   "when": {
+    "east": "pipe|rim|cap",
     "south": "none"
    },
    "apply": {
@@ -1397,8 +1549,8 @@
   },
   {
    "when": {
-    "east": "pipe|rim",
-    "south": "pipe|rim"
+    "east": "pipe|rim|cap",
+    "south": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/arm_east_south_inner"
@@ -1406,7 +1558,15 @@
   },
   {
    "when": {
-    "east": "pipe|rim",
+    "east": "pipe|rim|cap"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/water_arm_east_south"
+   }
+  },
+  {
+   "when": {
+    "east": "pipe|rim|cap",
     "up": "none"
    },
    "apply": {
@@ -1415,8 +1575,8 @@
   },
   {
    "when": {
-    "east": "pipe|rim",
-    "up": "pipe|rim"
+    "east": "pipe|rim|cap",
+    "up": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/arm_east_up_inner"
@@ -1424,7 +1584,15 @@
   },
   {
    "when": {
-    "east": "pipe|rim",
+    "east": "pipe|rim|cap"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/water_arm_east_up"
+   }
+  },
+  {
+   "when": {
+    "east": "pipe|rim|cap",
     "down": "none"
    },
    "apply": {
@@ -1433,8 +1601,8 @@
   },
   {
    "when": {
-    "east": "pipe|rim",
-    "down": "pipe|rim"
+    "east": "pipe|rim|cap",
+    "down": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/arm_east_down_inner"
@@ -1442,7 +1610,15 @@
   },
   {
    "when": {
-    "up": "pipe|rim",
+    "east": "pipe|rim|cap"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/water_arm_east_down"
+   }
+  },
+  {
+   "when": {
+    "up": "pipe|rim|cap",
     "north": "none"
    },
    "apply": {
@@ -1451,8 +1627,8 @@
   },
   {
    "when": {
-    "up": "pipe|rim",
-    "north": "pipe|rim"
+    "up": "pipe|rim|cap",
+    "north": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/arm_up_north_inner"
@@ -1460,7 +1636,15 @@
   },
   {
    "when": {
-    "up": "pipe|rim",
+    "up": "pipe|rim|cap"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/water_arm_up_north"
+   }
+  },
+  {
+   "when": {
+    "up": "pipe|rim|cap",
     "south": "none"
    },
    "apply": {
@@ -1469,8 +1653,8 @@
   },
   {
    "when": {
-    "up": "pipe|rim",
-    "south": "pipe|rim"
+    "up": "pipe|rim|cap",
+    "south": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/arm_up_south_inner"
@@ -1478,7 +1662,15 @@
   },
   {
    "when": {
-    "up": "pipe|rim",
+    "up": "pipe|rim|cap"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/water_arm_up_south"
+   }
+  },
+  {
+   "when": {
+    "up": "pipe|rim|cap",
     "west": "none"
    },
    "apply": {
@@ -1487,8 +1679,8 @@
   },
   {
    "when": {
-    "up": "pipe|rim",
-    "west": "pipe|rim"
+    "up": "pipe|rim|cap",
+    "west": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/arm_up_west_inner"
@@ -1496,7 +1688,15 @@
   },
   {
    "when": {
-    "up": "pipe|rim",
+    "up": "pipe|rim|cap"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/water_arm_up_west"
+   }
+  },
+  {
+   "when": {
+    "up": "pipe|rim|cap",
     "east": "none"
    },
    "apply": {
@@ -1505,8 +1705,8 @@
   },
   {
    "when": {
-    "up": "pipe|rim",
-    "east": "pipe|rim"
+    "up": "pipe|rim|cap",
+    "east": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/arm_up_east_inner"
@@ -1514,7 +1714,15 @@
   },
   {
    "when": {
-    "down": "pipe|rim",
+    "up": "pipe|rim|cap"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/water_arm_up_east"
+   }
+  },
+  {
+   "when": {
+    "down": "pipe|rim|cap",
     "north": "none"
    },
    "apply": {
@@ -1523,8 +1731,8 @@
   },
   {
    "when": {
-    "down": "pipe|rim",
-    "north": "pipe|rim"
+    "down": "pipe|rim|cap",
+    "north": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/arm_down_north_inner"
@@ -1532,7 +1740,15 @@
   },
   {
    "when": {
-    "down": "pipe|rim",
+    "down": "pipe|rim|cap"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/water_arm_down_north"
+   }
+  },
+  {
+   "when": {
+    "down": "pipe|rim|cap",
     "south": "none"
    },
    "apply": {
@@ -1541,8 +1757,8 @@
   },
   {
    "when": {
-    "down": "pipe|rim",
-    "south": "pipe|rim"
+    "down": "pipe|rim|cap",
+    "south": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/arm_down_south_inner"
@@ -1550,7 +1766,15 @@
   },
   {
    "when": {
-    "down": "pipe|rim",
+    "down": "pipe|rim|cap"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/water_arm_down_south"
+   }
+  },
+  {
+   "when": {
+    "down": "pipe|rim|cap",
     "west": "none"
    },
    "apply": {
@@ -1559,8 +1783,8 @@
   },
   {
    "when": {
-    "down": "pipe|rim",
-    "west": "pipe|rim"
+    "down": "pipe|rim|cap",
+    "west": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/arm_down_west_inner"
@@ -1568,7 +1792,15 @@
   },
   {
    "when": {
-    "down": "pipe|rim",
+    "down": "pipe|rim|cap"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/water_arm_down_west"
+   }
+  },
+  {
+   "when": {
+    "down": "pipe|rim|cap",
     "east": "none"
    },
    "apply": {
@@ -1577,11 +1809,19 @@
   },
   {
    "when": {
-    "down": "pipe|rim",
-    "east": "pipe|rim"
+    "down": "pipe|rim|cap",
+    "east": "pipe|rim|cap"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/arm_down_east_inner"
+   }
+  },
+  {
+   "when": {
+    "down": "pipe|rim|cap"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/water_arm_down_east"
    }
   },
   {
@@ -1594,10 +1834,26 @@
   },
   {
    "when": {
+    "north": "cap"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/cap_north"
+   }
+  },
+  {
+   "when": {
     "south": "rim"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/rim_south"
+   }
+  },
+  {
+   "when": {
+    "south": "cap"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/cap_south"
    }
   },
   {
@@ -1610,10 +1866,26 @@
   },
   {
    "when": {
+    "west": "cap"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/cap_west"
+   }
+  },
+  {
+   "when": {
     "east": "rim"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/rim_east"
+   }
+  },
+  {
+   "when": {
+    "east": "cap"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/cap_east"
    }
   },
   {
@@ -1626,10 +1898,26 @@
   },
   {
    "when": {
+    "up": "cap"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/cap_up"
+   }
+  },
+  {
+   "when": {
     "down": "rim"
    },
    "apply": {
     "model": "orefishfarm:block/pipe/rim_down"
+   }
+  },
+  {
+   "when": {
+    "down": "cap"
+   },
+   "apply": {
+    "model": "orefishfarm:block/pipe/cap_down"
    }
   }
  ]

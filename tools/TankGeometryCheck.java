@@ -8,10 +8,10 @@ import java.util.*;
  *   javac -d /tmp/tg src/main/java/IGoByJake/orefishfarm/block/TankGeometry.java tools/TankGeometryCheck.java
  *   java -cp /tmp/tg TankGeometryCheck
  * Checks, in world space over the whole aquarium:
- *   twins     every glass face with liquid behind it has a same-size liquid twin 0.1 px further in
+ *   pairs     every glass face with water in front of it has the water's face on the same plane, facing back
  *   overlap   no two glass (or two liquid) faces overlap in the same plane
- *   sealed    every glass edge is met by other glass all along it, or is the top of the aquarium, its foot on the
- *             base, or a step's foot on the neighbour's water surface
+ *   sealed    the glass is closed: every glass edge is met by other glass all along it, except where it stands
+ *             on the base
  *   fades     an edge fades where the glass folds or ends, and is plain where it carries straight on
  *   inside    no liquid outside the glass, none above the water line of a top block
  *   surface   the water surface covers the open water exactly once (no gaps, no double layers)
@@ -42,16 +42,18 @@ public class TankGeometryCheck {
         }
         List<Q> glass = all.stream().filter(Q::glass).toList(), liquid = all.stream().filter(x -> !x.glass).toList();
 
-        // twins
+        // pairs: water in front of a glass face lies on the same plane, facing back at it
         for (Q g : glass) {
-            int a = axis(g.dir), s = FACE_N[g.dir][a];
-            int[] f = g.f.clone(), t = g.t.clone();
-            f[a] -= s * q(TankGeometry.TWIN);
-            t[a] -= s * q(TankGeometry.TWIN);
-            boolean twin = liquid.stream().anyMatch(l -> l.dir == g.dir && Arrays.equals(l.f, f) && Arrays.equals(l.t, t));
-            boolean wantsTwin = liquidBelow(set, g); // liquid behind the glass
-            if (wantsTwin && !twin) problems.add("twins: no liquid twin behind " + desc(g));
-            if (!wantsTwin && twin) problems.add("twins: liquid behind glass above the water line " + desc(g));
+            boolean pair = liquid.stream().anyMatch(l -> l.dir == (g.dir ^ 1) && Arrays.equals(l.f, g.f) && Arrays.equals(l.t, g.t));
+            boolean wants = waterInFront(set, g);
+            if (wants && !pair) problems.add("pairs: water in front of glass but no water face on it: " + desc(g));
+            if (!wants && pair) problems.add("pairs: water face on glass with no water in front: " + desc(g));
+        }
+        for (Q l : liquid) {
+            // the open surface (a top block's, at the line) has no glass over it; the water under a step slab does
+            if (l.dir == 1 && !in(set, l.block[0], l.block[1] + 1, l.block[2])) continue;
+            boolean pair = glass.stream().anyMatch(g -> g.dir == (l.dir ^ 1) && Arrays.equals(l.f, g.f) && Arrays.equals(l.t, g.t));
+            if (!pair) problems.add("pairs: water side face with no glass on it: " + desc(l));
         }
         // overlaps
         for (List<Q> kind : List.of(glass, liquid)) {
@@ -98,13 +100,12 @@ public class TankGeometryCheck {
                         problems.add("sealed: glass edge open for " + missing / (float) U + " px: " + desc(g) + " toward " + dirOut + " at " + pt(p0));
                         continue;
                     }
-                    if (open.equals("top") || open.equals("base")) { if (!fades) why = "plain " + open + " edge"; }
-                    else if (open.equals("waterline") && fades) why = "fading step foot";
+                    if (!fades && width(g) > U) why = "plain " + open + " edge";
+                    if (why != null) problems.add("fades: " + why + ": " + desc(g) + " toward " + dirOut);
                     continue;
                 }
                 // a sliver (under 1 px) shows a single fade column: skip
-                if (fold && !flat && !fades && width(g) >= U) why = "plain edge on a fold";
-                if (flat && !fold && fades && !nearConcave(set, g, dirOut)) why = "fading edge where the glass carries on";
+                if (fold && !flat && !fades && width(g) > U) why = "plain edge on a fold";
                 if (why != null) problems.add("fades: " + why + ": " + desc(g) + " toward " + dirOut);
             }
         }
@@ -136,15 +137,15 @@ public class TankGeometryCheck {
         return true; // fades on a flat join only occur at inside-corner ends by construction; checked visually by "sealed"
     }
 
-    /** Is there liquid right behind this glass face (just inside its middle)? */
-    static boolean liquidBelow(Set<List<Integer>> set, Q g) {
+    /** Is there water just in front of this glass face (all over it)? */
+    static boolean waterInFront(Set<List<Integer>> set, Q g) {
         int a = axis(g.dir), s = FACE_N[g.dir][a];
         int wet = 0, dry = 0;
         for (int[] p : samplePoints(g)) {
-            p[a] -= s * 50;
+            p[a] += s * 50;
             if (isWater(set, p)) wet++; else dry++;
         }
-        if (wet > 0 && dry > 0) problems.add("twins: glass with water behind part of it and air behind the rest " + desc(g));
+        if (wet > 0 && dry > 0) problems.add("pairs: glass with water in front of part of it and air in front of the rest " + desc(g));
         return wet > 0;
     }
 
@@ -155,7 +156,7 @@ public class TankGeometryCheck {
         int lx = p[0] - bx * 16 * U, ly = p[1] - by * 16 * U, lz = p[2] - bz * 16 * U;
         if (!in(set, bx, by + 1, bz)) return ly < q(TankGeometry.LINE);
         if (ly < q(TankGeometry.LINE)) return true;
-        return !besideAir(set, bx, by, bz, lx, lz);
+        return !besideAir(set, bx, by, bz, lx, lz); // the step slabs and pocket corners there are glass
     }
 
     static int uncovered(List<int[]> cover, int lo, int hi) {
@@ -169,22 +170,11 @@ public class TankGeometryCheck {
         return gap;
     }
 
-    /** Allowed open edges: "top" (nothing above), "base" (stands on the base), "waterline" (a step's foot). */
+    /** Allowed open edges: only the glass's foot where it stands on the base. */
     static String openEdge(Set<List<Integer>> set, Q g, int dirOut, int[] p) {
         int[] b = g.block;
         int localY = p[1] - b[1] * 16 * U;
-        if (dirOut == 1 && localY == 16 * U) {
-            // open above if the space just over the edge, on the inside of the glass, isn't aquarium
-            int a = axis(g.dir), s = FACE_N[g.dir][a];
-            int[] above = p.clone();
-            above[1] += 50;
-            above[a] -= s * 50;
-            int along = 3 - a - 1; // the face's horizontal in-plane axis
-            above[along] = (g.f[along] + g.t[along]) / 2;
-            if (!inHull(set, above)) return "top";
-        }
         if (dirOut == 0 && localY == q(TankGeometry.BASE) && !in(set, b[0], b[1] - 1, b[2])) return "base";
-        if (dirOut == 0 && localY == q(TankGeometry.LINE) && in(set, b[0], b[1] + 1, b[2])) return "waterline";
         return null;
     }
 
@@ -192,7 +182,7 @@ public class TankGeometryCheck {
     static boolean inHull(Set<List<Integer>> set, int[] p) {
         int bx = Math.floorDiv(p[0], 16 * U), by = Math.floorDiv(p[1], 16 * U), bz = Math.floorDiv(p[2], 16 * U);
         if (!in(set, bx, by, bz)) return false;
-        int lx = p[0] - bx * 16 * U, lz = p[2] - bz * 16 * U, g = q(TankGeometry.GLASS);
+        int lx = p[0] - bx * 16 * U, lz = p[2] - bz * 16 * U, g = q(TankGeometry.THICK);
         for (int dx = -1; dx <= 1; dx++)
             for (int dz = -1; dz <= 1; dz++) {
                 if (dx == 0 && dz == 0 || in(set, bx + dx, by, bz + dz)) continue;
@@ -205,7 +195,7 @@ public class TankGeometryCheck {
 
     /** In a block that goes on up, within GLASS of a neighbour (side or diagonal) that is a top block: its air. */
     static boolean besideAir(Set<List<Integer>> set, int bx, int by, int bz, int lx, int lz) {
-        int g = q(TankGeometry.GLASS);
+        int g = q(TankGeometry.THICK);
         for (int dx = -1; dx <= 1; dx++)
             for (int dz = -1; dz <= 1; dz++) {
                 if (dx == 0 && dz == 0) continue;
@@ -260,7 +250,7 @@ public class TankGeometryCheck {
         int bx = Math.floorDiv(p[0], 16 * U), by = Math.floorDiv(p[1] - (l.dir == 1 ? 1 : 0), 16 * U), bz = Math.floorDiv(p[2], 16 * U);
         if (!in(set, bx, by, bz)) return "outside the aquarium";
         int lx = p[0] - bx * 16 * U, ly = p[1] - by * 16 * U, lz = p[2] - bz * 16 * U;
-        int g = q(TankGeometry.GLASS);
+        int g = q(TankGeometry.THICK);
         // within GLASS of a column that isn't in the aquarium at this level (including diagonals)
         for (int dx = -1; dx <= 1; dx++)
             for (int dz = -1; dz <= 1; dz++) {
@@ -279,7 +269,7 @@ public class TankGeometryCheck {
 
     /** Sample the open water surface and count the surface faces over each point. */
     static void surface(Set<List<Integer>> set, List<Q> liquid) {
-        int line = q(TankGeometry.LINE), keep = q(TankGeometry.LIQUID) + 20;
+        int line = q(TankGeometry.LINE), keep = q(TankGeometry.THICK) + 20;
         for (List<Integer> b : set) {
             int bx = b.get(0), by = b.get(1), bz = b.get(2);
             boolean top = !in(set, bx, by + 1, bz);
@@ -287,7 +277,7 @@ public class TankGeometryCheck {
                 for (int k = 0; k < 32; k++) {
                     int lx = (i * 16 * U) / 32 + U / 4, lz = (k * 16 * U) / 32 + U / 4; // 0.25, 0.75, ... px
                     // is this point open water at the line? a top block's inside, or a taller block's band outside its step glass
-                    boolean open = top || besideAir(set, bx, by, bz, lx, lz);
+                    boolean open = top;
                     if (!open) continue;
                     // skip the thin band between glass and water at walls (by design), and anything outside the glass
                     boolean nearWall = false;

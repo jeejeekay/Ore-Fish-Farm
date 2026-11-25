@@ -45,13 +45,13 @@ public class PipeTankBlock extends Block {
     public static final EnumProperty<PipeSide> DOWN = EnumProperty.create("down", PipeSide.class);
 
     private static final Map<BlockState, VoxelShape> SHAPES = new HashMap<>();
-    private static final VoxelShape CORE = Block.box(5, 5, 5, 11, 11, 11); // the 6 px tube
+    private static final VoxelShape CORE = Block.box(4, 4, 4, 12, 12, 12); // the 8 px tube
 
     public PipeTankBlock(Properties props) {
         super(props);
         BlockState s = this.stateDefinition.any();
         for (Direction d : Direction.values()) s = s.setValue(side(d), PipeSide.NONE);
-        registerDefaultState(s.setValue(EAST, PipeSide.RIM).setValue(WEST, PipeSide.RIM));
+        registerDefaultState(s.setValue(EAST, PipeSide.CAP).setValue(WEST, PipeSide.CAP));
     }
 
     public static EnumProperty<PipeSide> side(Direction d) {
@@ -101,12 +101,12 @@ public class PipeTankBlock extends Block {
             if (s != PipeSide.NONE) joined++;
         }
         if (joined == 0) {
-            sides[Direction.EAST.ordinal()] = PipeSide.RIM;
-            sides[Direction.WEST.ordinal()] = PipeSide.RIM;
+            sides[Direction.EAST.ordinal()] = PipeSide.CAP;
+            sides[Direction.WEST.ordinal()] = PipeSide.CAP;
         } else if (joined == 1) {
             for (Direction d : Direction.values()) {
                 if (sides[d.ordinal()] != PipeSide.NONE) {
-                    sides[d.getOpposite().ordinal()] = PipeSide.RIM;
+                    sides[d.getOpposite().ordinal()] = PipeSide.CAP;
                     break;
                 }
             }
@@ -191,8 +191,8 @@ public class PipeTankBlock extends Block {
         for (Direction d : Direction.values()) {
             PipeSide side = state.getValue(side(d));
             if (side == PipeSide.NONE) continue;
-            s = Shapes.or(s, box(d, 5, 11, 11, 16));
-            if (side == PipeSide.RIM) s = Shapes.or(s, box(d, 4, 12, 14, 16)); // the 8 px mouth, 2 px deep
+            s = Shapes.or(s, box(d, 4, 12, 12, 16));
+            if (side == PipeSide.RIM || side == PipeSide.CAP) s = Shapes.or(s, box(d, 3, 13, 14, 16)); // the 10 px rim (the part in this block)
         }
         return s.optimize();
     }

@@ -33,11 +33,11 @@ def shaped(pipes, inv, p):
         sides[d] = 'pipe' if n in pipes else 'rim' if n in inv else 'none'
     joined = sum(s != 'none' for s in sides.values())
     if joined == 0:
-        sides['east'] = sides['west'] = 'rim'
+        sides['east'] = sides['west'] = 'cap'
     elif joined == 1:
         d = next(d for d in DIRS if sides[d] != 'none')
         opp = tuple(-c for c in VEC[d])
-        sides[next(e for e in DIRS if VEC[e] == opp)] = 'rim'
+        sides[next(e for e in DIRS if VEC[e] == opp)] = 'cap'
     return sides
 
 
@@ -106,14 +106,21 @@ def check(name, pipes, inv=()):
         g, w, r = faces_of(shaped(pipes, inv, p), p)
         glass += g; water += w; rims += r
     problems = []
-    # water twins
-    for face, f, t, im, uv in glass:
-        n = [abs(c) for c in VEC[face]].index(1)
-        s = sum(VEC[face])
-        twin = [list(f), list(t)]
-        twin[0][n] -= s * F(1, 10); twin[1][n] -= s * F(1, 10)
-        if not any(wf == face and wf2 == twin[0] and wt == twin[1] for wf, wf2, wt in water):
-            problems.append(f'no water twin for {face} {f}')
+    # water: its own closed tube (edges meet another water face, or sit under a rim), no overlaps, inside the glass
+    wmap = {}
+    for face, f, t in water:
+        for d, seg in edges(face, f, t):
+            wmap.setdefault(tuple(sorted(seg)), []).append(face)
+    for key, users in wmap.items():
+        under_rim = any(all(rf[i] <= key[0][i] <= rt[i] and rf[i] <= key[1][i] <= rt[i] for i in range(3)) for rf, rt in rims)
+        if len(users) != 2 and not (len(users) == 1 and under_rim):
+            problems.append(f'water edge met by {len(users)} faces at {[float(c) for c in key[0]]}')
+    for (a, b) in itertools.combinations(range(len(water)), 2):
+        fa, A0, A1 = water[a]
+        fb, B0, B1 = water[b]
+        n = [abs(c) for c in VEC[fa]].index(1)
+        if fa == fb and A0[n] == B0[n] and all(max(A0[i], B0[i]) < min(A1[i], B1[i]) for i in range(3) if i != n):
+            problems.append(f'overlapping {fa} water at {A0}')
     # edges
     edge_map = {}
     for gi, (face, f, t, im, uv) in enumerate(glass):
@@ -168,5 +175,6 @@ ok &= check('3x3 ring', [(x, 0, z) for x in range(3) for z in range(3) if (x, z)
 ok &= check('2x2x2 cube', [(x, y, z) for x in range(2) for y in range(2) for z in range(2)])
 ok &= check('staircase', L((0, 0, 0), (1, 0, 0), (1, 1, 0), (2, 1, 0), (2, 2, 0)))
 ok &= check('chest on a bend', L((0, 0, 0), (1, 0, 0)), L((1, 1, 0), (0, 0, 1)))
+ok &= check('dead end + chest', L((0, 0, 0), (1, 0, 0)), L((2, 0, 0),))
 ok &= check('filled 3x3 slab', [(x, 0, z) for x in range(3) for z in range(3)])
 print('ALL OK' if ok else 'FAILURES')
