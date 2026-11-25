@@ -623,6 +623,24 @@ public final class PipeNet {
         return new long[]{key, f};
     }
 
+    /** Whether the inventories next to {@code pipe} are the ones this network has on record for it. */
+    boolean knowsInventoriesAt(ServerLevel level, BlockPos pipe) {
+        long p = pipe.asLong();
+        for (Direction d : Direction.values()) {
+            BlockPos n = pipe.relative(d);
+            if (this.pipes.contains(n.asLong()) || level.getBlockState(n).getBlock() instanceof PipeTankBlock) continue;
+            boolean has = PipeTankBlock.hasInventory(level, n, d.getOpposite());
+            boolean known = false;
+            for (Endpoint e : this.endpoints) {
+                if (e.missing) continue;
+                for (long[] a : e.access) if (a[0] == p && a[1] == d.get3DDataValue()) { known = true; break; }
+                if (known) break;
+            }
+            if (has != known) return false;
+        }
+        return true;
+    }
+
     /**
      * Works out the inventories this network touches now. Loaded pipes are looked at; pipes in unloaded chunks keep
      * what they reached before. A found inventory keeps its letter and name; {@code known} holds endpoints from

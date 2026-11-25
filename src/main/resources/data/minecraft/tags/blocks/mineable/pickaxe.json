@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "orefishfarm:fish_tank",
+    "orefishfarm:breeding_tank",
+    "orefishfarm:power_tank",
+    "orefishfarm:pipe_tank"
+  ]
+}

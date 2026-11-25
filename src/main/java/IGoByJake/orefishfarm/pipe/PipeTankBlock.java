@@ -123,7 +123,36 @@ public class PipeTankBlock extends Block {
 
     @Override
     public BlockState updateShape(BlockState state, Direction dir, BlockState neighbor, LevelAccessor level, BlockPos pos, BlockPos from) {
+        // Some blocks (Create's depots, belts, and others) only offer their inventory once their block entity has
+        // set itself up, which is after this call. Look again a moment later.
+        recheckSoon(level, pos);
         return shaped(state, level, pos);
+    }
+
+    /** Re-check this pipe's joins in a couple of ticks. */
+    private void recheckSoon(LevelAccessor level, BlockPos pos) {
+        if (!level.isClientSide() && !level.getBlockTicks().hasScheduledTick(pos, this)) level.scheduleTick(pos, this, RECHECK_TICKS);
+    }
+
+    private static final int RECHECK_TICKS = 2;
+
+    /** The delayed re-check: fix the look, and have the network find its inventories again. */
+    @Override
+    public void tick(BlockState state, ServerLevel level, BlockPos pos, net.minecraft.util.RandomSource random) {
+        BlockState now = shaped(state, level, pos);
+        if (now != state) level.setBlock(pos, now, Block.UPDATE_ALL); // onPlace marks the network
+        else {
+            // Same look (a capped end and an inventory mouth look alike), but an inventory may have come or gone.
+            PipeNetworks nets = PipeNetworks.get(level);
+            PipeNet net = nets.netAt(pos);
+            if (net == null || !net.knowsInventoriesAt(level, pos)) nets.markDirty(pos);
+        }
+    }
+
+    /** A neighbour's block entity changed (Forge): its inventory may have just appeared. */
+    @Override
+    public void onNeighborChange(BlockState state, net.minecraft.world.level.LevelReader level, BlockPos pos, BlockPos neighbor) {
+        if (level instanceof LevelAccessor la) recheckSoon(la, pos);
     }
 
     @Override
@@ -147,6 +176,7 @@ public class PipeTankBlock extends Block {
         if (level.isClientSide) return;
         BlockState now = shaped(state, level, pos);
         if (now != state) level.setBlock(pos, now, Block.UPDATE_CLIENTS);
+        recheckSoon(level, pos);
     }
 
     // ------------------------------------------------------------------ shape and look
