@@ -39,6 +39,9 @@ import java.util.Map;
  *                   { "item": "...", "weight": 2, "food": "orefishfarm:brine_flakes" },   only while the aquarium eats
  *                   { "item": "...", "weight": 2, "traits": ["orefishfarm:charged"] } ],  this (item or "#tag"), only
  *                                                 if the fish carries these genes. None met = the plain "product".
+ *     "wild_genes": { "chance": 0.6, "one_of": ["orefishfarm:oak", "orefishfarm:birch"] },
+ *                               optional: a wild fish (caught or scooped) gets one of these genes at random, this often.
+ *                               Pair it with "products" entries that need those genes (see barkacuda.json).
  *     "product_tag": "orefishfarm:bark_scales",   optional: shed a random item of this tag instead (product = the count
  *                                                 and what shows when the tag is empty)
  *     "product_chance": 0.75,   chance per bite (every biteTicks of eating) in a Fish Tank
@@ -150,6 +153,15 @@ public final class FishData {
         }
     }
 
+    /** A wild fish's chance of one random gene from a list ("wild_genes"). Server side only. */
+    public record WildGenes(float chance, List<ResourceLocation> oneOf) {}
+    private static Map<Item, WildGenes> wildGenes = Map.of();
+
+    @Nullable
+    public static WildGenes wildGenes(Item fish) {
+        return wildGenes.get(fish);
+    }
+
     private static Map<Item, List<Drop>> drops = Map.of();
     private static Map<Item, List<Drop>> pendingDrops = Map.of();
 
@@ -170,7 +182,7 @@ public final class FishData {
         for (Drop d : list) {
             if (d.weight() > 0 && d.fedBy(eating) && FishGenes.hasAll(fish, d.traits())) { ok.add(d); total += d.weight(); }
         }
-        if (ok.isEmpty()) return f.product().copy();
+        if (ok.isEmpty()) return productFor(f, random); // nothing met: its product tag at random, or its product
         int roll = random.nextInt(total);
         for (Drop d : ok) {
             roll -= d.weight();
@@ -711,6 +723,7 @@ public final class FishData {
         Map<Item, ResourceLocation> tagOut = new HashMap<>();
         Map<Item, List<Drop>> dropOut = new HashMap<>();
         Map<Item, Float> haulOut = new HashMap<>();
+        Map<Item, WildGenes> wildOut = new HashMap<>();
         files.forEach((id, json) -> {
             try {
                 JsonObject o = json.getAsJsonObject();
@@ -729,6 +742,11 @@ public final class FishData {
                         GsonHelper.getAsFloat(o, "heat", 0F)));
                 if (o.has("scale")) scaleOut.put(f, Mth.clamp(GsonHelper.getAsFloat(o, "scale"), 0.25F, 4F));
                 if (o.has("haul")) haulOut.put(f, Math.max(0F, GsonHelper.getAsFloat(o, "haul")));
+                if (o.has("wild_genes")) {
+                    JsonObject w = GsonHelper.getAsJsonObject(o, "wild_genes");
+                    List<ResourceLocation> g = ids(GsonHelper.getAsJsonArray(w, "one_of"));
+                    if (!g.isEmpty()) wildOut.put(f, new WildGenes(Mth.clamp(GsonHelper.getAsFloat(w, "chance", 1F), 0F, 1F), g));
+                }
                 if (o.has("product_tag")) tagOut.put(f, new ResourceLocation(GsonHelper.getAsString(o, "product_tag")));
                 if (o.has("products")) {
                     List<Drop> dl = new ArrayList<>();
@@ -759,6 +777,7 @@ public final class FishData {
         productTags = tagOut;
         drops = dropOut;
         hauls = haulOut;
+        wildGenes = wildOut;
         byBucket = indexBuckets(out);
         LOG.info("Ore Fish Farm: {} fish", out.size());
     }

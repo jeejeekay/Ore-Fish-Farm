@@ -242,7 +242,14 @@ public final class FishGenes {
             p[i] = wildPotential(l[i], random);
         }
         setStats(stack, l, p);
-        setGenes(stack, speciesGenes(species));
+        List<ResourceLocation> genes = new ArrayList<>(speciesGenes(species));
+        // "wild_genes" in the fish's file: maybe one random gene from its list (e.g. a Barkacuda's tree).
+        FishData.WildGenes w = FishData.wildGenes(species);
+        if (w != null && genes.size() < MAX_GENES && random.nextFloat() < w.chance()) {
+            ResourceLocation g = w.oneOf().get(random.nextInt(w.oneOf().size()));
+            if (!genes.contains(g)) genes.add(g);
+        }
+        setGenes(stack, genes);
     }
 
     /** A wild level: picked by the config's wildLevelWeights. */

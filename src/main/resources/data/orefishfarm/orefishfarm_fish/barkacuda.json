@@ -5,6 +5,77 @@
     "count": 1
   },
   "product_tag": "orefishfarm:bark_scales",
+  "wild_genes": {
+    "chance": 0.6,
+    "one_of": [
+      "orefishfarm:oak",
+      "orefishfarm:spruce",
+      "orefishfarm:birch",
+      "orefishfarm:jungle",
+      "orefishfarm:acacia",
+      "orefishfarm:dark_oak",
+      "orefishfarm:mangrove",
+      "orefishfarm:cherry"
+    ]
+  },
+  "products": [
+    {
+      "item": "orefishfarm:oak_bark_scale",
+      "weight": 1,
+      "traits": [
+        "orefishfarm:oak"
+      ]
+    },
+    {
+      "item": "orefishfarm:spruce_bark_scale",
+      "weight": 1,
+      "traits": [
+        "orefishfarm:spruce"
+      ]
+    },
+    {
+      "item": "orefishfarm:birch_bark_scale",
+      "weight": 1,
+      "traits": [
+        "orefishfarm:birch"
+      ]
+    },
+    {
+      "item": "orefishfarm:jungle_bark_scale",
+      "weight": 1,
+      "traits": [
+        "orefishfarm:jungle"
+      ]
+    },
+    {
+      "item": "orefishfarm:acacia_bark_scale",
+      "weight": 1,
+      "traits": [
+        "orefishfarm:acacia"
+      ]
+    },
+    {
+      "item": "orefishfarm:dark_oak_bark_scale",
+      "weight": 1,
+      "traits": [
+        "orefishfarm:dark_oak"
+      ]
+    },
+    {
+      "item": "orefishfarm:mangrove_bark_scale",
+      "weight": 1,
+      "traits": [
+        "orefishfarm:mangrove"
+      ]
+    },
+    {
+      "item": "orefishfarm:cherry_bark_scale",
+      "weight": 1,
+      "traits": [
+        "orefishfarm:cherry"
+      ]
+    }
+  ],
   "product_chance": 1.0,
   "habitat": "orefishfarm:water",
   "scale": 1.5

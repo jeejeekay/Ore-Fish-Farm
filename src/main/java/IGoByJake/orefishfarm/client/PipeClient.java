@@ -40,11 +40,12 @@ public final class PipeClient {
     private static final int MAX_DRAWN = 256;
     /** Ticks a fish stays drawn where its leg ended. */
     private static final long LINGER = 30;
+    /** The biggest a fish is drawn in a pipe (blocks): a cod's size. Smaller fish shrink, see FishLook.pipeSize. */
     private static final float SIZE = 0.2F;
     /** Drawn size of a carried item (blocks). */
-    private static final float CARGO = 0.4F;
+    private static final float CARGO = 0.3F;
     /** How far right of the pipe's centre a swimming fish keeps (blocks; the water is 5 px across). */
-    private static final double KEEP_RIGHT = 1.25 / 16;
+    private static final double KEEP_RIGHT = 1.0 / 16;
 
     private record Trip(long[] path, long start, long end, ItemStack fish, ItemStack cargo) {}
 
@@ -128,8 +129,9 @@ public final class PipeClient {
             pose.mulPose(Axis.YP.rotation(yaw));
             pose.mulPose(Axis.ZP.rotation(pitch));
             Entity mob = FishLook.mob(t.fish);
+            float size = mob == null ? SIZE : FishLook.pipeSize(mob, SIZE);
             if (mob != null) {
-                FishLook.render(mob, SIZE, (long) now + (entry.getLongKey() & 0xFFF), partial, pose, buffers, light);
+                FishLook.render(mob, size, (long) now + (entry.getLongKey() & 0xFFF), partial, pose, buffers, light);
             } else {
                 pose.pushPose();
                 pose.scale(SIZE, SIZE, SIZE);
@@ -137,9 +139,10 @@ public final class PipeClient {
                 pose.popPose();
             }
             if (!t.cargo.isEmpty()) {
-                // What it carries, held at its nose: twice the fish's size (2.27.1) so it's easy to see.
+                // What it carries, held at its nose: the fish's half length, plus the item's half width (a block
+                // drawn FIXED fills about half its scale). Raise the second number to push the item further out.
                 pose.pushPose();
-                pose.translate(SIZE * 0.5F + CARGO * 0.4F, 0, 0);
+                pose.translate(size * 0.5F + CARGO * 0.25F, 0, 0);
                 pose.mulPose(Axis.YP.rotationDegrees(90));
                 pose.scale(CARGO, CARGO, CARGO);
                 mc.getItemRenderer().renderStatic(t.cargo, ItemDisplayContext.FIXED, light, OverlayTexture.NO_OVERLAY, pose, buffers, level, 0);

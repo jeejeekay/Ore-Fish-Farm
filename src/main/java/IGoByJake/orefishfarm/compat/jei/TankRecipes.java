@@ -37,9 +37,14 @@ public final class TankRecipes {
         for (FishData.Fish f : sorted()) {
             List<FishData.Drop> drops = FishData.drops(f);
             if (!drops.isEmpty()) { // one page per entry of a weighted list
-                int total = drops.stream().mapToInt(FishData.Drop::weight).sum();
-                for (FishData.Drop d : drops)
+                for (FishData.Drop d : drops) {
+                    // Out of the entries a fish with exactly this entry's genes could also get.
+                    int total = drops.stream().filter(o -> d.traits().containsAll(o.traits())).mapToInt(FishData.Drop::weight).sum();
                     out.add(new Product(FishData.bucketOf(f), List.of(d.item().copy()), FishData.productChance(f), foods, d, total));
+                }
+                // What it sheds when no entry is met (its product tag, or product), if no entry is always met.
+                if (f.makesProduct() && drops.stream().noneMatch(d -> d.traits().isEmpty() && d.food() == null))
+                    out.add(new Product(FishData.bucketOf(f), FishData.productChoices(f), FishData.productChance(f), foods, null, 0));
             } else if (f.makesProduct()) out.add(new Product(FishData.bucketOf(f), FishData.productChoices(f), FishData.productChance(f), foods, null, 0));
         }
         return out;

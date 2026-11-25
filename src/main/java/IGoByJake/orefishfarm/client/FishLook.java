@@ -107,6 +107,21 @@ public final class FishLook {
     }
 
     /**
+     * How long this mob is drawn in a Pipe Tank, at most {@code max} (blocks): the tank's sizing relative to a cod
+     * (tank_display referenceSize and sizePower), so a cod or anything bigger fills the pipe and smaller fish shrink,
+     * down to half of max; then the sizeOverrides entry and the baby scale.
+     */
+    public static float pipeSize(Entity e, float max) {
+        float scale = e instanceof LivingEntity l ? l.getScale() : 1F;
+        float adult = Math.max(e.getBbWidth(), e.getBbHeight()) / Math.max(0.05F, scale);
+        double rel = Math.pow(Math.max(0.01, adult) / IGoByJake.orefishfarm.Config.TANK_REFERENCE_SIZE.get(), IGoByJake.orefishfarm.Config.TANK_SIZE_POWER.get());
+        double d = net.minecraft.util.Mth.clamp(max * rel, max * 0.5, max);
+        var id = ForgeRegistries.ENTITY_TYPES.getKey(e.getType());
+        if (id != null) d = Math.min(max, d * IGoByJake.orefishfarm.Config.tankSizeOverride(id.toString()));
+        return (float) (d * Math.min(1F, scale));
+    }
+
+    /**
      * Draws the mob centred on the current pose origin, side-on (its length along x), its hitbox's longest side
      * fitted to {@code size} (from {@link #tankSize}).
      */
