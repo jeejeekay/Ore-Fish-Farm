@@ -3842,6 +3842,358 @@
       "apply": {
         "model": "orefishfarm:block/tank/fill_void_top_15"
       }
+    },
+    {
+      "when": {
+        "north": "false",
+        "west": "true",
+        "up": "false",
+        "down": "false"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_north_west_ff"
+      }
+    },
+    {
+      "when": {
+        "north": "false",
+        "east": "true",
+        "up": "false",
+        "down": "false"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_north_east_ff"
+      }
+    },
+    {
+      "when": {
+        "north": "false",
+        "west": "true",
+        "up": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_north_west_ft"
+      }
+    },
+    {
+      "when": {
+        "north": "false",
+        "east": "true",
+        "up": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_north_east_ft"
+      }
+    },
+    {
+      "when": {
+        "north": "false",
+        "west": "true",
+        "up": "true",
+        "down": "false"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_north_west_tf"
+      }
+    },
+    {
+      "when": {
+        "north": "false",
+        "east": "true",
+        "up": "true",
+        "down": "false"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_north_east_tf"
+      }
+    },
+    {
+      "when": {
+        "north": "false",
+        "west": "true",
+        "up": "true",
+        "down": "true"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_north_west_tt"
+      }
+    },
+    {
+      "when": {
+        "north": "false",
+        "east": "true",
+        "up": "true",
+        "down": "true"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_north_east_tt"
+      }
+    },
+    {
+      "when": {
+        "south": "false",
+        "west": "true",
+        "up": "false",
+        "down": "false"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_south_west_ff"
+      }
+    },
+    {
+      "when": {
+        "south": "false",
+        "east": "true",
+        "up": "false",
+        "down": "false"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_south_east_ff"
+      }
+    },
+    {
+      "when": {
+        "south": "false",
+        "west": "true",
+        "up": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_south_west_ft"
+      }
+    },
+    {
+      "when": {
+        "south": "false",
+        "east": "true",
+        "up": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_south_east_ft"
+      }
+    },
+    {
+      "when": {
+        "south": "false",
+        "west": "true",
+        "up": "true",
+        "down": "false"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_south_west_tf"
+      }
+    },
+    {
+      "when": {
+        "south": "false",
+        "east": "true",
+        "up": "true",
+        "down": "false"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_south_east_tf"
+      }
+    },
+    {
+      "when": {
+        "south": "false",
+        "west": "true",
+        "up": "true",
+        "down": "true"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_south_west_tt"
+      }
+    },
+    {
+      "when": {
+        "south": "false",
+        "east": "true",
+        "up": "true",
+        "down": "true"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_south_east_tt"
+      }
+    },
+    {
+      "when": {
+        "west": "false",
+        "north": "true",
+        "up": "false",
+        "down": "false"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_west_north_ff"
+      }
+    },
+    {
+      "when": {
+        "west": "false",
+        "south": "true",
+        "up": "false",
+        "down": "false"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_west_south_ff"
+      }
+    },
+    {
+      "when": {
+        "west": "false",
+        "north": "true",
+        "up": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_west_north_ft"
+      }
+    },
+    {
+      "when": {
+        "west": "false",
+        "south": "true",
+        "up": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_west_south_ft"
+      }
+    },
+    {
+      "when": {
+        "west": "false",
+        "north": "true",
+        "up": "true",
+        "down": "false"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_west_north_tf"
+      }
+    },
+    {
+      "when": {
+        "west": "false",
+        "south": "true",
+        "up": "true",
+        "down": "false"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_west_south_tf"
+      }
+    },
+    {
+      "when": {
+        "west": "false",
+        "north": "true",
+        "up": "true",
+        "down": "true"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_west_north_tt"
+      }
+    },
+    {
+      "when": {
+        "west": "false",
+        "south": "true",
+        "up": "true",
+        "down": "true"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_west_south_tt"
+      }
+    },
+    {
+      "when": {
+        "east": "false",
+        "north": "true",
+        "up": "false",
+        "down": "false"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_east_north_ff"
+      }
+    },
+    {
+      "when": {
+        "east": "false",
+        "south": "true",
+        "up": "false",
+        "down": "false"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_east_south_ff"
+      }
+    },
+    {
+      "when": {
+        "east": "false",
+        "north": "true",
+        "up": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_east_north_ft"
+      }
+    },
+    {
+      "when": {
+        "east": "false",
+        "south": "true",
+        "up": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_east_south_ft"
+      }
+    },
+    {
+      "when": {
+        "east": "false",
+        "north": "true",
+        "up": "true",
+        "down": "false"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_east_north_tf"
+      }
+    },
+    {
+      "when": {
+        "east": "false",
+        "south": "true",
+        "up": "true",
+        "down": "false"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_east_south_tf"
+      }
+    },
+    {
+      "when": {
+        "east": "false",
+        "north": "true",
+        "up": "true",
+        "down": "true"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_east_north_tt"
+      }
+    },
+    {
+      "when": {
+        "east": "false",
+        "south": "true",
+        "up": "true",
+        "down": "true"
+      },
+      "apply": {
+        "model": "orefishfarm:block/tank/glass_east_south_tt"
+      }
     }
   ]
 }

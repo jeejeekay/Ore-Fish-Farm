@@ -1,23 +1,22 @@
 {
- "render_type": "minecraft:cutout",
+ "render_type": "minecraft:translucent",
  "ambientocclusion": false,
  "textures": {
-  "glass_h": "orefishfarm:block/pipe_glass_h",
-  "glass_v": "orefishfarm:block/pipe_glass_v",
+  "glass": "orefishfarm:block/pipe_glass",
   "glass_plain": "orefishfarm:block/pipe_glass_plain",
   "particle": "orefishfarm:block/pipe_rim"
  },
  "elements": [
   {
    "from": [
-    4,
-    4,
-    4
+    5,
+    5,
+    5
    ],
    "to": [
-    12,
-    4,
-    12
+    11,
+    5,
+    11
    ],
    "faces": {
     "down": {

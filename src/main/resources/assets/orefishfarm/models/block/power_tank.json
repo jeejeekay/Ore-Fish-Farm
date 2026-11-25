@@ -260,7 +260,7 @@
    "textures": {
     "sand": "minecraft:block/sand",
     "water": "minecraft:block/water_still",
-    "glass": "orefishfarm:block/tank_glass",
+    "glass": "orefishfarm:block/pipe_glass",
     "plant": "minecraft:block/seagrass",
     "pebble": "minecraft:block/gravel",
     "coil": "orefishfarm:block/tank_coil",

@@ -40,7 +40,7 @@ public final class PipeClient {
     private static final int MAX_DRAWN = 256;
     /** Ticks a fish stays drawn where its leg ended. */
     private static final long LINGER = 30;
-    private static final float SIZE = 0.26F;
+    private static final float SIZE = 0.2F;
 
     private record Trip(long[] path, long start, long end, ItemStack fish, ItemStack cargo) {}
 
