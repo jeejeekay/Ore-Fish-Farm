@@ -250,7 +250,8 @@ public final class PipeNet {
     }
 
     private boolean hasLiveCommand() {
-        for (Command c : this.commands) if (c.on) return true;
+        // a command from an inventory to itself never has work: it doesn't keep the network looking
+        for (Command c : this.commands) if (c.on && c.from != c.to) return true;
         return false;
     }
 
