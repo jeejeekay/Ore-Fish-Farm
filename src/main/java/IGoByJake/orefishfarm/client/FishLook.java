@@ -47,6 +47,8 @@ public final class FishLook {
         if (e == null) return null;
         CompoundTag tag = bucket.getTag();
         if (e instanceof Bucketable b && tag != null) b.loadFromBucketTag(tag.copy());
+        // Pufferfish are shown fully puffed (their big model; the hitbox grows with it).
+        if (e instanceof net.minecraft.world.entity.animal.Pufferfish p) p.setPuffState(2);
         e.refreshDimensions(); // big species (fish file "scale") are fitted by their scaled hitbox
         e.setYRot(0);
         e.setXRot(0);
@@ -106,10 +108,17 @@ public final class FishLook {
         return (float) (d * scale);
     }
 
+    /** This mob's modelSizeFixes multiplier (1 if none): about hitbox length / model length. */
+    public static float modelFix(Entity e) {
+        var id = ForgeRegistries.ENTITY_TYPES.getKey(e.getType());
+        return id == null ? 1F : IGoByJake.orefishfarm.Config.tankSizeOverride(id.toString());
+    }
+
     /**
-     * How long this mob is drawn in a Pipe Tank, at most {@code max} (blocks): the tank's sizing relative to a cod
-     * (tank_display referenceSize and sizePower), so a cod or anything bigger fills the pipe and smaller fish shrink,
-     * down to half of max; then the sizeOverrides entry and the baby scale.
+     * The hitbox size this mob is fitted to in a Pipe Tank (see {@link #render}), for a pipe whose biggest fish is
+     * {@code max}: the tank's sizing relative to a cod (tank_display referenceSize and sizePower), capped at max and
+     * at least half of it, then the modelSizeFixes entry (so a mob's model, not its hitbox, is what fits) and the
+     * baby scale.
      */
     public static float pipeSize(Entity e, float max) {
         float scale = e instanceof LivingEntity l ? l.getScale() : 1F;
@@ -117,7 +126,7 @@ public final class FishLook {
         double rel = Math.pow(Math.max(0.01, adult) / IGoByJake.orefishfarm.Config.TANK_REFERENCE_SIZE.get(), IGoByJake.orefishfarm.Config.TANK_SIZE_POWER.get());
         double d = net.minecraft.util.Mth.clamp(max * rel, max * 0.5, max);
         var id = ForgeRegistries.ENTITY_TYPES.getKey(e.getType());
-        if (id != null) d = Math.min(max, d * IGoByJake.orefishfarm.Config.tankSizeOverride(id.toString()));
+        if (id != null) d *= IGoByJake.orefishfarm.Config.tankSizeOverride(id.toString());
         return (float) (d * Math.min(1F, scale));
     }
 

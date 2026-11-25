@@ -105,9 +105,29 @@ public final class Config {
                 .defineInRange("maxSizeJoined", 0.8, 0.1, 2.0);
         TANK_MAX_LONE = b.defineInRange("maxSizeLone", 0.6, 0.1, 1.0);
         TANK_MIN = b.comment("Smallest drawn length, in blocks (babies can go below it).").defineInRange("minSize", 0.2, 0.02, 1.0);
-        TANK_SIZE_OVERRIDES = b.comment("Extra size multipliers for mobs whose model doesn't match their hitbox: \"<entity id>=<multiplier>\",",
-                "e.g. \"alexscaves:gossamer_worm=0.5\". Applied after the maximum.")
-                .defineList("sizeOverrides", java.util.List.of(), o -> o instanceof String str && str.contains("="));
+        TANK_SIZE_OVERRIDES = b.comment(
+                "Size fixes for mobs whose model is a different length from their hitbox: \"<entity id>=<multiplier>\".",
+                "Tanks and Pipe Tanks size every mob by its hitbox (the longest side of it) and draw it so the hitbox fits that",
+                "size. Ore Fish Farm's own fish are drawn exactly as long as their hitbox, so they need nothing here. Most other",
+                "mobs' models are longer or shorter than their hitbox, so they look too big or too small next to ours.",
+                "How to work out the multiplier for a mob: multiplier = hitbox longest side / model longest side, both in blocks.",
+                "  Hitbox: the sized(width, height) in the mob's EntityType (use the larger of the two).",
+                "  Model: in the model's createBodyLayer(), add up where its boxes start and end along its length (head to tail",
+                "  fin, offsets included) and its height (top fin to bottom fin) as seen from the side; take the larger, in",
+                "  pixels, and divide by 16.",
+                "Worked examples (vanilla 1.20.1, the defaults below):",
+                "  cod:       hitbox 0.5;  model nose z=-4 to tail fin z=11 = 15 px = 0.94;  0.5 / 0.94 = 0.53",
+                "  salmon:    hitbox 0.7;  model head z=-3 to tail fin z=22 = 25 px = 1.56;  0.7 / 1.56 = 0.45",
+                "  tropical:  hitbox 0.5;  model A 12 px long (0.75), model B 14 px tall (0.88);  0.5 / 0.81 = 0.62",
+                "  puffer:    hitbox 0.7 fully puffed (tanks show it puffed);  model about 10 px (0.63);  0.7 / 0.63 = 1.1",
+                "  axolotl:   hitbox 0.75;  model head z=-9 to tail z=18 = 27 px = 1.69;  0.75 / 1.69 = 0.44",
+                "  tadpole:   hitbox 0.4;  model 10 px = 0.63;  0.4 / 0.63 = 0.64",
+                "Applied after the maximum size, so it only corrects how the model is drawn; how big the mob is next to others",
+                "still comes from its hitbox (sizePower). Pipe Tanks use it too, so a cod is the largest fish in a pipe.")
+                .defineList("modelSizeFixes", java.util.List.of(
+                        "minecraft:cod=0.53", "minecraft:salmon=0.45", "minecraft:tropical_fish=0.62",
+                        "minecraft:pufferfish=1.1", "minecraft:axolotl=0.44", "minecraft:tadpole=0.64"),
+                        o -> o instanceof String str && str.contains("="));
         b.pop().push("pipes");
         HAUL_BASE = b.comment("Items a hauling fish carries per trip at Haul 1x (level 3 by default): it carries this x its Haul stat multiplier",
                 "(statMultipliers) x its fish file's \"haul\" (default 1). Defaults: level 0 = 1, level 3 = 4, level 9 = 10, level 10 = 12.",
@@ -131,7 +151,7 @@ public final class Config {
     private static java.util.Map<String, Float> overrides;
     private static java.util.List<? extends String> overridesFrom;
 
-    /** The sizeOverrides multiplier for this entity id (1 if none). */
+    /** The modelSizeFixes multiplier for this entity id (1 if none). */
     public static float tankSizeOverride(String entityId) {
         java.util.List<? extends String> list = TANK_SIZE_OVERRIDES.get();
         if (list != overridesFrom) {
