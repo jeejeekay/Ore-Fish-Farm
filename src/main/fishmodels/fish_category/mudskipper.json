@@ -1,9 +1,13 @@
 {
- "credit": "Jake's Ore Fish Farm: shared 'mudskipper' fish model (long blunt head, bulging eyes on top, tall spotted front dorsal, long low rear dorsal, stout side fins it walks on); side view, head toward +x. A fish uses it with its own texture: {\"parent\": \"orefishfarm:fish_category/mudskipper\", \"textures\": {\"t\": ..., \"particle\": ...}}",
+ "credit": "Ore Fish Farm: one fish shape. Groups front / body / tail become fish_category/<shape>[_front|_tail].json at build time; the body group's pivot is where the body swings, the tail group's pivot where the tail wags.",
  "texture_size": [
   32,
   32
  ],
+ "textures": {
+  "t": "orefishfarm:item/fish/mudskipper",
+  "particle": "orefishfarm:item/fish/mudskipper"
+ },
  "elements": [
   {
    "name": "head",
@@ -568,6 +572,74 @@
      ]
     }
    }
+  },
+  {
+   "name": "tail",
+   "from": [
+    0.4,
+    5.0,
+    8
+   ],
+   "to": [
+    3.0,
+    8.0,
+    8
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      0.0,
+      2.5,
+      3.0
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      2.5,
+      0.0,
+      5.0,
+      3.0
+     ]
+    }
+   }
+  }
+ ],
+ "groups": [
+  {
+   "name": "body",
+   "origin": [
+    8,
+    8,
+    8
+   ],
+   "color": 0,
+   "children": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+   ]
+  },
+  {
+   "name": "tail",
+   "origin": [
+    3.0,
+    8,
+    8
+   ],
+   "color": 0,
+   "children": [
+    10
+   ]
   }
  ]
 }

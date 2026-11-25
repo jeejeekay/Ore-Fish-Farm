@@ -1,9 +1,13 @@
 {
- "credit": "Jake's Ore Fish Farm: shared 'barracuda' fish model (long slim body, jutting jaw, two small dorsals, forked tail); side view, head toward +x. Articulated: barracuda_front holds still, barracuda swings, barracuda_tail wags.",
+ "credit": "Ore Fish Farm: one fish shape. Groups front / body / tail become fish_category/<shape>[_front|_tail].json at build time; the body group's pivot is where the body swings, the tail group's pivot where the tail wags.",
  "texture_size": [
   32,
   32
  ],
+ "textures": {
+  "t": "orefishfarm:item/fish/barkacuda",
+  "particle": "orefishfarm:item/fish/barkacuda"
+ },
  "elements": [
   {
    "name": "head",
@@ -382,6 +386,289 @@
      ]
     }
    }
+  },
+  {
+   "name": "body_rear",
+   "from": [
+    3.6,
+    6.2,
+    7.0
+   ],
+   "to": [
+    8.0,
+    8.2,
+    9.0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      8.0,
+      5.0,
+      12.5,
+      7.0
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      7.0,
+      4.5,
+      9.0
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      4.5,
+      7.0,
+      6.5,
+      9.0
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      6.5,
+      7.0,
+      8.5,
+      9.0
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      8.5,
+      7.0,
+      13.0,
+      9.0
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      9.0,
+      4.5,
+      11.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "stalk",
+   "from": [
+    2.0,
+    6.7,
+    7.5
+   ],
+   "to": [
+    3.6,
+    7.7,
+    8.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      12.5,
+      1.5,
+      13.5
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      1.5,
+      12.5,
+      3.0,
+      13.5
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      3.0,
+      12.5,
+      4.0,
+      13.5
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      4.0,
+      12.5,
+      5.0,
+      13.5
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      5.0,
+      12.5,
+      6.5,
+      13.5
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      6.5,
+      12.5,
+      8.0,
+      13.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "dorsal_2",
+   "from": [
+    4.4,
+    8.2,
+    8
+   ],
+   "to": [
+    5.6,
+    9.2,
+    8
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      8.0,
+      12.5,
+      9.0,
+      13.5
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      9.0,
+      12.5,
+      10.0,
+      13.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "anal",
+   "from": [
+    4.4,
+    5.4,
+    8
+   ],
+   "to": [
+    5.6,
+    6.2,
+    8
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      10.0,
+      12.5,
+      11.0,
+      13.5
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      11.0,
+      12.5,
+      12.0,
+      13.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "tail",
+   "from": [
+    0.0,
+    4.8,
+    8
+   ],
+   "to": [
+    2.0,
+    9.6,
+    8
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      0.0,
+      2.0,
+      5.0
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      2.0,
+      0.0,
+      4.0,
+      5.0
+     ]
+    }
+   }
+  }
+ ],
+ "groups": [
+  {
+   "name": "front",
+   "origin": [
+    8.0,
+    8,
+    8
+   ],
+   "color": 0,
+   "children": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ]
+  },
+  {
+   "name": "body",
+   "origin": [
+    8.0,
+    8,
+    8
+   ],
+   "color": 0,
+   "children": [
+    6,
+    7,
+    8,
+    9
+   ]
+  },
+  {
+   "name": "tail",
+   "origin": [
+    2.0,
+    8,
+    8
+   ],
+   "color": 0,
+   "children": [
+    10
+   ]
   }
  ]
 }

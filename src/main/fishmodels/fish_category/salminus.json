@@ -1,9 +1,13 @@
 {
- "credit": "Jake's Ore Fish Farm: shared 'salminus' fish model (golden dorado: deep body, big jaw, dotted scale rows, red forked tail); side view, head toward +x. Articulated: salminus_front holds still, salminus swings.",
+ "credit": "Ore Fish Farm: one fish shape. Groups front / body / tail become fish_category/<shape>[_front|_tail].json at build time; the body group's pivot is where the body swings, the tail group's pivot where the tail wags.",
  "texture_size": [
   32,
   32
  ],
+ "textures": {
+  "t": "orefishfarm:item/fish/brasszino",
+  "particle": "orefishfarm:item/fish/brasszino"
+ },
  "elements": [
   {
    "name": "head",
@@ -382,6 +386,359 @@
      ]
     }
    }
+  },
+  {
+   "name": "body_rear",
+   "from": [
+    4.6,
+    5.8,
+    7.1
+   ],
+   "to": [
+    8.4,
+    8.4,
+    8.9
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      3.5,
+      8.0,
+      7.5,
+      10.5
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      7.5,
+      8.0,
+      11.5,
+      10.5
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      11.5,
+      8.0,
+      13.5,
+      10.5
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      13.5,
+      8.0,
+      15.5,
+      10.5
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      10.0,
+      10.5,
+      14.0,
+      12.5
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      12.5,
+      4.0,
+      14.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "stalk",
+   "from": [
+    2.8,
+    6.4,
+    7.5
+   ],
+   "to": [
+    4.6,
+    7.6,
+    8.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      10.0,
+      12.5,
+      12.0,
+      13.5
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      12.0,
+      12.5,
+      14.0,
+      13.5
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      14.0,
+      12.5,
+      15.0,
+      13.5
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      15.0,
+      12.5,
+      16.0,
+      13.5
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      14.5,
+      2.0,
+      15.5
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      2.0,
+      14.5,
+      4.0,
+      15.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "adipose",
+   "from": [
+    3.8,
+    7.6,
+    7.85
+   ],
+   "to": [
+    4.5,
+    8.1,
+    8.15
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      13.0,
+      15.5,
+      13.5,
+      16.0
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      13.5,
+      15.5,
+      14.0,
+      16.0
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      14.0,
+      15.5,
+      14.5,
+      16.0
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      14.5,
+      15.5,
+      15.0,
+      16.0
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      15.0,
+      15.5,
+      15.5,
+      16.0
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      15.5,
+      15.5,
+      16.0,
+      16.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "pelvic",
+   "from": [
+    7.0,
+    5.0,
+    8
+   ],
+   "to": [
+    8.2,
+    5.8,
+    8
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      4.0,
+      14.5,
+      5.0,
+      15.5
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      5.0,
+      14.5,
+      6.0,
+      15.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "anal",
+   "from": [
+    4.4,
+    5.2,
+    8
+   ],
+   "to": [
+    6.4,
+    6.0,
+    8
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      6.0,
+      14.5,
+      8.0,
+      15.5
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      8.0,
+      14.5,
+      10.0,
+      15.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "tail",
+   "from": [
+    0.0,
+    4.8,
+    8
+   ],
+   "to": [
+    2.8,
+    9.2,
+    8
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      0.0,
+      3.0,
+      4.5
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      3.0,
+      0.0,
+      6.0,
+      4.5
+     ]
+    }
+   }
+  }
+ ],
+ "groups": [
+  {
+   "name": "front",
+   "origin": [
+    8.4,
+    8,
+    8
+   ],
+   "color": 0,
+   "children": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ]
+  },
+  {
+   "name": "body",
+   "origin": [
+    8.4,
+    8,
+    8
+   ],
+   "color": 0,
+   "children": [
+    6,
+    7,
+    8,
+    9,
+    10
+   ]
+  },
+  {
+   "name": "tail",
+   "origin": [
+    2.8,
+    8,
+    8
+   ],
+   "color": 0,
+   "children": [
+    11
+   ]
   }
  ]
 }

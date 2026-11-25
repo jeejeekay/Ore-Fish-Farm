@@ -1,5 +1,5 @@
 {
-  "parent": "orefishfarm:fish_category/power_rear",
+  "parent": "orefishfarm:fish_category/power",
   "textures": {
     "t": "orefishfarm:item/fish/glass_eel",
     "particle": "orefishfarm:item/fish/glass_eel"

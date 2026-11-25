@@ -35,7 +35,11 @@ import java.util.function.Consumer;
  * for any mod's fish. With no model it falls back to the item's own sprite.
  *
  * <p>Articulated fish (salmon-style swimming) also have {@code path_front.json}: the front stays still and the body
- * model swings from the front's back edge, carrying the tail with it.
+ * model swings, carrying the tail with it.
+ * <p>Joints: where the body swings and the tail wags come from the pivots of the "body" and "tail" groups in the
+ * shape's Blockbench file (src/main/fishmodels, split at build time into assets/orefishfarm/fish_joints.json, keyed
+ * by the model the fish file points at). A model with no entry there falls back to its pieces' edges: the front's
+ * back edge for the body, the tail's front edge for the tail.
  */
 public final class FishRender {
     private FishRender() {}
@@ -61,6 +65,49 @@ public final class FishRender {
 
     public static void clearCache() {
         CACHE.clear();
+        joints = null;
+    }
+
+    /** Model id ("orefishfarm:fish_category/sturgeon") -> {body joint x, tail joint x} in blocks; NaN = not set. */
+    private static Map<String, float[]> joints;
+
+    private static Map<String, float[]> joints() {
+        if (joints != null) return joints;
+        Map<String, float[]> out = new HashMap<>();
+        var rm = Minecraft.getInstance().getResourceManager();
+        rm.getResource(new ResourceLocation("orefishfarm", "fish_joints.json")).ifPresent(res -> {
+            try (var reader = res.openAsReader()) {
+                var json = com.google.gson.JsonParser.parseReader(reader).getAsJsonObject();
+                for (var e : json.entrySet()) {
+                    var o = e.getValue().getAsJsonObject();
+                    float body = o.has("body") ? o.getAsJsonArray("body").get(0).getAsFloat() / 16 : Float.NaN;
+                    float tail = o.has("tail") ? o.getAsJsonArray("tail").get(0).getAsFloat() / 16 : Float.NaN;
+                    out.put(e.getKey(), new float[]{body, tail});
+                }
+            } catch (Exception ex) {
+                org.slf4j.LoggerFactory.getLogger("orefishfarm").warn("Couldn't read fish_joints.json", ex);
+            }
+        });
+        return joints = out;
+    }
+
+    /** The joints for fish model {@code fish/<path>}: its own entry, or the shape its file points at (parent). */
+    private static float @org.jetbrains.annotations.Nullable [] jointsFor(ResourceLocation fishModel) {
+        Map<String, float[]> all = joints();
+        String own = fishModel.getNamespace() + ":fish/" + fishModel.getPath();
+        if (all.containsKey(own)) return all.get(own);
+        var rm = Minecraft.getInstance().getResourceManager();
+        var file = new ResourceLocation(fishModel.getNamespace(), "models/fish/" + fishModel.getPath() + ".json");
+        try (var reader = rm.getResource(file).map(r -> { try { return r.openAsReader(); } catch (Exception e) { return null; } }).orElse(null)) {
+            if (reader == null) return null;
+            var json = com.google.gson.JsonParser.parseReader(reader).getAsJsonObject();
+            if (!json.has("parent")) return null;
+            String parent = json.get("parent").getAsString();
+            if (!parent.contains(":")) parent = "minecraft:" + parent;
+            return all.get(parent);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private static Fish lookup(ItemStack stack) {
@@ -87,7 +134,10 @@ public final class FishRender {
             if (front == missing) front = null;
             float[] y = {1, 0};
             for (BakedModel part : new BakedModel[]{body, tail, front}) if (part != null) yRange(part, y);
-            return new Fish(body, tail, tail == null ? 0.5F : maxX(tail), front, front == null ? 0.5F : minX(front), y[0], y[1]);
+            float[] j = jointsFor(k);
+            float tailJoint = tail == null ? 0.5F : j != null && !Float.isNaN(j[1]) ? j[1] : maxX(tail);
+            float bodyJoint = front == null ? 0.5F : j != null && !Float.isNaN(j[0]) ? j[0] : minX(front);
+            return new Fish(body, tail, tailJoint, front, bodyJoint, y[0], y[1]);
         });
     }
 

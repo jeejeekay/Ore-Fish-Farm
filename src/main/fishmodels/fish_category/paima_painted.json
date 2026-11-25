@@ -1,9 +1,13 @@
 {
- "credit": "Jake's Ore Fish Farm: shared 'paima_painted' fish model (the paima shape with the shape tool's UV layout), an arapaima (long rectangular body, low dorsal ridge on the rear back, small head, two belly fins, rounded tail; shape from Jake's drawing); side view, head toward +x. A fish uses it with its own texture: {\"parent\": \"orefishfarm:fish_category/paima\", \"textures\": {\"t\": ..., \"particle\": ...}}",
+ "credit": "Ore Fish Farm: one fish shape. Groups front / body / tail become fish_category/<shape>[_front|_tail].json at build time; the body group's pivot is where the body swings, the tail group's pivot where the tail wags.",
  "texture_size": [
   32,
   32
  ],
+ "textures": {
+  "t": "orefishfarm:item/fish/ironpaima",
+  "particle": "orefishfarm:item/fish/ironpaima"
+ },
  "elements": [
   {
    "name": "body",
@@ -469,6 +473,71 @@
      ]
     }
    }
+  },
+  {
+   "name": "tail",
+   "from": [
+    0,
+    6.1,
+    8
+   ],
+   "to": [
+    1.6,
+    8.8,
+    8
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      8.5,
+      8.5,
+      10.0,
+      11.0
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      10.0,
+      8.5,
+      11.5,
+      11.0
+     ]
+    }
+   }
+  }
+ ],
+ "groups": [
+  {
+   "name": "body",
+   "origin": [
+    8,
+    8,
+    8
+   ],
+   "color": 0,
+   "children": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ]
+  },
+  {
+   "name": "tail",
+   "origin": [
+    1.6,
+    8,
+    8
+   ],
+   "color": 0,
+   "children": [
+    7
+   ]
   }
  ]
 }

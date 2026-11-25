@@ -210,9 +210,26 @@ public final class FishData {
     }
 
     public record Fish(Item item, ItemStack product, float productChance, float breedTime, int power, ResourceLocation habitat, @Nullable Item bucket, float heat) {
-        public boolean makesPower() { return this.power > 0; }
+        /** A power fish: a "power" in its file, or in #orefishfarm:power_fish (then {@link #TAG_POWER} FE/t). */
+        public boolean makesPower() { return this.power > 0 || new ItemStack(this.item).is(IGoByJake.orefishfarm.FishItem.POWER_FISH); }
         public boolean makesHeat() { return this.heat > 0; }
         public boolean makesProduct() { return !this.product.isEmpty() && this.productChance > 0; }
+    }
+
+    /** FE/t for a fish that is only in #orefishfarm:power_fish, with no "power" in its file. */
+    public static final int TAG_POWER = 4;
+
+    /** Has drops: a product, a "products" list or a product tag. */
+    public static boolean hasDrops(@Nullable Fish f) {
+        return f != null && (f.makesProduct() || !drops(f).isEmpty());
+    }
+
+    /**
+     * Needs food: a fish that makes something (drops, power or heat). Other fish don't eat; they breed on the
+     * aquarium's bite clock without food.
+     */
+    public static boolean eats(@Nullable Fish f) {
+        return f != null && (hasDrops(f) || f.makesPower() || f.makesHeat());
     }
 
     /**
@@ -241,7 +258,8 @@ public final class FishData {
 
     /** FE/tick this fish makes in a Power Tank, after the config multiplier. */
     public static int powerPerTick(Fish f) {
-        return fromDisk ? (int) Math.round(f.power() * Config.POWER.get()) : f.power();
+        int base = f.power() > 0 ? f.power() : f.makesPower() ? TAG_POWER : 0;
+        return fromDisk ? (int) Math.round(base * Config.POWER.get()) : base;
     }
 
     /** Chances after the config multipliers (synced copies already have them applied). */

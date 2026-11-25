@@ -1,9 +1,13 @@
 {
- "credit": "Jake's Ore Fish Farm: shared 'shark' fish model (nurse shark: broad flat head, barbels, two rear dorsals, long upper tail lobe); side view, head toward +x. Articulated: shark_front holds still, shark swings. A fish uses it with its own texture via fish/<fish>.json (parent shark), <fish>_front.json (parent shark_front) and <fish>_tail.json (parent shark_tail).",
+ "credit": "Ore Fish Farm: one fish shape. Groups front / body / tail become fish_category/<shape>[_front|_tail].json at build time; the body group's pivot is where the body swings, the tail group's pivot where the tail wags.",
  "texture_size": [
   32,
   32
  ],
+ "textures": {
+  "t": "orefishfarm:item/fish/sandshark",
+  "particle": "orefishfarm:item/fish/sandshark"
+ },
  "elements": [
   {
    "name": "head",
@@ -487,6 +491,358 @@
      ]
     }
    }
+  },
+  {
+   "name": "body_rear",
+   "from": [
+    4.6,
+    5.8,
+    7.0
+   ],
+   "to": [
+    8.5,
+    8.0,
+    9.0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      8.0,
+      4.0,
+      10.0
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      4.0,
+      8.0,
+      8.0,
+      10.0
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      8.0,
+      8.0,
+      10.0,
+      10.0
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      10.0,
+      8.0,
+      12.0,
+      10.0
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      12.0,
+      8.0,
+      16.0,
+      10.0
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      10.0,
+      4.0,
+      12.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "stalk",
+   "from": [
+    2.6,
+    6.3,
+    7.5
+   ],
+   "to": [
+    4.6,
+    7.6,
+    8.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      7.5,
+      12.0,
+      9.5,
+      13.5
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      9.5,
+      12.0,
+      11.5,
+      13.5
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      11.5,
+      12.0,
+      12.5,
+      13.5
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      12.5,
+      12.0,
+      13.5,
+      13.5
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      2.0,
+      13.5,
+      4.0,
+      14.5
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      4.0,
+      13.5,
+      6.0,
+      14.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "dorsal_1",
+   "from": [
+    6.2,
+    8.0,
+    8
+   ],
+   "to": [
+    8.4,
+    10.0,
+    8
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      4.0,
+      10.0,
+      6.0,
+      12.0
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      6.0,
+      10.0,
+      8.0,
+      12.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "dorsal_2",
+   "from": [
+    3.8,
+    7.6,
+    8
+   ],
+   "to": [
+    5.6,
+    9.2,
+    8
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      13.5,
+      12.0,
+      15.5,
+      13.5
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      13.5,
+      2.0,
+      15.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "pelvic",
+   "from": [
+    6.4,
+    5.1,
+    8
+   ],
+   "to": [
+    7.6,
+    5.8,
+    8
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      14.0,
+      15.0,
+      15.0,
+      15.5
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      15.0,
+      15.0,
+      16.0,
+      15.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "anal",
+   "from": [
+    3.6,
+    5.6,
+    8
+   ],
+   "to": [
+    4.6,
+    6.3,
+    8
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      15.5,
+      1.0,
+      16.0
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      1.0,
+      15.5,
+      2.0,
+      16.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "tail",
+   "from": [
+    0.0,
+    5.6,
+    8
+   ],
+   "to": [
+    2.6,
+    8.8,
+    8
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      10.0,
+      3.0,
+      12.5,
+      6.0
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      12.5,
+      3.0,
+      15.0,
+      6.0
+     ]
+    }
+   }
+  }
+ ],
+ "groups": [
+  {
+   "name": "front",
+   "origin": [
+    8.5,
+    8,
+    8
+   ],
+   "color": 0,
+   "children": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ]
+  },
+  {
+   "name": "body",
+   "origin": [
+    8.5,
+    8,
+    8
+   ],
+   "color": 0,
+   "children": [
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ]
+  },
+  {
+   "name": "tail",
+   "origin": [
+    2.6,
+    8,
+    8
+   ],
+   "color": 0,
+   "children": [
+    13
+   ]
   }
  ]
 }

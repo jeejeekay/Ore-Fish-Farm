@@ -143,6 +143,65 @@ tasks.named('processResources', ProcessResources).configure {
     }
 }
 
+// Fish models: src/main/fishmodels/<folder>/<shape>.json are ordinary Blockbench models whose outliner groups are the
+// fish's pieces (front / body / tail, or any other name, e.g. the trout's "sheared"). Each group becomes
+// assets/orefishfarm/models/<folder>/<shape>[_<group>].json ("body" is just <shape>), the files the game reads.
+// The groups' pivots go to assets/orefishfarm/fish_joints.json: the body's is where it swings, the tail's where it wags.
+// Don't edit the generated files (build/generated/fishmodels); edit the sources in Blockbench.
+def fishModelsOut = layout.buildDirectory.dir('generated/fishmodels')
+tasks.register('splitFishModels') {
+    def srcDir = file('src/main/fishmodels')
+    inputs.dir(srcDir)
+    outputs.dir(fishModelsOut)
+    doLast {
+        def out = fishModelsOut.get().asFile
+        project.delete(out)
+        def joints = new TreeMap()
+        def collect
+        collect = { children, list -> children.each { c -> if (c instanceof Number) list << c.intValue() else if (c instanceof Map) collect(c.children ?: [], list) } }
+        srcDir.eachDir { folder ->
+            folder.eachFileMatch(~/.*\.json/) { f ->
+                def m = new groovy.json.JsonSlurper().parse(f)
+                def shape = f.name - '.json'
+                def elements = m.elements ?: []
+                def used = [] as Set
+                def groups = (m.groups ?: []).findAll { it instanceof Map }
+                def pieces = new LinkedHashMap()
+                groups.each { g ->
+                    def idx = []
+                    collect(g.children ?: [], idx)
+                    used.addAll(idx)
+                    pieces[g.name] = [idx: idx, origin: g.origin]
+                }
+                // elements in no group belong to the body
+                def loose = (0..<elements.size()).findAll { !used.contains(it) }
+                if (loose) { def b = pieces['body'] ?: [idx: [], origin: null]; b.idx = (b.idx + loose).sort(); pieces['body'] = b }
+                pieces.each { name, piece ->
+                    def model = new LinkedHashMap()
+                    if (m.texture_size) model.texture_size = m.texture_size
+                    model.textures = m.textures ?: [:]
+                    model.elements = piece.idx.sort().collect { elements[it] }
+                    def outName = name == 'body' ? shape : "${shape}_${name}"
+                    def file = new File(out, "assets/orefishfarm/models/${folder.name}/${outName}.json")
+                    file.parentFile.mkdirs()
+                    file.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(model))
+                }
+                def j = new LinkedHashMap()
+                if (pieces['body']?.origin) j.body = pieces['body'].origin
+                if (pieces['tail']?.origin) j.tail = pieces['tail'].origin
+                pieces.keySet().findAll { it != 'front' && it != 'tail' }.each { name ->
+                    joints["orefishfarm:${folder.name}/${name == 'body' ? shape : shape + '_' + name}".toString()] = j
+                }
+            }
+        }
+        def jf = new File(out, 'assets/orefishfarm/fish_joints.json')
+        jf.parentFile.mkdirs()
+        jf.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(joints))
+    }
+}
+sourceSets.main.resources.srcDir(fishModelsOut)
+tasks.named('processResources').configure { dependsOn 'splitFishModels' }
+
 // Example for how to get properties into the manifest for reading at runtime.
 tasks.named('jar', Jar).configure {
     manifest {

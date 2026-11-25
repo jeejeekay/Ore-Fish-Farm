@@ -383,14 +383,19 @@ public final class FishGenes {
         };
     }
 
-    /** The stats a fish shows: Yield and Satiety always, Charge for power fish, Heat for heat fish. */
+    /** The stats a fish shows when it has drops and eats: Yield, Satiety, Charge for power fish, Heat for heat fish. */
     public static List<String> shownStats(boolean power, boolean heat) {
-        return shownStats(power, heat, false);
+        return shownStats(true, true, power, heat, false);
     }
 
-    /** As {@link #shownStats(boolean, boolean)}, plus Haul for hauling fish (#orefishfarm:hauling_fish). */
-    public static List<String> shownStats(boolean power, boolean heat, boolean haul) {
-        List<String> out = new ArrayList<>(List.of(YIELD, SATIETY));
+    /**
+     * Only the stats that do something for this fish: Yield with drops, Satiety if it eats (drops, power or heat),
+     * Charge for power fish, Heat for heat fish, Haul for hauling fish (#orefishfarm:hauling_fish).
+     */
+    public static List<String> shownStats(boolean drops, boolean eats, boolean power, boolean heat, boolean haul) {
+        List<String> out = new ArrayList<>();
+        if (drops) out.add(YIELD);
+        if (eats) out.add(SATIETY);
         if (power) out.add(CHARGE);
         if (heat) out.add(HEAT);
         if (haul) out.add(HAUL);
@@ -399,7 +404,7 @@ public final class FishGenes {
 
     /** The stats this fish shows. */
     public static List<String> shownStats(FishData.Fish fish) {
-        return shownStats(fish.makesPower(), fish.makesHeat(), FishData.isHauler(fish));
+        return shownStats(FishData.hasDrops(fish), FishData.eats(fish), fish.makesPower(), fish.makesHeat(), FishData.isHauler(fish));
     }
 
     /**

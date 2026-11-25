@@ -408,7 +408,7 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
             int slot = findFood(true);
             if (slot >= 0 && this.habitat.equals(FishData.foodHabitat(this.shared.getStackInSlot(slot)))) {
                 this.burn = 0;
-                startFood(slot, eaters(fishes));
+                startFood(slot, hungry(eaters(fishes), true));
             }
         }
 
@@ -441,10 +441,13 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
             fishes.remove(f);
         }
 
-        // Food.
-        List<FishRef> eaters = eaters(fishes);
+        // Food. Only fish that make something (or visitors, who need their habitat food) eat; the rest breed on the
+        // aquarium's bite clock without food.
+        List<FishRef> live = eaters(fishes);
+        List<FishRef> eaters = hungry(live, true), rest = hungry(live, false);
         int rate = 0;
-        if (this.burn > 0 && !eaters.isEmpty()) {
+        boolean eating = this.burn > 0 && !eaters.isEmpty();
+        if (eating) {
             this.burn--;
             if (power) {
                 for (FishRef f : eaters) {
@@ -462,13 +465,18 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
                     shed(f);
                 }
             }
-            // Breeding goes by the aquarium's bite, also jittered.
+            setChanged();
+        }
+        // Breeding goes by the aquarium's bite, also jittered: eating fish while they eat, the others always.
+        List<FishRef> breeders = new ArrayList<>(rest);
+        if (eating) breeders.addAll(eaters);
+        if (!breeders.isEmpty()) {
             if (this.biteLen <= 0) this.biteLen = biteLength();
             if (++this.bite >= this.biteLen) {
                 int elapsed = this.bite;
                 this.bite = 0;
                 this.biteLen = biteLength();
-                takeBite(eaters, power, elapsed);
+                takeBite(breeders, power, elapsed);
             }
             setChanged();
         }
@@ -501,7 +509,7 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
         else if (diesIn >= 0) status = NEEDS_HABITAT_FOOD;
         else if (fishes.isEmpty()) status = NO_FISH;
         else if (power && !hasPowerFish) status = NO_POWER_FISH;
-        else if (this.burn <= 0 && findFood(false) < 0) status = NO_FOOD;
+        else if (!eaters.isEmpty() && this.burn <= 0 && findFood(false) < 0) status = NO_FOOD;
         else if (power && this.energy >= energyCapacity()) status = ENERGY_FULL;
         else if (!power && outputFull()) status = OUTPUT_FULL;
         else status = OK;
@@ -514,6 +522,16 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
         this.view[D_FISH] = fishes.size();
         this.view[D_BLOCKS] = mem.size();
         this.view[D_PROTECTED] = isProtected() ? 1 : 0;
+    }
+
+    /** The fish that need food (wantFood) or don't: those that make something, and visitors from another habitat. */
+    private List<FishRef> hungry(List<FishRef> fishes, boolean wantFood) {
+        List<FishRef> out = new ArrayList<>();
+        for (FishRef f : fishes) {
+            boolean needs = FishData.eats(FishData.fish(f.stack())) || !FishData.habitatOf(f.stack()).equals(this.habitat);
+            if (needs == wantFood) out.add(f);
+        }
+        return out;
     }
 
     private List<FishRef> eaters(List<FishRef> fishes) {
