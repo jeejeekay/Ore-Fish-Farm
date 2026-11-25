@@ -1,33 +1,33 @@
 {
- "render_type": "minecraft:translucent",
- "ambientocclusion": false,
- "textures": {
-  "glass": "orefishfarm:block/pipe_glass",
-  "particle": "orefishfarm:block/pipe_glass"
- },
- "elements": [
-  {
-   "from": [
-    15.6,
-    3,
-    15.6
-   ],
-   "to": [
-    15.6,
-    15,
-    16
-   ],
-   "faces": {
-    "east": {
-     "texture": "#glass",
-     "uv": [
-      15.6,
-      0,
-      16,
-      16
-     ]
+  "render_type": "minecraft:cutout",
+  "ambientocclusion": false,
+  "textures": {
+    "glass": "orefishfarm:block/tank_glass",
+    "particle": "orefishfarm:block/tank_glass"
+  },
+  "elements": [
+    {
+      "from": [
+        15.6,
+        3,
+        15.6
+      ],
+      "to": [
+        15.6,
+        15,
+        16
+      ],
+      "faces": {
+        "east": {
+          "texture": "#glass",
+          "uv": [
+            15.6,
+            0,
+            16,
+            16
+          ]
+        }
+      }
     }
-   }
-  }
- ]
+  ]
 }
