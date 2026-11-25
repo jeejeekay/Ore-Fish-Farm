@@ -167,11 +167,14 @@ public final class PipeNet {
 
     // ================================================================== fish slots
 
-    /** Fish slots: 1, plus one per 4 pipes, plus one per 2 connected inventories (config), up to the max. */
+    /**
+     * Fish slots: 1, plus one more for every 4 pipes AND 2 connected inventories together (config), up to the max:
+     * each extra slot needs both, so the scarcer of the two decides.
+     */
     public int capacity() {
         int inv = 0;
         for (Endpoint e : this.endpoints) if (!e.missing) inv++;
-        int slots = 1 + this.pipes.size() / Config.PIPES_PER_FISH_SLOT.get() + inv / Config.INVENTORIES_PER_FISH_SLOT.get();
+        int slots = 1 + Math.min(this.pipes.size() / Config.PIPES_PER_FISH_SLOT.get(), inv / Config.INVENTORIES_PER_FISH_SLOT.get());
         return Mth.clamp(slots, 1, Math.min(MAX_FISH, Config.PIPE_MAX_FISH.get()));
     }
 

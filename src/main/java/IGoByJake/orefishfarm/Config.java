@@ -117,8 +117,8 @@ public final class Config {
         PIPE_SCAN_TICKS = b.comment("Ticks between a network's looks for work while it has idle fish and live commands.").defineInRange("scanTicks", 20, 1, 1200);
         PIPE_MAX_SCAN_TICKS = b.comment("A network that finds nothing to do looks less often, up to this many ticks apart (any change or delivery resets it).")
                 .defineInRange("maxScanTicks", 80, 1, 2400);
-        PIPES_PER_FISH_SLOT = b.comment("A network has 1 fish slot, plus one per this many pipes...").defineInRange("pipesPerExtraFishSlot", 4, 1, 4096);
-        INVENTORIES_PER_FISH_SLOT = b.comment("...plus one per this many inventories it's connected to.").defineInRange("inventoriesPerExtraFishSlot", 2, 1, 4096);
+        PIPES_PER_FISH_SLOT = b.comment("A network has 1 fish slot, plus one more for every this many pipes...").defineInRange("pipesPerExtraFishSlot", 4, 1, 4096);
+        INVENTORIES_PER_FISH_SLOT = b.comment("...together with this many connected inventories (an extra slot needs both).").defineInRange("inventoriesPerExtraFishSlot", 2, 1, 4096);
         PIPE_MAX_FISH = b.comment("Most fish slots a network can have.").defineInRange("maxFishSlots", 16, 1, 16);
         PIPE_MAX_NETWORK = b.comment("Most pipes in one network; pipes past this form a network of their own.").defineInRange("maxPipesPerNetwork", 2048, 1, 65536);
         PIPE_MAX_COMMANDS = b.defineInRange("maxCommands", 64, 1, 256);
