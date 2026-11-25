@@ -3,7 +3,6 @@
  "ambientocclusion": false,
  "textures": {
   "g15": "orefishfarm:block/pipe_glass_15",
-  "i15": "orefishfarm:block/pipe_glass_in_15",
   "particle": "orefishfarm:block/pipe_rim"
  },
  "elements": [
@@ -26,29 +25,6 @@
       0,
       8,
       8
-     ]
-    }
-   }
-  },
-  {
-   "from": [
-    4.5,
-    11.5,
-    4.5
-   ],
-   "to": [
-    11.5,
-    11.5,
-    11.5
-   ],
-   "faces": {
-    "down": {
-     "texture": "#i15",
-     "uv": [
-      0,
-      0,
-      7.0,
-      7.0
      ]
     }
    }

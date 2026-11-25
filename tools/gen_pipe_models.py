@@ -6,9 +6,8 @@ end keeps it inside (14..16).
 
 How it stays glitch-free
 ------------------------
-Like the aquarium walls (TankGeometry), the glass has thickness: a 0.5 px wall with its outer faces on the 8 px tube
-and its inner faces on the 7 px water tube, facing in; the water's faces lie on the inner faces' planes, facing out
-(only one of the two can ever face the camera). The glass is drawn on Minecraft's "tripwire" layer, which always draws after the translucent layer the water is
+The glass is one surface, the 8 px tube's outside (2.26.1 tried inner faces on the water tube like the aquarium
+walls; it looked the same for half again the faces, so it was dropped). The glass is drawn on Minecraft's "tripwire" layer, which always draws after the translucent layer the water is
 on, so glass is always over the water whatever the camera angle (Minecraft only re-sorts see-through faces now and
 then, which is what made water vanish at sharp angles in 2.25). Glass faces only sort against other glass.
 
@@ -100,7 +99,6 @@ for old in glob.glob(TX + '/pipe_glass*.png'):
     os.remove(old)
 for m in range(16):
     edge_texture(m).save(f'{TX}/pipe_glass_{m}.png')
-    edge_texture(m, INNER).save(f'{TX}/pipe_glass_in_{m}.png')
 
 
 # ------------------------------------------------------------------ faces
@@ -175,9 +173,8 @@ for d in DIRS:
         open_sides = [e for k, e in enumerate(around) if combo >> k & 1]  # connected
         fades = {e for e in around if e not in open_sides}
         el, mask = glass_face(d, *CORE, fades)
-        el_in, mask_in = glass_face(d, *WCORE, fades, inner=True)
         name = f'core_{d}_{combo}'
-        write(name, [el, el_in], textures_for([mask], [mask_in]), GLASS_LAYER)
+        write(name, [el], textures_for([mask]), GLASS_LAYER)
         when = {d: "none"}
         for e in around:
             when[e] = CONNECTED if e in open_sides else "none"
@@ -193,9 +190,8 @@ for a in DIRS:
         for inner in (False, True):
             fades = set(long_edges) | ({OPP[a]} if inner else set())
             el, mask = glass_face(s, lo, hi, fades)
-            el_in, mask_in = glass_face(s, *arm_box(a, W0, W1), fades, inner=True)
             name = f'arm_{a}_{s}_{"inner" if inner else "flat"}'
-            write(name, [el, el_in], textures_for([mask], [mask_in]), GLASS_LAYER)
+            write(name, [el], textures_for([mask]), GLASS_LAYER)
             parts.append({"when": {a: CONNECTED, s: CONNECTED if inner else "none"},
                           "apply": {"model": f"orefishfarm:block/pipe/{name}"}})
         write(f'water_arm_{a}_{s}', [water_face(s, *arm_box(a, W0, W1))], WATER_TEX)
