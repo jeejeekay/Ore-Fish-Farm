@@ -29,7 +29,6 @@ import java.util.List;
 public class PipeScreen extends AbstractContainerScreen<PipeMenu> {
     private static final int LIST_X = 6, LIST_Y = 18, LIST_W = 114, ROW_H = 18, LIST_ROWS = 5;
     private static final int CMD_X = 126, CMD_Y = 18, CMD_W = 198, CMD_ROW = 20, CMD_ROWS = 5;
-    private static final int HELP_X = PipeMenu.FISH_X + PipeMenu.FISH_COLS * 18 + 8;
     private static final int EDIT_NONE = 0, EDIT_NAME = 1, EDIT_KEEP = 2;
 
     private int listScroll, cmdScroll;
@@ -109,6 +108,15 @@ public class PipeScreen extends AbstractContainerScreen<PipeMenu> {
         scrollbar(g, x + LIST_W - 3, y0, LIST_ROWS * ROW_H, this.listScroll, eps.size(), LIST_ROWS);
     }
 
+    /** The first fish (its bucket) working on command i, or empty. */
+    private ItemStack workerOn(int i) {
+        for (int k = 0; k < PipeNet.MAX_FISH; k++) {
+            PipeMenu.FishView f = this.menu.fish[k];
+            if (f != null && f.command() == i && k < this.menu.slots.size()) return this.menu.slots.get(k).getItem();
+        }
+        return ItemStack.EMPTY;
+    }
+
     private void drawCommands(GuiGraphics g, int mx, int my) {
         int x = this.leftPos + CMD_X, y0 = this.topPos + CMD_Y;
         g.drawString(this.font, Component.translatable("screen.orefishfarm.pipe.commands"), x, this.topPos + 6, 0xFF404040, false);
@@ -131,7 +139,16 @@ public class PipeScreen extends AbstractContainerScreen<PipeMenu> {
             else g.renderItem(c.filter(), x + 2, y + 2);
             // from -> to
             button(g, x + 24, y + 3, 20, 14, letter(c.from()), in(mx, my, x + 24, y + 3, 20, 14), 0);
-            g.drawString(this.font, "→", x + 47, y + 6, 0xFFFFFFFF, true);
+            ItemStack worker = workerOn(i);
+            if (worker.isEmpty()) g.drawString(this.font, "→", x + 47, y + 6, 0xFFFFFFFF, true);
+            else { // the fish doing this job, small, bobbing along the arrow
+                g.pose().pushPose();
+                float bob = (float) Math.sin((System.currentTimeMillis() % 2000) / 2000.0 * Math.PI * 2) * 1.5F;
+                g.pose().translate(x + 45, y + 5 + bob, 0);
+                g.pose().scale(0.6F, 0.6F, 1F);
+                g.renderItem(worker, 0, 0);
+                g.pose().popPose();
+            }
             button(g, x + 56, y + 3, 20, 14, letter(c.to()), in(mx, my, x + 56, y + 3, 20, 14), 0);
             // keep
             if (!(this.editKind == EDIT_KEEP && this.editTarget == i)) {
@@ -154,11 +171,6 @@ public class PipeScreen extends AbstractContainerScreen<PipeMenu> {
         g.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 0xFF404040, false);
         g.drawString(this.font, Component.translatable("screen.orefishfarm.pipe.fish", this.menu.capacity, this.menu.pipeCount),
                 PipeMenu.FISH_X, PipeMenu.FISH_Y - 10, 0xFF404040, false);
-        int y = PipeMenu.FISH_Y - 10;
-        for (var line : this.font.split(Component.translatable("screen.orefishfarm.pipe.help"), PipeMenu.W - HELP_X - 6)) {
-            g.drawString(this.font, line, HELP_X, y, 0xFF505050, false);
-            y += 9;
-        }
     }
 
     @Override

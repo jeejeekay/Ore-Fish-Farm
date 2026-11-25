@@ -33,9 +33,9 @@ import java.util.List;
  * something in it changed); edits come back as {@link PipePackets.Edit}.
  */
 public class PipeMenu extends AbstractContainerMenu {
-    public static final int W = 330, H = 268;
-    public static final int FISH_X = 8, FISH_Y = 134, FISH_COLS = 8;
-    public static final int INV_X = (W - 162) / 2, INV_Y = 186;
+    public static final int W = 330, H = 246;
+    public static final int FISH_X = 8, FISH_Y = 132, FISH_COLS = PipeNet.MAX_FISH; // one row
+    public static final int INV_X = (W - 162) / 2, INV_Y = 164;
 
     private final BlockPos pos;
     @Nullable private final ServerLevel level;
@@ -52,7 +52,8 @@ public class PipeMenu extends AbstractContainerMenu {
 
     public record CommandView(ItemStack filter, int from, int to, int keep, boolean on) {}
 
-    public record FishView(byte state, ItemStack cargo, int amount, int target) {}
+    /** command: the command it is working on (list index), -1 = none. */
+    public record FishView(byte state, ItemStack cargo, int amount, int target, int command) {}
 
     public static void open(ServerPlayer player, PipeNet net, BlockPos pos) {
         NetworkHooks.openScreen(player, new SimpleMenuProvider((id, inv, p) -> new PipeMenu(id, inv, pos, (ServerLevel) p.level()),
@@ -186,7 +187,7 @@ public class PipeMenu extends AbstractContainerMenu {
         }
         for (int i = 0; i < PipeNet.MAX_FISH; i++) {
             byte st = buf.readByte();
-            this.fish[i] = st < 0 ? null : new FishView(st, buf.readItem(), buf.readVarInt(), buf.readVarInt());
+            this.fish[i] = st < 0 ? null : new FishView(st, buf.readItem(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt());
         }
     }
 

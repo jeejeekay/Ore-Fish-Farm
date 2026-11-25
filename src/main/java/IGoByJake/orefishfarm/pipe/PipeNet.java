@@ -64,6 +64,8 @@ public final class PipeNet {
     LongOpenHashSet pipes = new LongOpenHashSet();
     final List<Endpoint> endpoints = new ArrayList<>();
     final List<Command> commands = new ArrayList<>();
+    /** Where the next look for work starts in the command list (not saved). */
+    int nextCommand;
     final HaulFish[] fish = new HaulFish[MAX_FISH];
     int nextEndpointId = 1;
     /** Game time of the next thing to do (Long.MAX_VALUE = nothing until something changes). */
@@ -136,6 +138,8 @@ public final class PipeNet {
         long legStart, legEnd;
         /** The inventory block it swam into at the end of its last leg (drawn only; NONE = it's in a pipe). */
         long inside = NONE;
+        /** The command (list index) this trip is for, shown in the screen; -1 = none. */
+        int command = -1;
         ItemStack cargo = ItemStack.EMPTY;
         int amount;
         /** Source and target endpoints of the trip, and where a load goes back to. */
@@ -250,44 +254,49 @@ public final class PipeNet {
         for (HaulFish f : this.fish) if (f != null && f.state == HOLDING && placeHeld(level, f, now, -1)) did = true;
         List<HaulFish> idle = new ArrayList<>();
         for (HaulFish f : this.fish) if (f != null && f.state == IDLE) idle.add(f);
-        for (Command c : this.commands) {
-            if (idle.isEmpty()) break;
-            if (!c.on || c.from == c.to) continue;
-            Endpoint s = byId(c.from), t = byId(c.to);
-            if (s == null || t == null || s.missing || t.missing) continue;
-            IItemHandler hs = handler(level, s), ht = handler(level, t);
-            if (hs == null || ht == null) continue;
-            // Keep: count what's there plus what's on its way.
-            int need = Integer.MAX_VALUE;
-            if (c.keep >= 0) {
-                int have = c.filter.isEmpty() ? countAll(ht) : count(ht, c.filter);
-                need = c.keep - have - inbound(t.id, c.filter.isEmpty() ? null : c.filter);
-                if (need <= 0) continue;
-            }
-            // Several fish can take turns on one command in a look, nearest to the source first.
-            long srcPipe = s.accessPipe(this.pipes);
-            List<HaulFish> order = new ArrayList<>(idle);
-            BlockPos sp = BlockPos.of(srcPipe);
-            order.sort(java.util.Comparator.comparingDouble(f -> BlockPos.of(f.at).distSqr(sp)));
-            for (HaulFish f : order) {
-                if (need <= 0) break;
+        // The commands are worked in turn: each pass gives at most one fish to each command, starting after the
+        // last command that got one, so every command on the list gets served, not just the top one.
+        int n = this.commands.size();
+        boolean progress = true;
+        while (!idle.isEmpty() && progress && n > 0) {
+            progress = false;
+            for (int k = 0; k < n && !idle.isEmpty(); k++) {
+                int ci = Math.floorMod(this.nextCommand + k, n);
+                Command c = this.commands.get(ci);
+                if (!c.on || c.from == c.to) continue;
+                Endpoint s = byId(c.from), t = byId(c.to);
+                if (s == null || t == null || s.missing || t.missing) continue;
+                IItemHandler hs = handler(level, s), ht = handler(level, t);
+                if (hs == null || ht == null) continue;
+                // Keep: count what's there plus what's on its way.
+                int need = Integer.MAX_VALUE;
+                if (c.keep >= 0) {
+                    int have = c.filter.isEmpty() ? countAll(ht) : count(ht, c.filter);
+                    need = c.keep - have - inbound(t.id, c.filter.isEmpty() ? null : c.filter);
+                    if (need <= 0) continue;
+                }
                 ItemStack item = pick(c, hs, ht, s.id);
-                if (item.isEmpty()) break;
+                if (item.isEmpty()) continue;
                 int avail = count(hs, item) - outbound(s.id, item);
                 int room = room(ht, item) - inbound(t.id, item);
+                if (Math.min(avail, room) <= 0) continue;
+                // the nearest idle fish to the source takes it
+                long srcPipe = s.accessPipe(this.pipes);
+                BlockPos sp = BlockPos.of(srcPipe);
+                HaulFish f = java.util.Collections.min(idle, java.util.Comparator.comparingDouble(x -> BlockPos.of(x.at).distSqr(sp)));
                 int haul = rollHaul(f.bucket, level.random);
-                if (haul <= 0) continue; // rolled nothing this time: the next fish tries
                 int amount = Math.min(Math.min(haul, avail), Math.min(room, need));
-                if (amount <= 0) break;
+                if (amount <= 0) continue; // rolled nothing this time: it tries again next look
                 idle.remove(f);
                 f.cargo = item.copyWithCount(1);
                 f.amount = amount;
                 f.src = s.id;
                 f.dst = t.id;
                 f.ret = s.id;
+                f.command = ci;
                 startLeg(level, f, srcPipe, TO_SOURCE, now, s);
-                need -= amount;
-                did = true;
+                this.nextCommand = ci + 1;
+                did = progress = true;
             }
         }
         if (did) this.idleScans = 0;
@@ -352,6 +361,7 @@ public final class PipeNet {
 
     private static void clear(HaulFish f) {
         f.state = IDLE;
+        f.command = -1;
         f.cargo = ItemStack.EMPTY;
         f.amount = 0;
     }
@@ -823,6 +833,7 @@ public final class PipeNet {
             buf.writeItem(f.cargo);
             buf.writeVarInt(f.amount);
             buf.writeVarInt(f.state == TO_SOURCE ? f.src : f.dst);
+            buf.writeVarInt(f.moving() ? f.command : -1);
         }
     }
 
