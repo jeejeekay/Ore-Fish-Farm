@@ -41,6 +41,8 @@ public final class PipeClient {
     /** Ticks a fish stays drawn where its leg ended. */
     private static final long LINGER = 30;
     private static final float SIZE = 0.2F;
+    /** How far right of the pipe's centre a swimming fish keeps (blocks; the water is 5 px across). */
+    private static final double KEEP_RIGHT = 1.25 / 16;
 
     private record Trip(long[] path, long start, long end, ItemStack fish, ItemStack cargo) {}
 
@@ -106,6 +108,12 @@ public final class PipeClient {
             }
             double k = n == 1 ? 0 : along - Math.max(0, i);
             Vec3 p = a.lerp(b, k);
+            // Keep to the right of the way it's going, so fish going opposite ways pass side by side.
+            Vec3 heading = b.subtract(a);
+            Vec3 right = Math.abs(heading.y) > Math.abs(heading.x) + Math.abs(heading.z)
+                    ? new Vec3(heading.y > 0 ? 1 : -1, 0, 0)
+                    : new Vec3(-heading.z, 0, heading.x).normalize();
+            p = p.add(right.scale(KEEP_RIGHT));
             if (p.distanceToSqr(cam) > MAX_DIST * MAX_DIST) continue;
             Vec3 dir = b.subtract(a);
             if (dir.lengthSqr() < 1.0E-6) dir = new Vec3(1, 0, 0);

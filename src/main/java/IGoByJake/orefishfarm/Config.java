@@ -35,7 +35,7 @@ public final class Config {
     public static final ForgeConfigSpec.DoubleValue TANK_MIN;
     public static final ForgeConfigSpec.ConfigValue<java.util.List<? extends String>> TANK_SIZE_OVERRIDES;
     public static final ForgeConfigSpec.DoubleValue HAUL_BASE, PIPE_SWIM_SPEED;
-    public static final ForgeConfigSpec.IntValue PIPE_SCAN_TICKS, PIPE_MAX_SCAN_TICKS, PIPES_PER_FISH_SLOT, PIPE_MAX_FISH, PIPE_MAX_NETWORK, PIPE_MAX_COMMANDS;
+    public static final ForgeConfigSpec.IntValue PIPE_SCAN_TICKS, PIPE_MAX_SCAN_TICKS, PIPES_PER_FISH_SLOT, INVENTORIES_PER_FISH_SLOT, PIPE_MAX_FISH, PIPE_MAX_NETWORK, PIPE_MAX_COMMANDS;
 
     static final java.util.List<Double> DEFAULT_MULTIPLIERS = java.util.List.of(0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 3.0);
     static final java.util.List<Double> DEFAULT_WEIGHTS = java.util.List.of(81.0, 243.0, 729.0, 2187.0, 729.0, 243.0, 81.0, 27.0, 9.0, 3.0, 1.0);
@@ -117,7 +117,8 @@ public final class Config {
         PIPE_SCAN_TICKS = b.comment("Ticks between a network's looks for work while it has idle fish and live commands.").defineInRange("scanTicks", 20, 1, 1200);
         PIPE_MAX_SCAN_TICKS = b.comment("A network that finds nothing to do looks less often, up to this many ticks apart (any change or delivery resets it).")
                 .defineInRange("maxScanTicks", 80, 1, 2400);
-        PIPES_PER_FISH_SLOT = b.comment("One fish slot per this many pipes in a network.").defineInRange("pipesPerFishSlot", 8, 1, 4096);
+        PIPES_PER_FISH_SLOT = b.comment("A network has 1 fish slot, plus one per this many pipes...").defineInRange("pipesPerExtraFishSlot", 4, 1, 4096);
+        INVENTORIES_PER_FISH_SLOT = b.comment("...plus one per this many inventories it's connected to.").defineInRange("inventoriesPerExtraFishSlot", 2, 1, 4096);
         PIPE_MAX_FISH = b.comment("Most fish slots a network can have.").defineInRange("maxFishSlots", 16, 1, 16);
         PIPE_MAX_NETWORK = b.comment("Most pipes in one network; pipes past this form a network of their own.").defineInRange("maxPipesPerNetwork", 2048, 1, 65536);
         PIPE_MAX_COMMANDS = b.defineInRange("maxCommands", 64, 1, 256);
