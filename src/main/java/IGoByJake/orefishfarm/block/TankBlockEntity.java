@@ -135,6 +135,8 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
     private int biteLen;
     ItemStack burnItem = ItemStack.EMPTY;
     int energy;
+    /** Part FE carried over between ticks, so small boosts (Charged) aren't rounded away. Not saved. */
+    private float energyPart;
     /** Controller: whether pairs breed. */
     boolean breeding = true;
 
@@ -403,7 +405,7 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
 
         // Visitors from another habitat: reach for the habitat food straight away.
         boolean needHabitatFood = false;
-        for (FishRef f : fishes) if (!FishData.habitatOf(f.stack()).equals(this.habitat)) { needHabitatFood = true; break; }
+        for (FishRef f : fishes) if (!atHome(f.stack())) { needHabitatFood = true; break; }
         if (needHabitatFood && !isProtected()) {
             int slot = findFood(true);
             if (slot >= 0 && this.habitat.equals(FishData.foodHabitat(this.shared.getStackInSlot(slot)))) {
@@ -420,7 +422,7 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
         List<FishRef> dead = new ArrayList<>();
         for (FishRef f : fishes) {
             int s = f.be.stress[f.slot];
-            if (safe || FishData.habitatOf(f.stack()).equals(this.habitat)) {
+            if (safe || atHome(f.stack())) {
                 if (s != 0) f.be.stress[f.slot] = 0;
                 continue;
             }
@@ -450,10 +452,16 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
         if (eating) {
             this.burn--;
             if (power) {
+                float fe = this.energyPart;
                 for (FishRef f : eaters) {
                     FishData.Fish d = FishData.fish(f.stack());
-                    if (d != null && d.makesPower()) rate += Math.round(FishData.powerPerTick(d) * FishGenes.factor(f.stack(), FishGenes.CHARGE));
+                    if (d == null || !d.makesPower()) continue;
+                    float r = FishData.powerPerTick(d) * FishGenes.factor(f.stack(), FishGenes.CHARGE);
+                    if (FishGenes.hasGene(f.stack(), FishGenes.CHARGED)) r *= FishGenes.CHARGED_POWER;
+                    fe += r;
                 }
+                rate = (int) fe;
+                this.energyPart = fe - rate;
                 this.energy = (int) Math.min(energyCapacity(), (long) this.energy + rate);
             }
             // Each fish sheds on its own timer (a bite, give or take the jitter), started at a random point.
@@ -488,13 +496,18 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
         if (power && this.energy > 0) pushEnergy(mem);
 
         // Heat: the eating heat fish, each times its Heat stat factor, per tank block.
+        // Hot Blooded: any eating heat fish with the gene lifts the aquarium one level (at most seething).
         float heat = 0;
+        boolean hotBlooded = false;
         if (this.burn > 0) for (FishRef f : eaters) {
             FishData.Fish d = FishData.fish(f.stack());
-            if (d != null && d.makesHeat()) heat += d.heat() * FishGenes.factor(f.stack(), FishGenes.HEAT);
+            if (d == null || !d.makesHeat()) continue;
+            heat += d.heat() * FishGenes.factor(f.stack(), FishGenes.HEAT);
+            if (FishGenes.hasGene(f.stack(), FishGenes.HOT_BLOODED)) hotBlooded = true;
         }
         heat /= Math.max(1, mem.size());
         int heatLevel = heat >= HEAT_SEETHING ? 3 : heat >= HEAT_KINDLED ? 2 : heat >= HEAT_SMOULDERING ? 1 : 0;
+        if (hotBlooded) heatLevel = Math.min(3, heatLevel + 1);
         this.heatLevel = heatLevel;
         for (TankBlockEntity m : mem) { // only touches blocks whose heat differs (cheap; no-op without Create)
             BlockState st = m.getBlockState(), hot = IGoByJake.orefishfarm.compat.CreateHeat.withHeat(st, heatLevel);
@@ -528,10 +541,15 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
     private List<FishRef> hungry(List<FishRef> fishes, boolean wantFood) {
         List<FishRef> out = new ArrayList<>();
         for (FishRef f : fishes) {
-            boolean needs = FishData.eats(FishData.fish(f.stack())) || !FishData.habitatOf(f.stack()).equals(this.habitat);
+            boolean needs = FishData.eats(FishData.fish(f.stack())) || !atHome(f.stack());
             if (needs == wantFood) out.add(f);
         }
         return out;
+    }
+
+    /** In its own habitat here, or Hardy (fine anywhere). */
+    private boolean atHome(ItemStack fish) {
+        return FishData.habitatOf(fish).equals(this.habitat) || FishGenes.hasGene(fish, FishGenes.HARDY);
     }
 
     private List<FishRef> eaters(List<FishRef> fishes) {

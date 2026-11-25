@@ -139,6 +139,15 @@ public final class FishGenes {
         return genes(stack).contains(gene);
     }
 
+    // ---------------------------------------------------------------- genes with effects (2.28.0)
+    /** Hot Blooded: an aquarium with an eating heat fish that carries it heats one Create level higher (at most seething). */
+    public static final ResourceLocation HOT_BLOODED = new ResourceLocation("orefishfarm", "hot_blooded");
+    /** Hardy: lives in a tank of any habitat without being hurt, and needs no habitat food there. */
+    public static final ResourceLocation HARDY = new ResourceLocation("orefishfarm", "hardy");
+    /** Charged: a power fish makes {@value #CHARGED_POWER}x its FE. */
+    public static final ResourceLocation CHARGED = new ResourceLocation("orefishfarm", "charged");
+    public static final float CHARGED_POWER = 1.25F;
+
     public static boolean hasAll(ItemStack stack, List<ResourceLocation> genes) {
         if (genes.isEmpty()) return true;
         List<ResourceLocation> mine = genes(stack);
@@ -435,6 +444,13 @@ public final class FishGenes {
                 g.append(geneName(genes.get(i)));
             }
             lines.add(g);
+            // What a gene does, for genes with a "gene.<ns>.<gene>.desc" lang line (Hardy, Hot Blooded, Charged).
+            for (ResourceLocation gene : genes) {
+                String key = "gene." + gene.getNamespace() + "." + gene.getPath() + ".desc";
+                if (net.minecraft.locale.Language.getInstance().has(key))
+                    lines.add(Component.literal(" ").append(geneName(gene)).append(": ")
+                            .append(Component.translatable(key)).withStyle(ChatFormatting.DARK_GRAY));
+            }
         }
     }
 }

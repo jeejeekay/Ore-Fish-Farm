@@ -43,7 +43,7 @@ public final class PipeClient {
     /** The biggest a fish is drawn in a pipe (blocks): a cod's size. Smaller fish shrink, see FishLook.pipeSize. */
     private static final float SIZE = 0.2F;
     /** Drawn size of a carried item (blocks). */
-    private static final float CARGO = 0.3F;
+    private static final float CARGO = 0.25F;
     /** How far right of the pipe's centre a swimming fish keeps (blocks; the water is 5 px across). */
     private static final double KEEP_RIGHT = 1.0 / 16;
 
