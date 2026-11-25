@@ -197,6 +197,11 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
             }
         }
 
+        /** How far off the glass a waypoint may sit: about the fish's half-width plus a little. */
+        double spread() {
+            return Math.min(this.inset, this.perp + 0.12);
+        }
+
         Path get(int fish, int home, int style) {
             return this.byFish.computeIfAbsent(fish * 4 + style, k -> new Path(this, fish, home, style));
         }
@@ -353,29 +358,60 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
             }
             int y0 = Integer.MAX_VALUE, y1 = Integer.MIN_VALUE;
             for (BlockPos b : p.members) { y0 = Math.min(y0, b.getY()); y1 = Math.max(y1, b.getY()); }
+            // Each fish has its own line: how far off the glass it laps, and which band of heights it rises and
+            // falls through, so a school spreads over the tank instead of tracing one path.
+            Lane lane = new Lane(p, r);
             if (p.members.size() == (x1 - x0 + 1) * (z1 - z0 + 1) * (y1 - y0 + 1)) { // a full box
-                rectLap(p, r, pts, blocks, x0, z0, x1, z1);
+                rectLap(p, r, lane, pts, blocks, x0, z0, x1, z1);
                 return;
             }
             // Odd shapes: follow the outline block by block (keeping a hand on the outer wall), so the fish never
             // cuts across empty space, then now and then wander through the middle and come back.
             List<int[]> ring = outline(cols, r);
             if (ring.size() < 2) {
-                rectLap(p, r, pts, blocks, x0, z0, x1, z1);
+                rectLap(p, r, lane, pts, blocks, x0, z0, x1, z1);
                 return;
             }
-            double in = p.perp + 0.1;
-            int laps = 2, total = ring.size() * laps;
-            int idx = 0;
+            // The columns in order (laps, with detours through the middle), then a point in each.
+            int laps = 2;
+            List<int[]> seq = new ArrayList<>();
+            List<Boolean> wall = new ArrayList<>();
             for (int lap = 0; lap < laps; lap++) {
-                for (int[] c : ring) {
-                    addColumnPoint(p, cols, c[0], c[1], in, (double) idx++ / total, pts, blocks);
-                }
+                for (int[] c : ring) { seq.add(c); wall.add(true); }
                 if (r.nextFloat() < 0.6F) { // a detour through the middle, back to where it left the wall
-                    int[] from = ring.get(ring.size() - 1);
-                    List<int[]> detour = wander(cols, from, ring.get(0), r);
-                    for (int[] c : detour) addColumnPoint(p, cols, c[0], c[1], 0.5, (double) idx / total, pts, blocks);
+                    for (int[] c : wander(cols, ring.get(ring.size() - 1), ring.get(0), r)) { seq.add(c); wall.add(false); }
                 }
+            }
+            int n = seq.size(), onWall = 0;
+            for (boolean w : wall) if (w) onWall++;
+            int idx = 0;
+            for (int i = 0; i < n; i++) {
+                int[] c = seq.get(i), a = seq.get((i - 1 + n) % n), b = seq.get((i + 1) % n);
+                // travel direction through this column: from the one before to the one after
+                int dx = Integer.signum(b[0] - a[0]), dz = Integer.signum(b[1] - a[1]);
+                addColumnPoint(p, cols, c[0], c[1], wall.get(i) ? lane.in : 0.5, dx, dz, lane, (double) idx / onWall, pts, blocks);
+                if (wall.get(i)) idx++;
+            }
+        }
+
+        /** A fast swimmer's own line through the tank. */
+        private static final class Lane {
+            /** Distance kept from the glass it laps along. */
+            final double in;
+            /** The share of the tank's height it uses (0..1 from the bottom), and the number of laps per climb. */
+            final double lo, hi;
+
+            Lane(Paths p, Random r) {
+                double near = p.perp + 0.06;
+                this.in = near + r.nextDouble() * 0.18;   // 0.18 .. 0.36 off the glass: different rings, even 1 wide
+                double band = 0.55 + r.nextDouble() * 0.45; // how much of the height it climbs through
+                this.lo = r.nextDouble() * (1 - band);
+                this.hi = this.lo + band;
+            }
+
+            double y(double lo, double hi, double frac) {
+                double a = lo + (hi - lo) * this.lo, b = lo + (hi - lo) * this.hi;
+                return a + (b - a) * (0.5 - 0.5 * Math.cos(2 * Math.PI * frac));
             }
         }
 
@@ -453,15 +489,18 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
         }
 
         /** A waypoint in a column: pushed toward its glass sides (by {@code in} from the glass), at a lap height. */
-        private static void addColumnPoint(Paths p, Map<Long, int[]> cols, int x, int z, double in, double frac, List<Vec3> pts, List<BlockPos> blocks) {
+        private static void addColumnPoint(Paths p, Map<Long, int[]> cols, int x, int z, double in, int dx, int dz, Lane lane, double frac, List<Vec3> pts, List<BlockPos> blocks) {
             double px = x + 0.5, pz = z + 0.5, push = Math.max(0, 0.5 - in);
-            if (!cols.containsKey(colKey(x - 1, z))) px -= push;
-            if (!cols.containsKey(colKey(x + 1, z))) px += push;
-            if (!cols.containsKey(colKey(x, z - 1))) pz -= push;
-            if (!cols.containsKey(colKey(x, z + 1))) pz += push;
+            boolean w = !cols.containsKey(colKey(x - 1, z)), e = !cols.containsKey(colKey(x + 1, z));
+            boolean n = !cols.containsKey(colKey(x, z - 1)), s = !cols.containsKey(colKey(x, z + 1));
+            // Glass on one side: hug it. Glass on both (a 1-wide stretch): keep to the right of the way it's going,
+            // so going out and coming back are two lines, not one down the middle.
+            int rx = -dz, rz = dx; // right of travel (x east, z south)
+            if (w && e) px += rx * push; else if (w) px -= push; else if (e) px += push;
+            if (n && s) pz += rz * push; else if (n) pz -= push; else if (s) pz += push;
             int[] yr = cols.get(colKey(x, z));
             double lo = yr[0] + 0.35, hi = Math.max(lo, yr[1] + 1 - 0.3);
-            double y = lo + (hi - lo) * (0.5 - 0.5 * Math.cos(2 * Math.PI * frac));
+            double y = lane.y(lo, hi, frac);
             // Around a step (the next column is shorter or starts higher): first move up or down inside the
             // column it's in, to a height both columns share, so it never swims through the missing corner.
             if (!pts.isEmpty()) {
@@ -482,10 +521,10 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
         }
 
         /** Rectangular footprints: a rounded-rectangle lap round the outside, rising and falling over four laps. */
-        private static void rectLap(Paths p, Random r, List<Vec3> pts, List<BlockPos> blocks, int x0, int z0, int x1, int z1) {
+        private static void rectLap(Paths p, Random r, Lane lane, List<Vec3> pts, List<BlockPos> blocks, int x0, int z0, int x1, int z1) {
             int y0 = Integer.MAX_VALUE, y1 = Integer.MIN_VALUE;
             for (BlockPos b : p.members) { y0 = Math.min(y0, b.getY()); y1 = Math.max(y1, b.getY()); }
-            double in = p.perp + 0.1; // laps run alongside the glass, so they can hug it
+            double in = lane.in; // laps run alongside the glass, each fish at its own distance from it
             double ax = x0 + in, bx = x1 + 1 - in, az = z0 + in, bz = z1 + 1 - in;
             double lo = y0 + 0.35, hi = Math.max(lo, y1 + 1 - 0.3);
             double rad = Math.min(0.3, Math.min(bx - ax, bz - az) / 2);
@@ -502,10 +541,10 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
             }
             if (r.nextBoolean()) java.util.Collections.reverse(ring);
             int shift = r.nextInt(ring.size());
-            int laps = 4, n = ring.size() * laps;
+            int laps = 3 + r.nextInt(3), n = ring.size() * laps;
             for (int i = 0; i < n; i++) {
                 double[] q = ring.get((i + shift) % ring.size());
-                double y = lo + (hi - lo) * (0.5 - 0.5 * Math.cos(2 * Math.PI * i / n));
+                double y = lane.y(lo, hi, (double) i / n);
                 Vec3 v = new Vec3(q[0], y, q[1]);
                 pts.add(v);
                 blocks.add(nearest(p, v));
@@ -594,7 +633,7 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
                     pts.add(new Vec3((from.getX() + to.getX()) / 2.0 + 0.5 + (alongX ? 0 : side), from.getY() + BOTTOM_Y,
                             (from.getZ() + to.getZ()) / 2.0 + 0.5 + (alongX ? side : 0)));
                 } else {
-                    pts.add(face(r, from, to, p.inset));
+                    pts.add(face(r, from, to, p.spread()));
                 }
                 blocks.add(to); // the stretch after a face point runs through the block it enters
                 from = to;
@@ -617,7 +656,9 @@ public class AquariumRenderer implements BlockEntityRenderer<TankBlockEntity> {
         /** A random point in a tank block, clear of its glass sides; a little above the floor and below the top. */
         private static Vec3 inside(Paths p, Random r, BlockPos b) {
             boolean floor = p.isGlass(b, Direction.DOWN), ceiling = p.isGlass(b, Direction.UP);
-            double in = p.inset;
+            // Waypoints across most of the block (the frame clamp still keeps a nose pointed at glass off it), so fish
+            // spread out instead of all passing through the middle.
+            double in = p.spread();
             double y0 = floor ? Math.max(0.3, p.margin) : 0.05, y1 = ceiling ? Math.min(0.72, 1 - p.margin) : 0.95;
             return new Vec3(b.getX() + in + r.nextDouble() * (1 - 2 * in), b.getY() + y0 + r.nextDouble() * (y1 - y0), b.getZ() + in + r.nextDouble() * (1 - 2 * in));
         }

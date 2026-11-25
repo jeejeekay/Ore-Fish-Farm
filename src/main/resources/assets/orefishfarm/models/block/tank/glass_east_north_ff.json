@@ -2,8 +2,8 @@
   "render_type": "minecraft:cutout",
   "ambientocclusion": false,
   "textures": {
-    "glass": "orefishfarm:block/tank_glass",
-    "particle": "orefishfarm:block/tank_glass"
+    "glass": "orefishfarm:block/tank_glass_cutout",
+    "particle": "orefishfarm:block/tank_glass_cutout"
   },
   "elements": [
     {
@@ -19,13 +19,7 @@
       ],
       "faces": {
         "east": {
-          "texture": "#glass",
-          "uv": [
-            0,
-            0,
-            0.4,
-            16
-          ]
+          "texture": "#glass"
         }
       }
     }

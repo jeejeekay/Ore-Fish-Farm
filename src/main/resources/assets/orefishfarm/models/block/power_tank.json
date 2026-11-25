@@ -1,334 +1,334 @@
 {
-  "loader": "forge:composite",
-  "parent": "minecraft:block/block",
-  "textures": {
+ "loader": "forge:composite",
+ "parent": "minecraft:block/block",
+ "textures": {
+  "particle": "orefishfarm:block/power_tank_frame"
+ },
+ "children": {
+  "frame": {
+   "render_type": "minecraft:cutout",
+   "textures": {
+    "sand": "minecraft:block/sand",
+    "water": "minecraft:block/water_still",
+    "glass": "orefishfarm:block/tank_glass",
+    "plant": "minecraft:block/seagrass",
+    "pebble": "minecraft:block/gravel",
+    "coil": "orefishfarm:block/tank_coil",
+    "frame": "orefishfarm:block/power_tank_frame",
     "particle": "orefishfarm:block/power_tank_frame"
-  },
-  "children": {
-    "frame": {
-      "render_type": "minecraft:cutout",
-      "textures": {
-        "sand": "minecraft:block/sand",
-        "water": "minecraft:block/water_still",
-        "glass": "orefishfarm:block/tank_glass",
-        "plant": "minecraft:block/seagrass",
-        "pebble": "minecraft:block/gravel",
-        "coil": "orefishfarm:block/tank_coil",
-        "frame": "orefishfarm:block/power_tank_frame",
-        "particle": "orefishfarm:block/power_tank_frame"
+   },
+   "elements": [
+    {
+     "from": [
+      0,
+      0,
+      0
+     ],
+     "to": [
+      16,
+      2,
+      16
+     ],
+     "faces": {
+      "north": {
+       "texture": "#frame"
       },
-      "elements": [
-        {
-          "from": [
-            0,
-            0,
-            0
-          ],
-          "to": [
-            16,
-            2,
-            16
-          ],
-          "faces": {
-            "north": {
-              "texture": "#frame"
-            },
-            "south": {
-              "texture": "#frame"
-            },
-            "east": {
-              "texture": "#frame"
-            },
-            "west": {
-              "texture": "#frame"
-            },
-            "up": {
-              "texture": "#frame"
-            },
-            "down": {
-              "texture": "#frame"
-            }
-          }
-        },
-        {
-          "from": [
-            0,
-            15,
-            0
-          ],
-          "to": [
-            16,
-            16,
-            1
-          ],
-          "faces": {
-            "north": {
-              "texture": "#frame"
-            },
-            "south": {
-              "texture": "#frame"
-            },
-            "east": {
-              "texture": "#frame"
-            },
-            "west": {
-              "texture": "#frame"
-            },
-            "up": {
-              "texture": "#frame"
-            },
-            "down": {
-              "texture": "#frame"
-            }
-          }
-        },
-        {
-          "from": [
-            0,
-            15,
-            15
-          ],
-          "to": [
-            16,
-            16,
-            16
-          ],
-          "faces": {
-            "north": {
-              "texture": "#frame"
-            },
-            "south": {
-              "texture": "#frame"
-            },
-            "east": {
-              "texture": "#frame"
-            },
-            "west": {
-              "texture": "#frame"
-            },
-            "up": {
-              "texture": "#frame"
-            },
-            "down": {
-              "texture": "#frame"
-            }
-          }
-        },
-        {
-          "from": [
-            0,
-            15,
-            1
-          ],
-          "to": [
-            1,
-            16,
-            15
-          ],
-          "faces": {
-            "east": {
-              "texture": "#frame"
-            },
-            "west": {
-              "texture": "#frame"
-            },
-            "up": {
-              "texture": "#frame"
-            },
-            "down": {
-              "texture": "#frame"
-            }
-          }
-        },
-        {
-          "from": [
-            15,
-            15,
-            1
-          ],
-          "to": [
-            16,
-            16,
-            15
-          ],
-          "faces": {
-            "east": {
-              "texture": "#frame"
-            },
-            "west": {
-              "texture": "#frame"
-            },
-            "up": {
-              "texture": "#frame"
-            },
-            "down": {
-              "texture": "#frame"
-            }
-          }
-        },
-        {
-          "from": [
-            0.5,
-            2,
-            0.5
-          ],
-          "to": [
-            15.5,
-            3,
-            15.5
-          ],
-          "faces": {
-            "north": {
-              "texture": "#sand"
-            },
-            "south": {
-              "texture": "#sand"
-            },
-            "east": {
-              "texture": "#sand"
-            },
-            "west": {
-              "texture": "#sand"
-            },
-            "up": {
-              "texture": "#sand"
-            }
-          }
-        },
-        {
-          "from": [
-            6,
-            3,
-            6
-          ],
-          "to": [
-            10,
-            5,
-            10
-          ],
-          "faces": {
-            "north": {
-              "texture": "#coil"
-            },
-            "south": {
-              "texture": "#coil"
-            },
-            "east": {
-              "texture": "#coil"
-            },
-            "west": {
-              "texture": "#coil"
-            },
-            "up": {
-              "texture": "#coil"
-            }
-          }
-        },
-        {
-          "from": [
-            7.5,
-            5,
-            7.5
-          ],
-          "to": [
-            8.5,
-            8,
-            8.5
-          ],
-          "faces": {
-            "north": {
-              "texture": "#coil"
-            },
-            "south": {
-              "texture": "#coil"
-            },
-            "east": {
-              "texture": "#coil"
-            },
-            "west": {
-              "texture": "#coil"
-            },
-            "up": {
-              "texture": "#coil"
-            }
-          }
-        }
-      ]
+      "south": {
+       "texture": "#frame"
+      },
+      "east": {
+       "texture": "#frame"
+      },
+      "west": {
+       "texture": "#frame"
+      },
+      "up": {
+       "texture": "#frame"
+      },
+      "down": {
+       "texture": "#frame"
+      }
+     }
     },
-    "glass": {
-      "render_type": "minecraft:translucent",
-      "textures": {
-        "sand": "minecraft:block/sand",
-        "water": "minecraft:block/water_still",
-        "glass": "orefishfarm:block/tank_glass",
-        "plant": "minecraft:block/seagrass",
-        "pebble": "minecraft:block/gravel",
-        "coil": "orefishfarm:block/tank_coil",
-        "frame": "orefishfarm:block/power_tank_frame",
-        "particle": "orefishfarm:block/power_tank_frame"
+    {
+     "from": [
+      0,
+      15,
+      0
+     ],
+     "to": [
+      16,
+      16,
+      1
+     ],
+     "faces": {
+      "north": {
+       "texture": "#frame"
       },
-      "elements": [
-        {
-          "from": [
-            0.5,
-            3,
-            0.5
-          ],
-          "to": [
-            15.5,
-            13,
-            15.5
-          ],
-          "faces": {
-            "north": {
-              "texture": "#water",
-              "tintindex": 0
-            },
-            "south": {
-              "texture": "#water",
-              "tintindex": 0
-            },
-            "east": {
-              "texture": "#water",
-              "tintindex": 0
-            },
-            "west": {
-              "texture": "#water",
-              "tintindex": 0
-            },
-            "up": {
-              "texture": "#water",
-              "tintindex": 0
-            }
-          }
-        },
-        {
-          "from": [
-            0.4,
-            2,
-            0.4
-          ],
-          "to": [
-            15.6,
-            15,
-            15.6
-          ],
-          "faces": {
-            "north": {
-              "texture": "#glass"
-            },
-            "south": {
-              "texture": "#glass"
-            },
-            "east": {
-              "texture": "#glass"
-            },
-            "west": {
-              "texture": "#glass"
-            }
-          }
-        }
-      ]
+      "south": {
+       "texture": "#frame"
+      },
+      "east": {
+       "texture": "#frame"
+      },
+      "west": {
+       "texture": "#frame"
+      },
+      "up": {
+       "texture": "#frame"
+      },
+      "down": {
+       "texture": "#frame"
+      }
+     }
+    },
+    {
+     "from": [
+      0,
+      15,
+      15
+     ],
+     "to": [
+      16,
+      16,
+      16
+     ],
+     "faces": {
+      "north": {
+       "texture": "#frame"
+      },
+      "south": {
+       "texture": "#frame"
+      },
+      "east": {
+       "texture": "#frame"
+      },
+      "west": {
+       "texture": "#frame"
+      },
+      "up": {
+       "texture": "#frame"
+      },
+      "down": {
+       "texture": "#frame"
+      }
+     }
+    },
+    {
+     "from": [
+      0,
+      15,
+      1
+     ],
+     "to": [
+      1,
+      16,
+      15
+     ],
+     "faces": {
+      "east": {
+       "texture": "#frame"
+      },
+      "west": {
+       "texture": "#frame"
+      },
+      "up": {
+       "texture": "#frame"
+      },
+      "down": {
+       "texture": "#frame"
+      }
+     }
+    },
+    {
+     "from": [
+      15,
+      15,
+      1
+     ],
+     "to": [
+      16,
+      16,
+      15
+     ],
+     "faces": {
+      "east": {
+       "texture": "#frame"
+      },
+      "west": {
+       "texture": "#frame"
+      },
+      "up": {
+       "texture": "#frame"
+      },
+      "down": {
+       "texture": "#frame"
+      }
+     }
+    },
+    {
+     "from": [
+      0.5,
+      2,
+      0.5
+     ],
+     "to": [
+      15.5,
+      3,
+      15.5
+     ],
+     "faces": {
+      "north": {
+       "texture": "#sand"
+      },
+      "south": {
+       "texture": "#sand"
+      },
+      "east": {
+       "texture": "#sand"
+      },
+      "west": {
+       "texture": "#sand"
+      },
+      "up": {
+       "texture": "#sand"
+      }
+     }
+    },
+    {
+     "from": [
+      6,
+      3,
+      6
+     ],
+     "to": [
+      10,
+      5,
+      10
+     ],
+     "faces": {
+      "north": {
+       "texture": "#coil"
+      },
+      "south": {
+       "texture": "#coil"
+      },
+      "east": {
+       "texture": "#coil"
+      },
+      "west": {
+       "texture": "#coil"
+      },
+      "up": {
+       "texture": "#coil"
+      }
+     }
+    },
+    {
+     "from": [
+      7.5,
+      5,
+      7.5
+     ],
+     "to": [
+      8.5,
+      8,
+      8.5
+     ],
+     "faces": {
+      "north": {
+       "texture": "#coil"
+      },
+      "south": {
+       "texture": "#coil"
+      },
+      "east": {
+       "texture": "#coil"
+      },
+      "west": {
+       "texture": "#coil"
+      },
+      "up": {
+       "texture": "#coil"
+      }
+     }
     }
+   ]
+  },
+  "glass": {
+   "render_type": "minecraft:translucent",
+   "textures": {
+    "sand": "minecraft:block/sand",
+    "water": "minecraft:block/water_still",
+    "glass": "orefishfarm:block/tank_glass",
+    "plant": "minecraft:block/seagrass",
+    "pebble": "minecraft:block/gravel",
+    "coil": "orefishfarm:block/tank_coil",
+    "frame": "orefishfarm:block/power_tank_frame",
+    "particle": "orefishfarm:block/power_tank_frame"
+   },
+   "elements": [
+    {
+     "from": [
+      0.5,
+      3,
+      0.5
+     ],
+     "to": [
+      15.5,
+      13,
+      15.5
+     ],
+     "faces": {
+      "north": {
+       "texture": "#water",
+       "tintindex": 0
+      },
+      "south": {
+       "texture": "#water",
+       "tintindex": 0
+      },
+      "east": {
+       "texture": "#water",
+       "tintindex": 0
+      },
+      "west": {
+       "texture": "#water",
+       "tintindex": 0
+      },
+      "up": {
+       "texture": "#water",
+       "tintindex": 0
+      }
+     }
+    },
+    {
+     "from": [
+      0.4,
+      2,
+      0.4
+     ],
+     "to": [
+      15.6,
+      15,
+      15.6
+     ],
+     "faces": {
+      "north": {
+       "texture": "#glass"
+      },
+      "south": {
+       "texture": "#glass"
+      },
+      "east": {
+       "texture": "#glass"
+      },
+      "west": {
+       "texture": "#glass"
+      }
+     }
+    }
+   ]
   }
+ }
 }
