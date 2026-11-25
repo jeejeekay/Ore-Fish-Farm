@@ -1,6 +1,6 @@
 """Pipe Tank models, blockstate, item model and glass textures (Ore Fish Farm 2.26.0).
 
-An 8x8 glass tube (4..12) round a 7x7 tube of tinted, animated water (4.5..11.5), with a 10x10 black rim collar:
+A 6x6 glass tube (5..11) of tinted, animated water on the same faces, with an 8x8 black rim collar:
 where it meets an inventory the collar reaches 2 px out of the block (14..18) into the inventory's; a capped dead
 end keeps it inside (14..16).
 
@@ -38,10 +38,11 @@ MD = ROOT + '/models/block/pipe'
 TX = ROOT + '/textures/block'
 os.makedirs(MD, exist_ok=True)
 
-G0, G1 = 4, 12     # the tube's glass: 8 px across, on whole pixels
-W0, W1 = 4.5, 11.5 # the water inside: 7 px
-R0, R1 = 3, 13     # the rim collar: 10 px across, 14..16 in the block (+2 px out at an inventory)
-SPAN = G1 - G0     # 8
+G0, G1 = 5, 11     # the tube: 6 px across, on whole pixels (2.26.3)
+W0, W1 = G0, G1    # the water lies on the glass faces themselves (same boxes, so the same depth: glass, drawn
+                   # after it on the tripwire layer, always lands on top; no z-fighting)
+R0, R1 = 4, 12     # the rim collar: 8 px across, 14..16 in the block (+2 px out at an inventory)
+SPAN = G1 - G0     # 6
 GLASS_LAYER = 'minecraft:tripwire'
 CONNECTED = 'pipe|rim|cap'
 
@@ -76,7 +77,7 @@ def perp(d):
 # ------------------------------------------------------------------ glass textures
 
 BODY = (222, 243, 252, 30)                       # the glass itself: a faint cool tint
-FADE = [(236, 250, 255, 135), (226, 246, 254, 72)]  # in from a folding edge: still see-through, never solid
+FADE = [(236, 250, 255, 135)]  # one band at a folding edge (2.26.3: shows more water): see-through, never solid
 
 
 INNER = 7  # the inner faces' span (the 7 px water tube)
