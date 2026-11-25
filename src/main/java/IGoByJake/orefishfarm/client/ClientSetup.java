@@ -65,6 +65,7 @@ public final class ClientSetup {
     @SubscribeEvent
     public static void onBaked(ModelEvent.BakingCompleted event) {
         FishRender.clearCache();
+        TankExtrasModel.clearCache();
     }
 
     @SubscribeEvent

@@ -751,20 +751,43 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
 
     // ------------------------------------------------------------------ saving and syncing
 
-    /** Extra model pieces for inside corners and steps, worked out by {@link Aquarium#extras} (bits listed there). */
+    /** This block's shape ({@link TankGeometry#shape}): which neighbours share its aquarium; 0 until worked out. */
     int extras;
     public static final net.minecraftforge.client.model.data.ModelProperty<Integer> EXTRAS = new net.minecraftforge.client.model.data.ModelProperty<>();
 
     @Override
     public net.minecraftforge.client.model.data.ModelData getModelData() {
-        return net.minecraftforge.client.model.data.ModelData.builder().with(EXTRAS, this.extras).build();
+        int shape = this.extras;
+        // not sent yet (or saved before 2.25): read it off the neighbours' block states, which say who they join
+        if ((shape & TankGeometry.KNOWN) == 0 && this.level != null) shape = TankGeometry.shape(this::sharesAquarium);
+        return net.minecraftforge.client.model.data.ModelData.builder().with(EXTRAS, shape).build();
+    }
+
+    /** Whether the block at this offset is in this block's aquarium, going by the joins in the block states. */
+    private boolean sharesAquarium(int dx, int dy, int dz) {
+        // step one axis at a time, each step through a side the block there says is joined (either order)
+        int[][] orders = {{0, 1, 2}, {2, 1, 0}, {1, 0, 2}, {1, 2, 0}};
+        for (int[] order : orders) {
+            BlockPos at = this.worldPosition;
+            boolean ok = true;
+            for (int axis : order) {
+                int v = axis == 0 ? dx : axis == 1 ? dy : dz;
+                if (v == 0) continue;
+                Direction d = axis == 0 ? (v > 0 ? Direction.EAST : Direction.WEST) : axis == 1 ? (v > 0 ? Direction.UP : Direction.DOWN) : (v > 0 ? Direction.SOUTH : Direction.NORTH);
+                BlockState s = this.level.getBlockState(at);
+                if (!(s.getBlock() instanceof TankBlock) || !s.getValue(TankBlock.side(d))) { ok = false; break; }
+                at = at.relative(d);
+            }
+            if (ok) return true;
+        }
+        return false;
     }
 
     @Override
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
         tag.putInt("Version", 3);
-        if (this.extras != 0) tag.putInt("Extras", this.extras);
+        if (this.extras != 0) tag.putInt("Shape", this.extras);
         tag.putBoolean("Breeding", this.breeding);
         tag.put("Fish", this.fish.serializeNBT());
         tag.put("Shared", this.shared.serializeNBT());
@@ -830,7 +853,7 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
         this.bite = tag.getInt("Bite");
         this.burnItem = tag.contains("BurnItem") ? ItemStack.of(tag.getCompound("BurnItem")) : ItemStack.EMPTY;
         this.energy = tag.getInt("Energy");
-        this.extras = tag.getInt("Extras");
+        this.extras = tag.getInt("Shape"); // "Extras" (before 2.25) meant something else: worked out again
         this.needsCheck = true;
     }
 

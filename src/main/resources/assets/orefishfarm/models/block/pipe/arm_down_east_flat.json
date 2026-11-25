@@ -1,0 +1,52 @@
+{
+ "render_type": "minecraft:translucent",
+ "ambientocclusion": false,
+ "textures": {
+  "g3": "orefishfarm:block/pipe_glass_3",
+  "fill": "minecraft:block/water_still",
+  "particle": "orefishfarm:block/pipe_rim"
+ },
+ "elements": [
+  {
+   "from": [
+    10.9,
+    0,
+    5
+   ],
+   "to": [
+    10.9,
+    5,
+    11
+   ],
+   "faces": {
+    "east": {
+     "texture": "#fill",
+     "tintindex": 0
+    }
+   }
+  },
+  {
+   "from": [
+    11,
+    0,
+    5
+   ],
+   "to": [
+    11,
+    5,
+    11
+   ],
+   "faces": {
+    "east": {
+     "texture": "#g3",
+     "uv": [
+      0,
+      0,
+      6,
+      5
+     ]
+    }
+   }
+  }
+ ]
+}
