@@ -1,6 +1,6 @@
 """Pipe Tank models, blockstate, item model and glass textures (Ore Fish Farm 2.26.0).
 
-A 6x6 glass tube (5..11) of tinted, animated water on the same faces, with an 8x8 black rim collar:
+A 6x6 glass tube (5..11) round a 4x4 tube of tinted, animated water (6..10), with an 8x8 black rim collar:
 where it meets an inventory the collar reaches 2 px out of the block (14..18) into the inventory's; a capped dead
 end keeps it inside (14..16).
 
@@ -39,8 +39,7 @@ TX = ROOT + '/textures/block'
 os.makedirs(MD, exist_ok=True)
 
 G0, G1 = 5, 11     # the tube: 6 px across, on whole pixels (2.26.3)
-W0, W1 = G0, G1    # the water lies on the glass faces themselves (same boxes, so the same depth: glass, drawn
-                   # after it on the tripwire layer, always lands on top; no z-fighting)
+W0, W1 = 6, 10     # the water: 4 px, 1 px inside the glass all round (2.27.1; 2.26.3 had it on the glass faces)
 R0, R1 = 4, 12     # the rim collar: 8 px across, 14..16 in the block (+2 px out at an inventory)
 SPAN = G1 - G0     # 6
 GLASS_LAYER = 'minecraft:tripwire'
@@ -77,7 +76,7 @@ def perp(d):
 # ------------------------------------------------------------------ glass textures
 
 BODY = (222, 243, 252, 30)                       # the glass itself: a faint cool tint
-FADE = [(236, 250, 255, 135)]  # one band at a folding edge (2.26.3: shows more water): see-through, never solid
+FADE = [(226, 246, 254, 72)]  # one light band at a folding edge (2.27.1: the lighter of the old two): see-through
 
 
 INNER = 7  # the inner faces' span (the 7 px water tube)

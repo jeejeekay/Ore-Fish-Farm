@@ -18,14 +18,6 @@
     {
       "item": "orefishfarm:mudskipper",
       "chance": 0.03
-    },
-    {
-      "item": "orefishfarm:ferrofin",
-      "chance": 0.01
-    },
-    {
-      "item": "orefishfarm:cuprum_eel",
-      "chance": 0.008
     }
   ]
 }

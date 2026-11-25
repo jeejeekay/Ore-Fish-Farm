@@ -106,10 +106,6 @@ def check(name, pipes, inv=()):
         g, w, r = faces_of(shaped(pipes, inv, p), p)
         glass += g; water += w; rims += r
     problems = []
-    # water lies exactly on the glass (same face, same corners): identical depth, so no z-fighting
-    for face, f, t in water:
-        if not any(gf == face and g0 == f and g1 == t for gf, g0, g1, *_ in glass):
-            problems.append(f'water face not exactly on a glass face: {face} {[float(c) for c in f]}')
     # water: its own closed tube (edges meet another water face, or sit under a rim), no overlaps, inside the glass
     wmap = {}
     for face, f, t in water:

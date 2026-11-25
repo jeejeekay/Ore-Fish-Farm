@@ -41,6 +41,8 @@ public final class PipeClient {
     /** Ticks a fish stays drawn where its leg ended. */
     private static final long LINGER = 30;
     private static final float SIZE = 0.2F;
+    /** Drawn size of a carried item (blocks). */
+    private static final float CARGO = 0.4F;
     /** How far right of the pipe's centre a swimming fish keeps (blocks; the water is 5 px across). */
     private static final double KEEP_RIGHT = 1.25 / 16;
 
@@ -135,11 +137,11 @@ public final class PipeClient {
                 pose.popPose();
             }
             if (!t.cargo.isEmpty()) {
-                // What it carries, held at its nose.
+                // What it carries, held at its nose: twice the fish's size (2.27.1) so it's easy to see.
                 pose.pushPose();
-                pose.translate(SIZE * 0.62F, 0, 0);
+                pose.translate(SIZE * 0.5F + CARGO * 0.4F, 0, 0);
                 pose.mulPose(Axis.YP.rotationDegrees(90));
-                pose.scale(0.2F, 0.2F, 0.2F);
+                pose.scale(CARGO, CARGO, CARGO);
                 mc.getItemRenderer().renderStatic(t.cargo, ItemDisplayContext.FIXED, light, OverlayTexture.NO_OVERLAY, pose, buffers, level, 0);
                 pose.popPose();
             }

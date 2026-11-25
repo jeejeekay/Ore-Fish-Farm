@@ -2,18 +2,6 @@
   "item": "orefishfarm:shell_sinker",
   "bonuses": [
     {
-      "fish": "orefishfarm:zincray",
-      "chance": 0.06,
-      "liquid": "lava",
-      "dimension": "minecraft:overworld"
-    },
-    {
-      "fish": "orefishfarm:ferrofin",
-      "chance": 0.03,
-      "liquid": "lava",
-      "dimension": "minecraft:overworld"
-    },
-    {
       "fish": "orefishfarm:stone_fish",
       "chance": 0.06,
       "liquid": "water"

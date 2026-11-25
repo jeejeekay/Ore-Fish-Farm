@@ -2,22 +2,19 @@
   "item": "orefishfarm:puffloater",
   "bonuses": [
     {
-      "fish": "orefishfarm:cuprum_eel",
+      "fish": "orefishfarm:glass_eel",
       "chance": 0.06,
-      "liquid": "lava",
-      "dimension": "minecraft:overworld"
+      "liquid": "water"
     },
     {
-      "fish": "orefishfarm:zincray",
+      "fish": "orefishfarm:cuprum_eel",
       "chance": 0.03,
-      "liquid": "lava",
-      "dimension": "minecraft:overworld"
+      "liquid": "water"
     },
     {
       "fish": "orefishfarm:ferrofin",
       "chance": 0.02,
-      "liquid": "lava",
-      "dimension": "minecraft:overworld"
+      "liquid": "water"
     }
   ]
 }

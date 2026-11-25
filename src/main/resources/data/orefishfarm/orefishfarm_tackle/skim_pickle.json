@@ -1,29 +1,4 @@
 {
   "item": "orefishfarm:skim_pickle",
-  "bonuses": [
-    {
-      "fish": "orefishfarm:gilded_carp",
-      "chance": 0.06,
-      "liquid": "lava",
-      "dimension": "minecraft:overworld"
-    },
-    {
-      "fish": "orefishfarm:cuprum_eel",
-      "chance": 0.03,
-      "liquid": "lava",
-      "dimension": "minecraft:overworld"
-    },
-    {
-      "fish": "orefishfarm:zincray",
-      "chance": 0.02,
-      "liquid": "lava",
-      "dimension": "minecraft:overworld"
-    },
-    {
-      "fish": "orefishfarm:ferrofin",
-      "chance": 0.02,
-      "liquid": "lava",
-      "dimension": "minecraft:overworld"
-    }
-  ]
+  "bonuses": []
 }
