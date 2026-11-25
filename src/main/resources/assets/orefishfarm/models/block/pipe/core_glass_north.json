@@ -20,7 +20,13 @@
    ],
    "faces": {
     "north": {
-     "texture": "#glass_plain"
+     "texture": "#glass_plain",
+     "uv": [
+      5,
+      5,
+      11,
+      11
+     ]
     }
    }
   }

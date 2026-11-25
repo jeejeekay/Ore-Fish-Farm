@@ -23,9 +23,9 @@
      "texture": "#glass",
      "uv": [
       0,
-      0,
+      5,
       16,
-      16
+      11
      ],
      "rotation": 90
     }
