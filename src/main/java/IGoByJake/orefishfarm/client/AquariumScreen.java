@@ -335,12 +335,13 @@ public class AquariumScreen extends AbstractContainerScreen<AquariumMenu> {
         g.fill(x + w - 1, y + 1, x + w, y + h, 0xFFFFFFFF);
     }
 
-    /** The mob from the bucket, side-on and about 20 pixels long, centred on (x, y); the bucket if it has no mob. */
+    /** The mob from the bucket, side-on, its model about 20 pixels long (via modelSizeFixes), centred on (x, y); the bucket if it has no mob. */
     private static void drawFish(GuiGraphics g, ItemStack bucket, int x, int y) {
         net.minecraft.world.entity.Entity mob = FishLook.mob(bucket);
         if (mob instanceof net.minecraft.world.entity.LivingEntity living) {
             float big = Math.max(0.2F, Math.max(mob.getBbWidth(), mob.getBbHeight()));
-            int scale = Math.max(4, Math.round(20 / big));
+            // modelSizeFixes: a vanilla fish's model is longer than its hitbox, so it would overflow the slot.
+            int scale = Math.max(4, Math.round(20 * FishLook.modelFix(mob) / big));
             org.joml.Quaternionf q = new org.joml.Quaternionf().rotateZ((float) Math.PI).mul(new org.joml.Quaternionf().rotateY((float) Math.PI / 2));
             net.minecraft.client.gui.screens.inventory.InventoryScreen.renderEntityInInventory(g, x, y + Math.round(mob.getBbHeight() * scale / 2), scale, q, null, living);
         } else {

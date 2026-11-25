@@ -119,14 +119,15 @@ public final class Config {
                 "  cod:       hitbox 0.5;  model nose z=-4 to tail fin z=11 = 15 px = 0.94;  0.5 / 0.94 = 0.53",
                 "  salmon:    hitbox 0.7;  model head z=-3 to tail fin z=22 = 25 px = 1.56;  0.7 / 1.56 = 0.45",
                 "  tropical:  hitbox 0.5;  model A 12 px long (0.75), model B 14 px tall (0.88);  0.5 / 0.81 = 0.62",
-                "  puffer:    hitbox 0.7 fully puffed (tanks show it puffed);  model about 10 px (0.63);  0.7 / 0.63 = 1.1",
+                "  puffer:    hitbox 0.7 fully puffed (tanks show it puffed);  model about 10 px (0.63);  0.7 / 0.63 = 1.1, then",
+                "             shrunk to 0.6 by eye: a round fish looks much bigger than a slim one of the same length",
                 "  axolotl:   hitbox 0.75;  model head z=-9 to tail z=18 = 27 px = 1.69;  0.75 / 1.69 = 0.44",
                 "  tadpole:   hitbox 0.4;  model 10 px = 0.63;  0.4 / 0.63 = 0.64",
                 "Applied after the maximum size, so it only corrects how the model is drawn; how big the mob is next to others",
                 "still comes from its hitbox (sizePower). Pipe Tanks use it too, so a cod is the largest fish in a pipe.")
                 .defineList("modelSizeFixes", java.util.List.of(
                         "minecraft:cod=0.53", "minecraft:salmon=0.45", "minecraft:tropical_fish=0.62",
-                        "minecraft:pufferfish=1.1", "minecraft:axolotl=0.44", "minecraft:tadpole=0.64"),
+                        "minecraft:pufferfish=0.6", "minecraft:axolotl=0.44", "minecraft:tadpole=0.64"),
                         o -> o instanceof String str && str.contains("="));
         b.pop().push("pipes");
         HAUL_BASE = b.comment("Items a hauling fish carries per trip at Haul 1x (level 3 by default): it carries this x its Haul stat multiplier",
