@@ -301,7 +301,9 @@ public final class PipeNet {
                 f.dst = t.id;
                 f.ret = s.id;
                 f.command = ci;
-                startLeg(level, f, srcPipe, TO_SOURCE, now, s);
+                // Sets off after a short random wait, so fish given jobs in the same look spread out (startDelay).
+                int delay = Config.PIPE_START_DELAY.get();
+                startLeg(level, f, srcPipe, TO_SOURCE, now + (delay > 0 ? level.random.nextInt(delay + 1) : 0), s);
                 this.nextCommand = ci + 1;
                 did = progress = true;
             }
@@ -398,7 +400,7 @@ public final class PipeNet {
      * Sends the fish to pipe {@code to}. For the drawing, a leg that ends at an inventory runs on into that block
      * (the fish swims into the chest), and the next leg starts back inside it.
      */
-    private void startLeg(ServerLevel level, HaulFish f, long to, byte state, long now, @javax.annotation.Nullable Endpoint into) {
+    private void startLeg(ServerLevel level, HaulFish f, long to, byte state, long start, @javax.annotation.Nullable Endpoint into) {
         long[] path = route(f.at, to);
         long[] shown = path;
         if (f.inside != NONE && path.length > 0) shown = prepend(f.inside, shown);
@@ -412,8 +414,8 @@ public final class PipeNet {
         f.state = state;
         f.from = f.at;
         f.at = to;
-        f.legStart = now;
-        f.legEnd = now + ticks;
+        f.legStart = start; // may be a little in the future: the fish waits where it is until then
+        f.legEnd = start + ticks;
         PipePackets.sendLeg(level, this, f, shown);
     }
 

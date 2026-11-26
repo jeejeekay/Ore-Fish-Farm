@@ -35,7 +35,7 @@ public final class Config {
     public static final ForgeConfigSpec.DoubleValue TANK_MIN;
     public static final ForgeConfigSpec.ConfigValue<java.util.List<? extends String>> TANK_SIZE_OVERRIDES;
     public static final ForgeConfigSpec.DoubleValue HAUL_BASE, PIPE_SWIM_SPEED;
-    public static final ForgeConfigSpec.IntValue PIPE_SCAN_TICKS, PIPE_MAX_SCAN_TICKS, PIPES_PER_FISH_SLOT, INVENTORIES_PER_FISH_SLOT, PIPE_MAX_FISH, PIPE_MAX_NETWORK, PIPE_MAX_COMMANDS;
+    public static final ForgeConfigSpec.IntValue PIPE_START_DELAY, PIPE_SCAN_TICKS, PIPE_MAX_SCAN_TICKS, PIPES_PER_FISH_SLOT, INVENTORIES_PER_FISH_SLOT, PIPE_MAX_FISH, PIPE_MAX_NETWORK, PIPE_MAX_COMMANDS;
 
     static final java.util.List<Double> DEFAULT_MULTIPLIERS = java.util.List.of(0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 3.0);
     static final java.util.List<Double> DEFAULT_WEIGHTS = java.util.List.of(81.0, 243.0, 729.0, 2187.0, 729.0, 243.0, 81.0, 27.0, 9.0, 3.0, 1.0);
@@ -135,6 +135,8 @@ public final class Config {
                 "A part item is a roll: 2.5 = 2 items, plus a 50% chance of a third.")
                 .defineInRange("haulBase", 4.0, 0.01, 1000.0);
         PIPE_SWIM_SPEED = b.comment("How fast hauling fish swim through Pipe Tanks, in blocks per second (fast swimmers go 1.5x).").defineInRange("swimSpeed", 4.0, 0.25, 64.0);
+        PIPE_START_DELAY = b.comment("A fish that takes a job sets off after a random wait of up to this many ticks, so fish sent out together",
+                "spread out along the pipes and finish at different times (0 = straight away).").defineInRange("startDelay", 30, 0, 400);
         PIPE_SCAN_TICKS = b.comment("Ticks between a network's looks for work while it has idle fish and live commands.").defineInRange("scanTicks", 20, 1, 1200);
         PIPE_MAX_SCAN_TICKS = b.comment("A network that finds nothing to do looks less often, up to this many ticks apart (any change or delivery resets it).")
                 .defineInRange("maxScanTicks", 80, 1, 2400);
